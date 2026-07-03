@@ -11,6 +11,8 @@ target_include_directories(OptiScanCore PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../..)
 set(OptiScanCore_SOURCES
     Config/SystemConfig.cpp
     Config/SystemConfig.h
+    Json/JsonSchemaValidator.h
+    Json/JsonSchemaValidator.cpp
     LogHandler.h
 )
 

@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 
-#include <External/Valijson/Subschema.hpp>
+#include <Extern/Valijson/Subschema.hpp>
 
 namespace valijson {
 

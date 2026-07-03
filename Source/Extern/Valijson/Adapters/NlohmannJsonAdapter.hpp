@@ -28,12 +28,12 @@
 #include <cmath>
 #include <optional>
 #include <string>
-#include <External/Nlohmann/json.hpp>
+#include <Extern/Nlohmann/json.hpp>
 
-#include <External/ValiJson/Internal/Adapter.hpp>
-#include <External/ValiJson/Internal/BasicAdapter.hpp>
-#include <External/ValiJson/Internal/FrozenValue.hpp>
-#include <External/ValiJson/Exceptions.hpp>
+#include <Extern/Valijson/Internal/Adapter.hpp>
+#include <Extern/Valijson/Internal/BasicAdapter.hpp>
+#include <Extern/Valijson/Internal/FrozenValue.hpp>
+#include <Extern/Valijson/Exceptions.hpp>
 #include <utility>
 
 namespace valijson {

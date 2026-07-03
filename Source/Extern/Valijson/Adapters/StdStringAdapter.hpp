@@ -16,10 +16,10 @@
 
 #include <string>
 
-#include <External/Valijson/Internal/Adapter.hpp>
-#include <External/Valijson/Internal/BasicAdapter.hpp>
-#include <External/Valijson/Internal/FrozenValue.hpp>
-#include <External/Valijson/Exceptions.hpp>
+#include <Extern/Valijson/Internal/Adapter.hpp>
+#include <Extern/Valijson/Internal/BasicAdapter.hpp>
+#include <Extern/Valijson/Internal/FrozenValue.hpp>
+#include <Extern/Valijson/Exceptions.hpp>
 
 namespace valijson {
 namespace adapters {

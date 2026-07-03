@@ -5,8 +5,8 @@
 #include <optional>
 #include <vector>
 
-#include <External/Valijson/Constraints/Constraint.hpp>
-#include <External/Valijson/Exceptions.hpp>
+#include <Extern/Valijson/Constraints/Constraint.hpp>
+#include <Extern/Valijson/Exceptions.hpp>
 
 namespace valijson {
 

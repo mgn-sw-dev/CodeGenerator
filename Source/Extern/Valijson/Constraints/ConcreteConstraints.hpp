@@ -21,12 +21,12 @@
 #include <vector>
 #include <cmath>
 
-#include <External/Valijson/Constraints/BasicConstraint.hpp>
-#include <External/Valijson/Internal/CustomAllocator.hpp>
-#include <External/Valijson/Internal/FrozenValue.hpp>
-#include <External/Valijson/Exceptions.hpp>
-#include <External/Valijson/Schema.hpp>
-#include <External/Valijson/ValidationResults.hpp>
+#include <Extern/Valijson/Constraints/BasicConstraint.hpp>
+#include <Extern/Valijson/Internal/CustomAllocator.hpp>
+#include <Extern/Valijson/Internal/FrozenValue.hpp>
+#include <Extern/Valijson/Exceptions.hpp>
+#include <Extern/Valijson/Schema.hpp>
+#include <Extern/Valijson/ValidationResults.hpp>
 
 #ifdef _MSC_VER
 #pragma warning( push )

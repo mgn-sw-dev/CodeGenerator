@@ -7,8 +7,8 @@
 #include <stdexcept>
 #include <string>
 
-#include <External/Valijson/Internal/Adapter.hpp>
-#include <External/Valijson/Exceptions.hpp>
+#include <Extern/Valijson/Internal/Adapter.hpp>
+#include <Extern/Valijson/Exceptions.hpp>
 
 #ifdef _MSC_VER
 #pragma warning( push )

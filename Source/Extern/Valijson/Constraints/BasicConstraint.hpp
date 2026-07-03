@@ -1,9 +1,9 @@
 #pragma once
 
-#include <External/Valijson/Constraints/Constraint.hpp>
-#include <External/Valijson/Constraints/ConstraintVisitor.hpp>
-#include <External/Valijson/Internal/CustomAllocator.hpp>
-#include <External/Valijson/Exceptions.hpp>
+#include <Extern/Valijson/Constraints/Constraint.hpp>
+#include <Extern/Valijson/Constraints/ConstraintVisitor.hpp>
+#include <Extern/Valijson/Internal/CustomAllocator.hpp>
+#include <Extern/Valijson/Exceptions.hpp>
 
 namespace valijson {
 namespace constraints {

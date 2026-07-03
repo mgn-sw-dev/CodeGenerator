@@ -1,9 +1,7 @@
 #pragma once
-#include <functional>
-#include <string>
-
 #include <Extern/Nlohmann/json.hpp>
 #include <OptiScan/Core/LogHandler.h>
+#include <string>
 
 namespace OptiScan::Core::Config
 {
@@ -12,8 +10,7 @@ namespace OptiScan::Core::Config
     public:
         SystemConfig();
         /** Load Configuration File.
-         *  @param configPath: Path to the configuration json file.
-         *  @todo param log handler. */
+         *  @param configPath: Path to the configuration json file. */
         bool loadFromFile(const std::string & configPath);
         /** */
         void setLogHandler(LogHandler * logHandler);
@@ -21,9 +18,15 @@ namespace OptiScan::Core::Config
         LogHandler * _logHandler;
 
         /** */
+        void loadConfigFile(const std::string & configPath, nlohmann::json & jsonRootObject) const;
+        /** */
+        void logError(const std::string & message) const;
+        /** */
         void logInfo(const std::string & message) const;
         /** */
         void resetAllFields();
+        /** */
+        void validateAgainstSchema(const nlohmann::json & jsonRootObject) const;
 
 
     };

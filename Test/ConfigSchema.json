@@ -1,0 +1,928 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/Config",
+  "definitions": {
+    "Config": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "Can": {
+          "type": "object",
+          "properties": {
+            "Busses": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/StandardCanBusEntry"
+                  },
+                  {
+                    "$ref": "#/definitions/FdCanBusEntry"
+                  },
+                  {
+                    "$ref": "#/definitions/VoiceToCanBusEntry"
+                  },
+                  {
+                    "$ref": "#/definitions/XcpCanBusEntry"
+                  },
+                  {
+                    "$ref": "#/definitions/XcpPlusCanBusEntry"
+                  }
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 20,
+              "uniqueItems": true
+            },
+            "StandardTrace": {
+              "type": "object",
+              "properties": {
+                "Busses": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                },
+                "Frequency_Hz": {
+                  "$ref": "#/definitions/Frequency"
+                },
+                "PrefetchTime_s": {
+                  "$ref": "#/definitions/PositiveInteger"
+                },
+                "RecordTime_s": {
+                  "$ref": "#/definitions/PositiveInteger"
+                },
+                "Version": {
+                  "$ref": "#/definitions/NotSemanticVersion"
+                },
+                "Trigger": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/StandardTraceTrigger"
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "Busses",
+                "Frequency_Hz",
+                "PrefetchTime_s",
+                "RecordTime_s",
+                "Version",
+                "Trigger"
+              ],
+              "additionalProperties": false
+            },
+            "FrequencyMax_Hz": {
+              "$ref": "#/definitions/Frequency"
+            },
+            "SelectionTable": {
+              "type": "string"
+            },
+            "XcpFrequencyMax_Hz": {
+              "$ref": "#/definitions/Frequency"
+            },
+            "XcpSelectionTable": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "Busses"
+          ],
+          "additionalProperties": false,
+          "description": "Can definitions"
+        },
+        "Lin": {
+          "type": "object",
+          "properties": {
+            "Busses": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LinBusEntry"
+              },
+              "minItems": 1,
+              "maxItems": 3,
+              "uniqueItems": true
+            },
+            "SelectionTable": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "Busses",
+            "SelectionTable"
+          ],
+          "additionalProperties": false,
+          "description": "Lin definitions"
+        },
+        "Gps": {
+          "type": "object",
+          "properties": {
+            "Frequency_Hz": {
+              "$ref": "#/definitions/Frequency"
+            }
+          },
+          "required": [
+            "Frequency_Hz"
+          ],
+          "additionalProperties": false
+        },
+        "Debug": {
+          "type": "object",
+          "properties": {
+            "Frequency_Hz": {
+              "$ref": "#/definitions/Frequency"
+            },
+            "IncludeVin": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "Frequency_Hz",
+            "IncludeVin"
+          ],
+          "additionalProperties": false
+        },
+        "ProjectInfos": {
+          "type": "object",
+          "properties": {
+            "Customer": {
+              "type": "string"
+            },
+            "FirmwareVersion": {
+              "$ref": "#/definitions/SemanticVersion"
+            },
+            "FleetManagementRelease": {
+              "type": "string",
+              "description": "The release of the fleet management system this configuration is intended for."
+            },
+            "Generation": {
+              "$ref": "#/definitions/Generation",
+              "description": "The hardware generation this configuration is intended for. Must be an positive non-floating integer"
+            },
+            "ProjectName": {
+              "type": "string",
+              "description": "The name of the project this config is intended for."
+            },
+            "SystemName": {
+              "type": "string",
+              "description": "The name of the firmware."
+            },
+            "SystemVersion": {
+              "$ref": "#/definitions/NotSemanticVersion",
+              "description": "Version of the system specification, not of the firmware!"
+            }
+          },
+          "required": [
+            "Customer",
+            "FirmwareVersion",
+            "FleetManagementRelease",
+            "Generation",
+            "ProjectName",
+            "SystemName",
+            "SystemVersion"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "$schema",
+        "Gps",
+        "Debug",
+        "ProjectInfos"
+      ],
+      "additionalProperties": false
+    },
+    "StandardCanBusEntry": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "string"
+        },
+        "Hardware": {
+          "$ref": "#/definitions/PositiveInteger",
+          "description": "The bus hardware identifier. Must be unique across all busses.",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "BaudRate": {
+          "$ref": "#/definitions/BaudRate"
+        },
+        "Termination": {
+          "type": "boolean"
+        },
+        "Transmitting": {
+          "type": "boolean"
+        },
+        "DbcNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "HandledMessages": {
+          "type": "object",
+          "properties": {
+            "Gps": {
+              "type": "object",
+              "properties": {
+                "Altitude": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/MessageSignalMap"
+                  },
+                  "minItems": 1
+                },
+                "Latitude": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/MessageSignalMap"
+                  },
+                  "minItems": 1
+                },
+                "Longitude": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/MessageSignalMap"
+                  },
+                  "minItems": 1
+                }
+              },
+              "additionalProperties": false,
+              "description": "Messages containing GPS signals.",
+              "minProperties": 1
+            },
+            "Vin": {
+              "$ref": "#/definitions/MessageSignalMap",
+              "description": "The message exposing the VIN."
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        },
+        "Type": {
+          "type": "string",
+          "const": "Standard"
+        }
+      },
+      "required": [
+        "BaudRate",
+        "DbcNames",
+        "Hardware",
+        "Id",
+        "Type"
+      ],
+      "additionalProperties": false
+    },
+    "PositiveInteger": {
+      "$ref": "#/definitions/Integer",
+      "description": "A positive integer number (greater than or equal to 0).",
+      "minimum": 0
+    },
+    "Integer": {
+      "type": "number",
+      "description": "An integer number.",
+      "multipleOf": 1
+    },
+    "BaudRate": {
+      "$ref": "#/definitions/PositiveInteger",
+      "description": "A baud rate for CAN communication. Must be a positive integer greater than or equal to 1000.",
+      "minimum": 1000
+    },
+    "MessageSignalMap": {
+      "type": "object",
+      "properties": {
+        "MessageName": {
+          "type": "string"
+        },
+        "SignalName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "MessageName",
+        "SignalName"
+      ],
+      "additionalProperties": false
+    },
+    "FdCanBusEntry": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "string"
+        },
+        "Hardware": {
+          "$ref": "#/definitions/PositiveInteger",
+          "description": "The bus hardware identifier. Must be unique across all busses.",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "BaudRate": {
+          "$ref": "#/definitions/BaudRate"
+        },
+        "Termination": {
+          "type": "boolean"
+        },
+        "Transmitting": {
+          "type": "boolean"
+        },
+        "DbcNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "HandledMessages": {
+          "type": "object",
+          "properties": {
+            "Gps": {
+              "type": "object",
+              "properties": {
+                "Altitude": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/MessageSignalMap"
+                  },
+                  "minItems": 1
+                },
+                "Latitude": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/MessageSignalMap"
+                  },
+                  "minItems": 1
+                },
+                "Longitude": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/MessageSignalMap"
+                  },
+                  "minItems": 1
+                }
+              },
+              "additionalProperties": false,
+              "description": "Messages containing GPS signals.",
+              "minProperties": 1
+            },
+            "Vin": {
+              "$ref": "#/definitions/MessageSignalMap",
+              "description": "The message exposing the VIN."
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        },
+        "Type": {
+          "type": "string",
+          "const": "Fd"
+        },
+        "DataBaudRate": {
+          "$ref": "#/definitions/BaudRate"
+        }
+      },
+      "required": [
+        "BaudRate",
+        "DataBaudRate",
+        "DbcNames",
+        "Hardware",
+        "Id",
+        "Type"
+      ],
+      "additionalProperties": false
+    },
+    "VoiceToCanBusEntry": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "string"
+        },
+        "Hardware": {
+          "$ref": "#/definitions/PositiveInteger",
+          "description": "The bus hardware identifier. Must be unique across all busses.",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "BaudRate": {
+          "$ref": "#/definitions/BaudRate"
+        },
+        "Termination": {
+          "type": "boolean",
+          "const": true
+        },
+        "Transmitting": {
+          "type": "boolean",
+          "const": true
+        },
+        "Type": {
+          "type": "string",
+          "const": "VoiceToCan"
+        },
+        "Version": {
+          "$ref": "#/definitions/NotSemanticVersion"
+        }
+      },
+      "required": [
+        "BaudRate",
+        "Hardware",
+        "Id",
+        "Termination",
+        "Transmitting",
+        "Type",
+        "Version"
+      ],
+      "additionalProperties": false
+    },
+    "NotSemanticVersion": {
+      "type": "string",
+      "description": "In some cases we use versions with only two numbers.",
+      "examples": [
+        "1.0"
+      ],
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "XcpCanBusEntry": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "string"
+        },
+        "Hardware": {
+          "$ref": "#/definitions/PositiveInteger",
+          "description": "The bus hardware identifier. Must be unique across all busses.",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "BaudRate": {
+          "$ref": "#/definitions/BaudRate"
+        },
+        "Termination": {
+          "type": "boolean"
+        },
+        "Transmitting": {
+          "type": "boolean",
+          "const": true
+        },
+        "A2lName": {
+          "type": "string"
+        },
+        "Type": {
+          "type": "string",
+          "const": "Xcp"
+        }
+      },
+      "required": [
+        "A2lName",
+        "BaudRate",
+        "Hardware",
+        "Id",
+        "Transmitting",
+        "Type"
+      ],
+      "additionalProperties": false
+    },
+    "XcpPlusCanBusEntry": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "string"
+        },
+        "Hardware": {
+          "$ref": "#/definitions/PositiveInteger",
+          "description": "The bus hardware identifier. Must be unique across all busses.",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "BaudRate": {
+          "$ref": "#/definitions/BaudRate"
+        },
+        "Termination": {
+          "type": "boolean"
+        },
+        "Transmitting": {
+          "type": "boolean",
+          "const": true
+        },
+        "A2lName": {
+          "type": "string"
+        },
+        "Type": {
+          "type": "string",
+          "const": "XcpPlus"
+        },
+        "TransportLayerInstance": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "A2lName",
+        "BaudRate",
+        "Hardware",
+        "Id",
+        "Transmitting",
+        "TransportLayerInstance",
+        "Type"
+      ],
+      "additionalProperties": false
+    },
+    "Frequency": {
+      "type": "number",
+      "description": "A frequency in Hz. Must be zero or a positive number or floating point.",
+      "minimum": 0
+    },
+    "StandardTraceTrigger": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/StandardTraceTriggerVoice2CanButton"
+        },
+        {
+          "$ref": "#/definitions/StandardTraceTriggerMessageIdPrefixPartialMatch"
+        },
+        {
+          "$ref": "#/definitions/StandardTraceTriggerMessagePayloadPartialMatch"
+        },
+        {
+          "$ref": "#/definitions/StandardTraceTriggerMessageDtcRotmeldungMatch"
+        }
+      ]
+    },
+    "StandardTraceTriggerVoice2CanButton": {
+      "$ref": "#/definitions/GenericStandardTraceTrigger%3C%22Voice2CanButton%22%3E"
+    },
+    "GenericStandardTraceTrigger<\"Voice2CanButton\">": {
+      "type": "object",
+      "properties": {
+        "EventType": {
+          "type": "string",
+          "const": "Voice2CanButton"
+        },
+        "Signals": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "MessageName": {
+                    "type": "string"
+                  },
+                  "Bus": {
+                    "type": "string"
+                  },
+                  "SignalName": {
+                    "type": "string"
+                  },
+                  "DbcName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Bus",
+                  "DbcName",
+                  "MessageName",
+                  "SignalName"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "MessageId": {
+                    "$ref": "#/definitions/MessageId"
+                  },
+                  "Bus": {
+                    "type": "string"
+                  },
+                  "SignalName": {
+                    "type": "string"
+                  },
+                  "DbcName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Bus",
+                  "DbcName",
+                  "MessageId",
+                  "SignalName"
+                ]
+              }
+            ]
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "EventType"
+      ],
+      "additionalProperties": false
+    },
+    "MessageId": {
+      "type": "string",
+      "description": "A message ID to match against. Must start with \"0x\" followed by a minimum of 8 hexadecimal but a maximum of 64 characters.",
+      "pattern": "^0x[0-9A-Fa-f]{8,64}$"
+    },
+    "StandardTraceTriggerMessageIdPrefixPartialMatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "MessageIdMask": {
+          "$ref": "#/definitions/HexMask"
+        },
+        "Bus": {
+          "type": "string"
+        },
+        "EventType": {
+          "type": "string",
+          "const": "MessageIdPrefixPartialMatch"
+        },
+        "Signals": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "MessageName": {
+                    "type": "string"
+                  },
+                  "Bus": {
+                    "type": "string"
+                  },
+                  "SignalName": {
+                    "type": "string"
+                  },
+                  "DbcName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Bus",
+                  "DbcName",
+                  "MessageName",
+                  "SignalName"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "MessageId": {
+                    "$ref": "#/definitions/MessageId"
+                  },
+                  "Bus": {
+                    "type": "string"
+                  },
+                  "SignalName": {
+                    "type": "string"
+                  },
+                  "DbcName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Bus",
+                  "DbcName",
+                  "MessageId",
+                  "SignalName"
+                ]
+              }
+            ]
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "Bus",
+        "EventType",
+        "MessageIdMask"
+      ]
+    },
+    "HexMask": {
+      "type": "string",
+      "description": "A hexadecimal mask to match against. Can be a partial match, but must start with \"0x\" followed by a minimum of 1 hexadecimal character.",
+      "pattern": "^0x[0-9A-Fa-f]+$"
+    },
+    "StandardTraceTriggerMessagePayloadPartialMatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "MessageIdMask": {
+          "$ref": "#/definitions/HexMask"
+        },
+        "Bus": {
+          "type": "string"
+        },
+        "TriggerValue": {
+          "$ref": "#/definitions/HexMask"
+        },
+        "TriggerValueOffset": {
+          "$ref": "#/definitions/PositiveInteger"
+        },
+        "TriggerValueSize": {
+          "$ref": "#/definitions/PositiveInteger"
+        },
+        "EventType": {
+          "type": "string",
+          "const": "MessagePayloadPartialMatch"
+        },
+        "Signals": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "MessageName": {
+                    "type": "string"
+                  },
+                  "Bus": {
+                    "type": "string"
+                  },
+                  "SignalName": {
+                    "type": "string"
+                  },
+                  "DbcName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Bus",
+                  "DbcName",
+                  "MessageName",
+                  "SignalName"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "MessageId": {
+                    "$ref": "#/definitions/MessageId"
+                  },
+                  "Bus": {
+                    "type": "string"
+                  },
+                  "SignalName": {
+                    "type": "string"
+                  },
+                  "DbcName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Bus",
+                  "DbcName",
+                  "MessageId",
+                  "SignalName"
+                ]
+              }
+            ]
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "Bus",
+        "EventType",
+        "MessageIdMask",
+        "TriggerValue",
+        "TriggerValueOffset",
+        "TriggerValueSize"
+      ]
+    },
+    "StandardTraceTriggerMessageDtcRotmeldungMatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "MessageIdMask": {
+          "$ref": "#/definitions/HexMask"
+        },
+        "Bus": {
+          "type": "string"
+        },
+        "TriggerValue": {
+          "$ref": "#/definitions/HexMask"
+        },
+        "TriggerValueOffset": {
+          "$ref": "#/definitions/PositiveInteger"
+        },
+        "TriggerValueSize": {
+          "$ref": "#/definitions/PositiveInteger"
+        },
+        "EventType": {
+          "type": "string",
+          "const": "MessagePegasusDtcRotmeldungMatch"
+        },
+        "Signals": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "MessageName": {
+                    "type": "string"
+                  },
+                  "Bus": {
+                    "type": "string"
+                  },
+                  "SignalName": {
+                    "type": "string"
+                  },
+                  "DbcName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Bus",
+                  "DbcName",
+                  "MessageName",
+                  "SignalName"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "MessageId": {
+                    "$ref": "#/definitions/MessageId"
+                  },
+                  "Bus": {
+                    "type": "string"
+                  },
+                  "SignalName": {
+                    "type": "string"
+                  },
+                  "DbcName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Bus",
+                  "DbcName",
+                  "MessageId",
+                  "SignalName"
+                ]
+              }
+            ]
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "Bus",
+        "EventType",
+        "MessageIdMask",
+        "TriggerValue",
+        "TriggerValueOffset",
+        "TriggerValueSize"
+      ]
+    },
+    "LinBusEntry": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "string"
+        },
+        "Hardware": {
+          "$ref": "#/definitions/PositiveInteger",
+          "description": "The bus hardware identifier. Must be unique across all busses.",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "LdfName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "Hardware",
+        "Id",
+        "LdfName"
+      ],
+      "additionalProperties": false
+    },
+    "SemanticVersion": {
+      "type": "string",
+      "description": "A semantic version with major, minor and patch numbers.",
+      "examples": [
+        "1.0.0",
+        "2.5.3"
+      ],
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "Generation": {
+      "$ref": "#/definitions/PositiveInteger",
+      "description": "The hardware generation a configuration is intended for.",
+      "minimum": 1
+    }
+  }
+}

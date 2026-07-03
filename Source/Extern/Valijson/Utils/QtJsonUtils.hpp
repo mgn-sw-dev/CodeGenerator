@@ -6,7 +6,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-#include <External/Valijson/Utils/FileUtils.hpp>
+#include <Extern/Valijson/Utils/FileUtils.hpp>
 
 namespace valijson {
 namespace utils {

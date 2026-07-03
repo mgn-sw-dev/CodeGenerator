@@ -1,7 +1,7 @@
 #pragma once
 
-#include <External/Valijson/Schema.hpp>
-#include <External/Valijson/ValidationVisitor.hpp>
+#include <Extern/Valijson/Schema.hpp>
+#include <Extern/Valijson/ValidationVisitor.hpp>
 
 namespace valijson {
 

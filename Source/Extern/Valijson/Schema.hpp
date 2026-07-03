@@ -3,8 +3,8 @@
 #include <cstdio>
 #include <set>
 
-#include <External/Valijson/Exceptions.hpp>
-#include <External/Valijson/Subschema.hpp>
+#include <Extern/Valijson/Exceptions.hpp>
+#include <Extern/Valijson/Subschema.hpp>
 
 namespace valijson {
 

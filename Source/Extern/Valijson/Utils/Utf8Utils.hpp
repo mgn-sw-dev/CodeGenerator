@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 
-#include <External/Valijson/Exceptions.hpp>
+#include <Extern/Valijson/Exceptions.hpp>
 
 /*
   Basic UTF-8 manipulation routines, adapted from code that was released into

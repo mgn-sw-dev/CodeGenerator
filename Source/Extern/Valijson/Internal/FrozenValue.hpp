@@ -1,6 +1,6 @@
 #pragma once
 
-#include <External/Valijson/Internal/Adapter.hpp>
+#include <Extern/Valijson/Internal/Adapter.hpp>
 
 namespace valijson {
 namespace adapters {

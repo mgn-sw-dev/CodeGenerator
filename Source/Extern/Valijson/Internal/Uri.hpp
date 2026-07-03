@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <External/Valijson/Internal/Regex.hpp>
+#include <Extern/Valijson/Internal/Regex.hpp>
 
 namespace valijson {
 namespace internal {

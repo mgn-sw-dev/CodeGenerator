@@ -2,9 +2,9 @@
 
 #include <iostream>
 
-#include <External/Nlohmann/json.hpp>
-#include <External/Valijson/Utils/FileUtils.hpp>
-#include <External/Valijson/Exceptions.hpp>
+#include <Extern/Nlohmann/json.hpp>
+#include <Extern/Valijson/Utils/FileUtils.hpp>
+#include <Extern/Valijson/Exceptions.hpp>
 
 namespace valijson {
 namespace utils {

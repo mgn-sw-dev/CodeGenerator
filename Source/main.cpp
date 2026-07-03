@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 	OptiScan::View::Console::ConsoleLogHandler logHandler;
     OptiScan::Core::Config::SystemConfig systemConfig;
 	systemConfig.setLogHandler(&logHandler);
-	systemConfig.loadFromFile("config.json");
+	systemConfig.loadFromFile("C:/CodeGenerator/Test/ConfigTest.json");
 	return 0;
 
 #if 0

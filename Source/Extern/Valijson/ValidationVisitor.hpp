@@ -5,12 +5,12 @@
 #include <unordered_map>
 #include <utility>
 
-#include <External/Valijson/Internal/Regex.hpp>
-#include <External/Valijson/Adapters/StdStringAdapter.hpp>
-#include <External/Valijson/Constraints/ConcreteConstraints.hpp>
-#include <External/Valijson/Constraints/ConstraintVisitor.hpp>
-#include <External/Valijson/ValidationResults.hpp>
-#include <External/Valijson/Utils/Utf8Utils.hpp>
+#include <Extern/Valijson/Internal/Regex.hpp>
+#include <Extern/Valijson/Adapters/StdStringAdapter.hpp>
+#include <Extern/Valijson/Constraints/ConcreteConstraints.hpp>
+#include <Extern/Valijson/Constraints/ConstraintVisitor.hpp>
+#include <Extern/Valijson/ValidationResults.hpp>
+#include <Extern/Valijson/Utils/Utf8Utils.hpp>
 
 #ifdef _MSC_VER
 #pragma warning( push )

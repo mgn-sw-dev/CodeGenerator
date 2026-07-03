@@ -29,7 +29,7 @@ SOFTWARE.
 #ifndef INCLUDE_INJA_JSON_HPP_
 #define INCLUDE_INJA_JSON_HPP_
 
-#include <External/Nlohmann/json.hpp>
+#include <Extern/Nlohmann/json.hpp>
 
 namespace inja {
 #ifndef INJA_DATA_TYPE

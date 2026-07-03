@@ -5,16 +5,16 @@
 #include <optional>
 #include <vector>
 
-#include <External/Valijson/Constraints/ConcreteConstraints.hpp>
-#include <External/Valijson/Internal/Adapter.hpp>
-#include <External/Valijson/Internal/Debug.hpp>
-#include <External/Valijson/Internal/JsonPointer.hpp>
-#include <External/Valijson/Internal/JsonReference.hpp>
-#include <External/Valijson/Internal/Uri.hpp>
-#include <External/Valijson/ConstraintBuilder.hpp>
-#include <External/Valijson/Schema.hpp>
-#include <External/Valijson/SchemaCache.hpp>
-#include <External/Valijson/Exceptions.hpp>
+#include <Extern/Valijson/Constraints/ConcreteConstraints.hpp>
+#include <Extern/Valijson/Internal/Adapter.hpp>
+#include <Extern/Valijson/Internal/Debug.hpp>
+#include <Extern/Valijson/Internal/JsonPointer.hpp>
+#include <Extern/Valijson/Internal/JsonReference.hpp>
+#include <Extern/Valijson/Internal/Uri.hpp>
+#include <Extern/Valijson/ConstraintBuilder.hpp>
+#include <Extern/Valijson/Schema.hpp>
+#include <Extern/Valijson/SchemaCache.hpp>
+#include <Extern/Valijson/Exceptions.hpp>
 
 namespace valijson {
 
