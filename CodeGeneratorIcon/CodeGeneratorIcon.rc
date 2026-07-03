@@ -1,0 +1,39 @@
+#include <Windows.h>
+
+#define STRSTR(x) #x
+#define STR(x) STRSTR(x)
+
+#ifdef IDI_ICON1
+#	undef IDI_ICON1
+#endif
+
+// IDI_ICON1 ICON DISCARDABLE "HelseLogo.ico"
+IDI_ICON1 ICON DISCARDABLE "EstinoLogo.ico"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION    VERSION_MAJOR,VERSION_MINOR,VERSION_REVISION,0
+PRODUCTVERSION VERSION_MAJOR,VERSION_MINOR,VERSION_REVISION,0
+//FILEFLAGSMASK 0x0
+//FILEFLAGS 0x0
+//FILEOS VOS__WINDOWS32
+FILETYPE VFT_APP
+//FILESUBTYPE 0x0
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904b0"
+        {
+            VALUE "CompanyName",        VERSION_ORGANIZATION "\0"
+            VALUE "FileDescription",    VERSION_DESCRIPTION "\0"
+			VALUE "FileVersion",        STR(VERSION_MAJOR) "." STR(VERSION_MINOR) "." STR(VERSION_REVISION) ".0\0"
+            VALUE "LegalCopyright",     VERSION_COPYRIGHT "\0"
+            VALUE "OriginalFilename",   VERSION_FILE_NAME "\0"
+            VALUE "ProductName",        VERSION_PRODUCT "\0"
+			VALUE "ProductVersion",     STR(VERSION_MAJOR) "." STR(VERSION_MINOR) "." STR(VERSION_REVISION) ".0\0"
+        }
+    }
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x409, 1200
+    }
+}
