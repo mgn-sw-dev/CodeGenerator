@@ -3,10 +3,12 @@
 
 int main(int argc, char *argv[])
 {
+	OptiScan::Core::Config::ConfigDatabase configDatabase;
 	OptiScan::View::Console::ConsoleLogHandler logHandler;
     OptiScan::Core::Config::SystemConfig systemConfig;
 	systemConfig.setLogHandler(&logHandler);
 	systemConfig.loadFromFile("C:/CodeGenerator/Test/ConfigTest.json");
+	systemConfig.parse(configDatabase);
 	return 0;
 
 #if 0
