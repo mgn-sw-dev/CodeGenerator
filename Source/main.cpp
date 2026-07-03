@@ -1,7 +1,12 @@
 
 
+#include <OptiScan/Core/Config/SystemConfig.h>
+
 int main(int argc, char *argv[])
 {
+    OptiScan::Core::Config::SystemConfig systemConfig;
+	return 0;
+
 #if 0
 	Q_INIT_RESOURCE(OptiScanCoreCodeGenerator);
 	QApplication a(argc, argv);

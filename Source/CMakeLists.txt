@@ -1,9 +1,10 @@
 find_package(CodeGeneratorIcon)
+find_package(OptiScanCore)
 # ToDo: Qt only for View needed
 qt_add_executable(CodeGenerator WIN32)
 
 target_link_libraries(CodeGenerator PRIVATE
-        # OptiScanCoreCodeGenerator
+        OptiScanCore
         CodeGeneratorIcon
         # OptiScanViews
 )
