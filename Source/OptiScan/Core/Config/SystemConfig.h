@@ -2,6 +2,7 @@
 #include <OptiScan/Core/Config/ConfigDatabase.h>
 #include <Extern/Nlohmann/json.hpp>
 #include <OptiScan/Core/LogHandler.h>
+#include <memory>
 #include <string>
 
 namespace OptiScan::Core::Config
@@ -29,6 +30,12 @@ namespace OptiScan::Core::Config
         void logError(const std::string & message) const;
         /** */
         void logInfo(const std::string & message) const;
+        /** */
+        void parseCanObject(ConfigDatabase & configDatabase);
+        /** */
+        void parseCanBusses(ConfigDatabase & configDatabase, const nlohmann::json & canObject);
+        /** */
+        std::unique_ptr<CanBusObject> parseCanBusObject(const nlohmann::json & busElement);
         /** */
         void parseDebugObject(ConfigDatabase & configDatabase);
         /** */

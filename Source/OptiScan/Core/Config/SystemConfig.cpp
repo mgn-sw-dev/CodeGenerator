@@ -3,6 +3,7 @@
 #include <OptiScan/Core/Config/SystemConfigConstants.h>
 #include <OptiScan/Core/Json/JsonSchemaValidator.h>
 #include <fstream>
+#include <memory>
 
 
 using namespace OptiScan::Core::Common;
@@ -98,6 +99,59 @@ namespace OptiScan::Core::Config
 		this->logInfo("GPS object: "
 			  "\n\t- Frequency: " + LogHandler::doubleToString(configDatabase._gpsObject._frequency_Hz, 2) + " Hz");
 
+		// optional objects
+		if (this->_jsonRootObject.contains(SystemConfigConstants::Can))
+		{
+			this->parseCanObject(configDatabase);
+		}
+
+	}
+
+	void SystemConfig::parseCanObject(ConfigDatabase & configDatabase)
+	{
+		const json & canObject = this->_jsonRootObject[SystemConfigConstants::Can];
+		this->parseCanBusses(configDatabase, canObject);
+	}
+
+	void SystemConfig::parseCanBusses(ConfigDatabase & configDatabase, const json & canObject)
+	{
+		const json & canBusses = canObject.at(SystemConfigConstants::Busses);
+		// check if canBusses is array is done by schema validation
+
+		configDatabase._canBusObjects.clear();
+		configDatabase._canBusObjects.reserve(canBusses.size());
+		for (const auto & element : canBusses)
+		{
+			configDatabase._canBusObjects.push_back(this->parseCanBusObject(element));
+		}
+	}
+
+	unique_ptr<CanBusObject> SystemConfig::parseCanBusObject(const json & busElement)
+	{
+		CanBusType const type = canBusTypeFromString(busElement.at(SystemConfigConstants::Type));
+		unique_ptr<CanBusObject> canBusObject;
+
+		switch (type)
+		{
+		case CanBusType::Fd:
+			canBusObject = make_unique<CanFdBusObject>(type);
+			break;
+		case CanBusType::Standard:
+			canBusObject = make_unique<CanStandardBusObject>(type);
+			break;
+		case CanBusType::VoiceToCan:
+			canBusObject = make_unique<CanVoiceToCanBusObject>(type);
+			break;
+		case CanBusType::Xcp:
+			canBusObject = make_unique<CanBusObject>(type);
+			break;
+		case CanBusType::XcpPlus:
+			canBusObject = make_unique<CanBusObject>(type);
+			break;
+		default:
+			throw runtime_error("Unknown can bus type.");
+		}
+		return canBusObject;
 	}
 
 	void SystemConfig::parseDebugObject(ConfigDatabase & configDatabase)

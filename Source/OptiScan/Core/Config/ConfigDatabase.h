@@ -1,7 +1,10 @@
 #pragma once
 
 #include <OptiScan/Core/Common/Version.h>
+#include <OptiScan/Core/Config/ConfigDatabaseCan.h>
+#include <memory>
 #include <string>
+#include <vector>
 
 namespace OptiScan::Core::Config
 {
@@ -39,6 +42,7 @@ namespace OptiScan::Core::Config
     class ConfigDatabase 
     {
     public:
+        std::vector<std::unique_ptr<CanBusObject>> _canBusObjects;
         ConfigDebugObject _debugObject;
         ConfigGpsObject _gpsObject;
         ConfigProjectInfos _projectInfos;
