@@ -1,13 +1,11 @@
 #include <OptiScan/Core/Config/SystemConfig.h>
-#include <iostream>
+#include <OptiScan/View/Console/ConsoleLogHandler.h>
 
 int main(int argc, char *argv[])
 {
+	OptiScan::View::Console::ConsoleLogHandler logHandler;
     OptiScan::Core::Config::SystemConfig systemConfig;
-	systemConfig.setLogHandler([](const std::string & message)
-	{
-		std::cout << message << std::endl;
-	});
+	systemConfig.setLogHandler(&logHandler);
 	systemConfig.loadFromFile("config.json");
 	return 0;
 

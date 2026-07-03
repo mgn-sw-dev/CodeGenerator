@@ -5,20 +5,21 @@ using namespace std;
 namespace OptiScan::Core::Config
 {
 	SystemConfig::SystemConfig()
+		: _logHandler(nullptr)
 	{
 	}
 
 	bool SystemConfig::loadFromFile(const string & configPath)
 	{
-		this->log("Loading configuration file: " + configPath);
+		this->logInfo("Loading configuration file: " + configPath);
 		return true;
 	}
 
-	void SystemConfig::log(const string & message) const
+	void SystemConfig::logInfo(const string & message) const
 	{
 		if (this->_logHandler)
 		{
-			this->_logHandler(message);
+			this->_logHandler->logInfo(message);
 		}
 	}
 
@@ -26,8 +27,8 @@ namespace OptiScan::Core::Config
 	{
 	}
 
-	void SystemConfig::setLogHandler(LogHandler logHandler)
+	void SystemConfig::setLogHandler(LogHandler * logHandler)
 	{
-		this->_logHandler = std::move(logHandler);
+		this->_logHandler = logHandler;
 	}
 }
