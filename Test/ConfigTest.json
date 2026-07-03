@@ -1,0 +1,176 @@
+{
+  "$schema": "../../dist/config-schema.json",
+  "Can": {
+    "Busses": [
+      {
+        "Type": "Standard",
+        "BaudRate": 500e3,
+        "DbcNames": ["Chassis_Dbc"],
+        "Hardware": 1,
+        "Id": "ChassisCan"
+      },
+      {
+        "Type": "Fd",
+        "BaudRate": 666e3,
+        "DataBaudRate": 5e6,
+        "DbcNames": ["Powertrain_Dbc"],
+        "Hardware": 2,
+        "Id": "PtCan"
+      },
+      {
+        "Type": "Standard",
+        "BaudRate": 1e6,
+        "DbcNames": ["Body_Dbc", "Body_Dbc_2"],
+        "HandledMessages": {
+          "Gps": {
+            "Altitude": [
+              {
+                "MessageName": "GpsAltitude",
+                "SignalName": "ALT"
+              }
+            ],
+            "Latitude": [
+              {
+                "MessageName": "GpsLatitude",
+                "SignalName": "LAT"
+              }
+            ]
+          },
+          "Vin": {
+            "MessageName": "VinMessage",
+            "SignalName": "VIN"
+          }
+        },
+        "Hardware": 3,
+        "Id": "BodyCan"
+      },
+      {
+        "Type": "VoiceToCan",
+        "BaudRate": 1e6,
+        "Hardware": 12,
+        "Id": "VoiceToCan",
+        "Version": "1.0",
+        "Termination": true,
+        "Transmitting": true
+      },
+      {
+        "Type": "XcpPlus",
+        "A2lName": "ACM_FS_DTA30_0d1_S10_52_01_000",
+        "BaudRate": 500e3,
+        "Hardware": 8,
+        "Id": "AcmXcp",
+        "TransportLayerInstance": "DevelopmentMaster_ObdCan",
+        "Transmitting": true
+      },
+      {
+        "Type": "Xcp",
+        "A2lName": "MCM2_M19",
+        "BaudRate": 500e3,
+        "Hardware": 9,
+        "Id": "McmXcp",
+        "Transmitting": true
+      }
+    ],
+    "StandardTrace": {
+      "Busses": ["Chassis"],
+      "PrefetchTime_s": 50,
+      "RecordTime_s": 10,
+      "Frequency_Hz": 0.1,
+      "Version": "1.1",
+      "Trigger": [
+        {
+          "EventType": "MessageIdPrefixPartialMatch",
+          "MessageIdMask": "0x7FF",
+          "Bus": "ChassisCan",
+          "Signals": [
+            {
+              "Bus": "Chassis",
+              "DbcName": "Foo",
+              "SignalName": "Bar",
+              "MessageId": "0x12345678"
+            }
+          ]
+        },
+        {
+          "EventType": "MessageIdPrefixPartialMatch",
+          "MessageIdMask": "0x59",
+          "Bus": "PtCan"
+        },
+        {
+          "EventType": "MessagePayloadPartialMatch",
+          "Bus": "BodyCan",
+          "MessageIdMask": "0x123",
+          "TriggerValue": "0x3039",
+          "TriggerValueOffset": 16,
+          "TriggerValueSize": 8,
+          "Signals": [
+            {
+              "Bus": "BodyCan",
+              "DbcName": "Bar",
+              "SignalName": "CoolantTemp",
+              "MessageId": "0x12345678"
+            }
+          ]
+        },
+        {
+          "EventType": "MessagePegasusDtcRotmeldungMatch",
+          "Bus": "BodyCan",
+          "MessageIdMask": "0x123",
+          "TriggerValue": "0x3039",
+          "TriggerValueOffset": 16,
+          "TriggerValueSize": 8,
+          "Signals": [
+            {
+              "Bus": "BodyCan",
+              "DbcName": "Baz",
+              "SignalName": "CoolantThegang",
+              "MessageId": "0x12345678"
+            }
+          ]
+        }
+      ]
+    },
+
+    "FrequencyMax_Hz": 10,
+    "SelectionTable": "Signal List - EU - Test - can",
+
+    "XcpFrequencyMax_Hz": 1,
+    "XcpSelectionTable": "Signal List - EU - Test - xcp"
+  },
+  "Debug": {
+    "Frequency_Hz": 0.1,
+    "IncludeVin": true
+  },
+  "Gps": {
+    "Frequency_Hz": 0.5
+  },
+  "Lin": {
+    "Busses": [
+      {
+        "Hardware": 1,
+        "Id": "ThermoLin",
+        "LdfName": "THERMO_Lin1_2023_31a"
+      },
+      {
+        "Hardware": 2,
+        "Id": "ThermoLin2",
+        "LdfName": "THERMO_Lin1_2023_31a"
+      },
+      {
+        "Hardware": 3,
+        "Id": "ThermoLin3",
+        "LdfName": "THERMO_Lin1_2023_31a"
+      }
+    ],
+    "SelectionTable": "Signal List - EU - Test - lin"
+  },
+  "ProjectInfos": {
+    "Customer": "CustomerName",
+    "FirmwareVersion": "0.0.0",
+    "FleetManagementRelease": "v0x",
+    "Generation": 2.0,
+    "ProjectName": "NameOfProject",
+    "SystemName": "NameOfFirmware",
+    "SystemVersion": "0.9"
+  }
+}
