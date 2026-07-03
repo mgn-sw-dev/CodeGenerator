@@ -9,6 +9,8 @@ target_link_libraries(OptiScanCore PUBLIC
 target_include_directories(OptiScanCore PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../..)
 
 set(OptiScanCore_SOURCES
+    Common/Version.cpp
+    Common/Version.h
     Config/ConfigDatabase.cpp
     Config/ConfigDatabase.h
     Config/SystemConfig.cpp

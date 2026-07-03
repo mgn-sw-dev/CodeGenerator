@@ -4,6 +4,7 @@
 #include <OptiScan/Core/Json/JsonSchemaValidator.h>
 #include <fstream>
 
+using namespace OptiScan::Core::Common;
 using namespace nlohmann;
 using namespace std;
 
@@ -86,7 +87,7 @@ namespace OptiScan::Core::Config
 		this->logInfo("Project infos:"
 				"\n\t- ProjectName: " + configDatabase._projectInfos._projectName
 			+ "\n\t- SystemName: " + configDatabase._projectInfos._systemName
-			+ "\n\t- SystemVersion: " + configDatabase._projectInfos._systemVersion
+			+ "\n\t- SystemVersion: " + configDatabase._projectInfos._systemVersion.toString()
 			+ "\n\t- Generation: " + to_string(configDatabase._projectInfos._generation));
 	}
 
@@ -94,12 +95,12 @@ namespace OptiScan::Core::Config
 	{
 		const json & projectInfoObject = this->_jsonRootObject[SystemConfigConstants::ProjectInfos];
 		configDatabase._projectInfos._customer = projectInfoObject.at(SystemConfigConstants::Customer);
-		configDatabase._projectInfos._firmwareVersion = projectInfoObject.at(SystemConfigConstants::FirmwareVersion);
+		configDatabase._projectInfos._firmwareVersion = Version::fromString(projectInfoObject.at(SystemConfigConstants::FirmwareVersion));
 		configDatabase._projectInfos._fleetManagementRelease = projectInfoObject.at(SystemConfigConstants::FleetManagementRelease);
 		configDatabase._projectInfos._generation = projectInfoObject.at(SystemConfigConstants::Generation);
 		configDatabase._projectInfos._projectName = projectInfoObject.at(SystemConfigConstants::ProjectName);
 		configDatabase._projectInfos._systemName = projectInfoObject.at(SystemConfigConstants::SystemName);
-		configDatabase._projectInfos._systemVersion = projectInfoObject.at(SystemConfigConstants::SystemVersion);
+		configDatabase._projectInfos._systemVersion = Version::fromString(projectInfoObject.at(SystemConfigConstants::SystemVersion));
 	}
 
 	void SystemConfig::resetAllFields()

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OptiScan/Core/Common/Version.h>
 #include <string>
 
 namespace OptiScan::Core::Config
@@ -8,14 +9,12 @@ namespace OptiScan::Core::Config
     {
     public:
         std::string _customer;
-        // ToDo: Change Type to Version
-        std::string _firmwareVersion;
+        Common::Version _firmwareVersion;
         std::string _fleetManagementRelease;
         uint8_t _generation;
         std::string _projectName;
         std::string _systemName;
-        // ToDo: Change Type to Version
-        std::string _systemVersion;
+        Common::Version _systemVersion;
 
         ConfigProjectInfos();
     };
