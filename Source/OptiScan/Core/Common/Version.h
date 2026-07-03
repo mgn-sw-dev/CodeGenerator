@@ -33,8 +33,8 @@ namespace OptiScan::Core::Common
 
 
     private:
-        uint8_t _major;
-        uint8_t _minor;
+        uint8_t _major = 0;
+        uint8_t _minor = 0;
         std::optional<uint8_t> _patch = std::nullopt;
     
     };

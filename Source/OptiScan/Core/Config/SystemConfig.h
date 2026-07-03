@@ -30,6 +30,10 @@ namespace OptiScan::Core::Config
         /** */
         void logInfo(const std::string & message) const;
         /** */
+        void parseDebugObject(ConfigDatabase & configDatabase);
+        /** */
+        void parseGpsObject(ConfigDatabase & configDatabase);
+        /** */
         void parseProjectInfoObject(ConfigDatabase & configDatabase);
         /** */
         void resetAllFields();

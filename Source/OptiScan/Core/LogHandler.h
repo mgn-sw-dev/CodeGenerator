@@ -12,5 +12,7 @@ namespace OptiScan::Core
 		virtual void logInfo(const std::string& message) = 0;
 		virtual void logWarning(const std::string& message) = 0;
 		virtual void logError(const std::string& message) = 0;
+
+		static std::string doubleToString(double value, int precision = 2);
 	};
 }

@@ -18,6 +18,7 @@ set(OptiScanCore_SOURCES
     Config/SystemConfigConstants.h
     Json/JsonSchemaValidator.h
     Json/JsonSchemaValidator.cpp
+    LogHandler.cpp
     LogHandler.h
 )
 

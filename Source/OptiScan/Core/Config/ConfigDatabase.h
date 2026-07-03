@@ -5,6 +5,23 @@
 
 namespace OptiScan::Core::Config
 {
+    class ConfigDebugObject
+    {
+    public:
+        double _frequency_Hz = 0.0;
+        bool _vinIncluded = false;
+
+        ConfigDebugObject() = default;
+    };
+
+    class ConfigGpsObject
+    {
+    public:
+        double _frequency_Hz = 0.0;
+
+        ConfigGpsObject() = default;
+    };
+
     class ConfigProjectInfos
     {
     public:
@@ -22,6 +39,8 @@ namespace OptiScan::Core::Config
     class ConfigDatabase 
     {
     public:
+        ConfigDebugObject _debugObject;
+        ConfigGpsObject _gpsObject;
         ConfigProjectInfos _projectInfos;
 
         ConfigDatabase();

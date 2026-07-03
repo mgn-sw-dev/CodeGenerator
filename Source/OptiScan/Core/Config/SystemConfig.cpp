@@ -4,6 +4,7 @@
 #include <OptiScan/Core/Json/JsonSchemaValidator.h>
 #include <fstream>
 
+
 using namespace OptiScan::Core::Common;
 using namespace nlohmann;
 using namespace std;
@@ -85,10 +86,31 @@ namespace OptiScan::Core::Config
 		// Through schema required parameters
 		this->parseProjectInfoObject(configDatabase);
 		this->logInfo("Project infos:"
-				"\n\t- ProjectName: " + configDatabase._projectInfos._projectName
+			  "\n\t- ProjectName: " + configDatabase._projectInfos._projectName
 			+ "\n\t- SystemName: " + configDatabase._projectInfos._systemName
 			+ "\n\t- SystemVersion: " + configDatabase._projectInfos._systemVersion.toString()
 			+ "\n\t- Generation: " + to_string(configDatabase._projectInfos._generation));
+		this->parseDebugObject(configDatabase);
+		this->logInfo("Debug object:"
+			  "\n\t- Frequency: " + LogHandler::doubleToString(configDatabase._debugObject._frequency_Hz, 2) + " Hz"
+			+ "\n\t- Include VIN: " + (configDatabase._debugObject._vinIncluded ? "true" : "false"));
+		this->parseGpsObject(configDatabase);
+		this->logInfo("GPS object: "
+			  "\n\t- Frequency: " + LogHandler::doubleToString(configDatabase._gpsObject._frequency_Hz, 2) + " Hz");
+
+	}
+
+	void SystemConfig::parseDebugObject(ConfigDatabase & configDatabase)
+	{
+		const json & debugObject = this->_jsonRootObject[SystemConfigConstants::Debug];
+		configDatabase._debugObject._frequency_Hz = debugObject.at(SystemConfigConstants::Frequency_Hz);
+		configDatabase._debugObject._vinIncluded = debugObject.at(SystemConfigConstants::IncludeVin);
+	}
+
+	void SystemConfig::parseGpsObject(ConfigDatabase & configDatabase)
+	{
+		const json & gpsObject = this->_jsonRootObject[SystemConfigConstants::Gps];
+		configDatabase._gpsObject._frequency_Hz = gpsObject.at(SystemConfigConstants::Frequency_Hz);
 	}
 
 	void SystemConfig::parseProjectInfoObject(ConfigDatabase & configDatabase)
