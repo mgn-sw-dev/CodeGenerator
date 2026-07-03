@@ -1,4 +1,4 @@
-# INDER CONSTRUCTION! DO NOT USE!
+# UNDER CONSTRUCTION! DO NOT USE!
 
 # CodeGenerator
 This repository contains the code for the firmware code generator. 
