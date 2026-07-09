@@ -33,12 +33,15 @@ namespace OptiScan::Core::Config
         /** Parse Json Array elementwise. Each element is expected to be a CanMessageSignalMap.
          * Push CanMessageSignalMap into messageSignalMap.
          * @param array: Json Array
-         * @param messageSignalMap: vector of CanMessageSignalMap */
-        static void parseArrayAsMessageSignalMap(const nlohmann::json & array, std::vector<CanMessageSignalMap> & messageSignalMap);
+         * @param messageSignalMaps: vector of CanMessageSignalMap */
+        static void parseArrayAsMessageSignalMap(const nlohmann::json & array, std::vector<CanMessageSignalMap> & messageSignalMaps);
+        /** Parse Json Array elementwise. Each element is expected to be a string.
+         * Push string into strings.
+         * @param array: Json Array
+         * @param strings: vector of string */
+        static void parseArrayAsString(const nlohmann::json & array, std::vector<std::string> & strings);
         /** */
         void parseCanBusses(ConfigDatabase & configDatabase, const nlohmann::json & canObject);
-        /** */
-        void parseCanBusDbcArray(const nlohmann::json & dbcArray, std::vector<std::string> & dbcNames);
         /** */
         void parseCanBusHandledMessagesObject(const nlohmann::json & jsonObject, CanHandledMessagesObject & canHandledMessages);
         /** */

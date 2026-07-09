@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <vector>
 
+#include "OptiScan/Core/Common/Version.h"
+
 namespace OptiScan::Core::Config
 {
 	enum class CanBusType : uint8_t
@@ -72,8 +74,8 @@ namespace OptiScan::Core::Config
 	public:
 		uint32_t _baudRate;
 		const CanBusType _type;
-		std::optional<bool> _termination;
-		std::optional<bool> _transmitting;
+		bool _termination;
+		bool _transmitting;
 
 		CanBusObject();
 		CanBusObject(const CanBusType & type);
@@ -102,9 +104,27 @@ namespace OptiScan::Core::Config
 	class CanVoiceToCanBusObject : public CanBusObject
 	{
 	public:
-		std::string _version;
+		Common::Version _version;
 
 		CanVoiceToCanBusObject(const CanBusType & type);
+		void clear() override;
+	};
+
+	class CanXcpBusObject : public CanBusObject
+	{
+	public:
+		std::string _a2lName;
+
+		CanXcpBusObject(const CanBusType & type);
+		void clear() override;
+	};
+
+	class CanXcpPlusBusObject : public CanXcpBusObject
+	{
+	public:
+		std::string _transportLayerInstance;
+
+		CanXcpPlusBusObject(const CanBusType & type);
 		void clear() override;
 	};
 }

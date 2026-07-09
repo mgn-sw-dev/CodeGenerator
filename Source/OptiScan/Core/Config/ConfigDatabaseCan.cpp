@@ -16,8 +16,8 @@ namespace OptiScan::Core::Config
 		: BusObject()
 		, _baudRate()
 		, _type(type)
-		, _termination()
-		, _transmitting()
+		, _termination(false)
+		, _transmitting(false)
 	{
 	}
 
@@ -25,8 +25,8 @@ namespace OptiScan::Core::Config
 	{
 		this->BusObject::clear();
 		this->_baudRate = 0;
-		this->_termination.reset();
-		this->_transmitting.reset();
+		this->_termination = false;
+		this->_transmitting = false;
 	}
 
 	CanStandardBusObject::CanStandardBusObject(const CanBusType & type)
@@ -64,7 +64,31 @@ namespace OptiScan::Core::Config
 	void CanVoiceToCanBusObject::clear()
 	{
 		this->CanBusObject::clear();
-		this->_version.clear();
+		this->_version = Common::Version();
+	}
+
+	CanXcpBusObject::CanXcpBusObject(const CanBusType & type)
+		: CanBusObject(type)
+		, _a2lName()
+	{
+	}
+
+	void CanXcpBusObject::clear()
+	{
+		this->CanBusObject::clear();
+		this->_a2lName.clear();
+	}
+
+	CanXcpPlusBusObject::CanXcpPlusBusObject(const CanBusType & type)
+		: CanXcpBusObject(type)
+		, _transportLayerInstance()
+	{
+	}
+
+	void CanXcpPlusBusObject::clear()
+	{
+		this->CanXcpBusObject::clear();
+		this->_transportLayerInstance.clear();
 	}
 
 }
