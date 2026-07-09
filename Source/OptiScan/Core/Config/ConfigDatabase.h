@@ -8,6 +8,18 @@
 
 namespace OptiScan::Core::Config
 {
+    class ConfigCanObject
+    {
+    public:
+        std::vector<std::unique_ptr<CanBusObject>> _busses = {};
+        std::optional<double> _frequencyMax_Hz = std::nullopt;
+        std::optional<std::string> _selectionTable = std::nullopt;
+        std::optional<double> _xcpFrequencyMax_Hz = std::nullopt;
+        std::optional<std::string> _xcpSelectionTable = std::nullopt;
+
+        ConfigCanObject() = default;
+    };
+
     class ConfigDebugObject
     {
     public:
@@ -42,7 +54,7 @@ namespace OptiScan::Core::Config
     class ConfigDatabase 
     {
     public:
-        std::vector<std::unique_ptr<CanBusObject>> _canBusObjects;
+        std::optional<ConfigCanObject> _canObject;
         ConfigDebugObject _debugObject;
         ConfigGpsObject _gpsObject;
         ConfigProjectInfos _projectInfos;

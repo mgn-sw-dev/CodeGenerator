@@ -41,7 +41,7 @@ namespace OptiScan::Core::Config
          * @param strings: vector of string */
         static void parseArrayAsString(const nlohmann::json & array, std::vector<std::string> & strings);
         /** */
-        void parseCanBusses(ConfigDatabase & configDatabase, const nlohmann::json & canObject);
+        void parseCanBusses(const nlohmann::json & canObject, std::vector<std::unique_ptr<CanBusObject>> & canBusses);
         /** */
         void parseCanBusHandledMessagesObject(const nlohmann::json & jsonObject, CanHandledMessagesObject & canHandledMessages);
         /** */

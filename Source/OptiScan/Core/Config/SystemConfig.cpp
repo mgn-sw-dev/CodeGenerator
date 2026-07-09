@@ -107,16 +107,16 @@ namespace OptiScan::Core::Config
 
 	}
 
-	void SystemConfig::parseCanBusses(ConfigDatabase & configDatabase, const json & canObject)
+	void SystemConfig::parseCanBusses(const json & canObject, vector<unique_ptr<CanBusObject>> & canBusses)
 	{
-		const json & canBusses = canObject.at(SystemConfigConstants::Busses);
+		const json & busses = canObject.at(SystemConfigConstants::Busses);
 		// check if canBusses is array is done by schema validation
 
-		configDatabase._canBusObjects.clear();
-		configDatabase._canBusObjects.reserve(canBusses.size());
-		for (const auto & element : canBusses)
+		canBusses.clear();
+		canBusses.reserve(canBusses.size());
+		for (const auto & element : busses)
 		{
-			configDatabase._canBusObjects.push_back(this->parseCanBusObject(element));
+			canBusses.push_back(this->parseCanBusObject(element));
 		}
 	}
 	
@@ -227,7 +227,32 @@ namespace OptiScan::Core::Config
 	void SystemConfig::parseCanObject(ConfigDatabase & configDatabase)
 	{
 		const json & canObject = this->_jsonRootObject[SystemConfigConstants::Can];
-		this->parseCanBusses(configDatabase, canObject);
+		configDatabase._canObject.emplace();
+		this->parseCanBusses(canObject, configDatabase._canObject->_busses);
+		if (canObject.contains(SystemConfigConstants::StandardTrace))
+		{
+
+		}
+		if (canObject.contains(SystemConfigConstants::FrequencyMax_Hz))
+		{
+			configDatabase._canObject->_frequencyMax_Hz.emplace();
+			configDatabase._canObject->_frequencyMax_Hz = canObject.at(SystemConfigConstants::FrequencyMax_Hz);
+		}
+		if (canObject.contains(SystemConfigConstants::SelectionTable))
+		{
+			configDatabase._canObject->_selectionTable.emplace();
+			configDatabase._canObject->_selectionTable = canObject.at(SystemConfigConstants::SelectionTable);
+		}
+		if (canObject.contains(SystemConfigConstants::XcpFrequencyMax_Hz))
+		{
+			configDatabase._canObject->_xcpFrequencyMax_Hz.emplace();
+			configDatabase._canObject->_xcpFrequencyMax_Hz = canObject.at(SystemConfigConstants::XcpFrequencyMax_Hz);
+		}
+		if (canObject.contains(SystemConfigConstants::XcpSelectionTable))
+		{
+			configDatabase._canObject->_xcpSelectionTable.emplace();
+			configDatabase._canObject->_xcpSelectionTable = canObject.at(SystemConfigConstants::XcpSelectionTable);
+		}
 	}
 
 	void SystemConfig::parseCommonCanBusFields(const json & busElement, CanBusObject & canBusObject)
