@@ -122,6 +122,8 @@ namespace OptiScan::Core::Config
 	
 	void SystemConfig::parseArrayAsMessageSignalMap(const json & array, vector<CanMessageSignalMap> & messageSignalMaps)
 	{
+		messageSignalMaps.clear();
+		messageSignalMaps.reserve(array.size());
 		for (const auto & element : array)
 		{
 			CanMessageSignalMap messageSignalMapElement;
@@ -145,10 +147,10 @@ namespace OptiScan::Core::Config
 	{
 		if (jsonObject.contains(SystemConfigConstants::Gps))
 		{
+			canHandledMessages._gps.emplace();
 			const json & gpsObject = jsonObject.at(SystemConfigConstants::Gps);
 			if (gpsObject.contains(SystemConfigConstants::Altitude))
 			{
-				canHandledMessages._gps.emplace();
 				const json & altitudeObject = gpsObject.at(SystemConfigConstants::Altitude);
 				SystemConfig::parseArrayAsMessageSignalMap(altitudeObject, canHandledMessages._gps->_altitude);
 			}
@@ -175,42 +177,26 @@ namespace OptiScan::Core::Config
 	unique_ptr<CanBusObject> SystemConfig::parseCanBusObject(const json & busElement)
 	{
 		unique_ptr<CanBusObject> canBusObject;
-		string idSuffix;
 		CanBusType const type = canBusTypeFromString(busElement.at(SystemConfigConstants::Type));
 		switch (type)
 		{
 		case CanBusType::Fd:
 			{
-				idSuffix = "Fd";
 				unique_ptr<CanFdBusObject> canFdBusObject = make_unique<CanFdBusObject>(type);
 				canFdBusObject->_dataBaudRate = busElement.at(SystemConfigConstants::DataBaudRate);
-				SystemConfig::parseArrayAsString(busElement.at(SystemConfigConstants::DbcNames), canFdBusObject->_dbcNames);
-				// optional
-				if (busElement.contains(SystemConfigConstants::HandledMessages))
-				{
-					canFdBusObject->_handledMessages.emplace();
-					this->parseCanBusHandledMessagesObject(busElement.at(SystemConfigConstants::HandledMessages), *canFdBusObject->_handledMessages);
-				}
+				this->parseStandardCanBusFields(busElement, *canFdBusObject);
 				canBusObject = move(canFdBusObject);
 			}
 			break;
 		case CanBusType::Standard:
 			{
-				idSuffix = "Can";
 				unique_ptr<CanStandardBusObject> canStandardBusObject = make_unique<CanStandardBusObject>(type);
-				SystemConfig::parseArrayAsString(busElement.at(SystemConfigConstants::DbcNames), canStandardBusObject->_dbcNames);
-				// optional parameters
-				if (busElement.contains(SystemConfigConstants::HandledMessages))
-				{
-					canStandardBusObject->_handledMessages.emplace();
-					this->parseCanBusHandledMessagesObject(busElement.at(SystemConfigConstants::HandledMessages), *canStandardBusObject->_handledMessages);
-				}
+				this->parseStandardCanBusFields(busElement, *canStandardBusObject);
 				canBusObject = move(canStandardBusObject);
 			}
 			break;
 		case CanBusType::VoiceToCan:
 			{
-				idSuffix = "Can";
 				unique_ptr<CanVoiceToCanBusObject> voiceCanObject = make_unique<CanVoiceToCanBusObject>(type);
 				voiceCanObject->_version = Version::fromString(busElement.at(SystemConfigConstants::Version));
 				canBusObject = move(voiceCanObject);
@@ -218,7 +204,6 @@ namespace OptiScan::Core::Config
 			break;
 		case CanBusType::Xcp:
 			{
-				idSuffix = "XcoCan";
 				unique_ptr<CanXcpBusObject> xcpBusObject = make_unique<CanXcpBusObject>(type);
 				xcpBusObject->_a2lName = busElement.at(SystemConfigConstants::A2lName);
 				canBusObject = move(xcpBusObject);
@@ -226,7 +211,6 @@ namespace OptiScan::Core::Config
 			break;
 		case CanBusType::XcpPlus:
 			{
-				idSuffix = "XcpPlusCan";
 				unique_ptr<CanXcpPlusBusObject> xcpPlusBusObject = make_unique<CanXcpPlusBusObject>(type);
 				xcpPlusBusObject->_a2lName = busElement.at(SystemConfigConstants::A2lName);
 				xcpPlusBusObject->_transportLayerInstance = busElement.at(SystemConfigConstants::TransportLayerInstance);
@@ -236,19 +220,7 @@ namespace OptiScan::Core::Config
 		default:
 			throw runtime_error("Unknown can bus type.");
 		}
-		canBusObject->_baudRate = busElement.at(SystemConfigConstants::BaudRate);
-		canBusObject->_hardwareId = busElement.at(SystemConfigConstants::Hardware);
-		canBusObject->_name = busElement.at(SystemConfigConstants::Id);
-		canBusObject->setIdSuffix(idSuffix);
-		if (busElement.contains(SystemConfigConstants::Termination))
-		{
-			canBusObject->_termination = busElement.at(SystemConfigConstants::Termination);
-		}
-		if (busElement.contains(SystemConfigConstants::Transmitting))
-		{
-			canBusObject->_transmitting = busElement.at(SystemConfigConstants::Transmitting);
-		}
-
+		this->parseCommonCanBusFields(busElement, *canBusObject);
 		return canBusObject;
 	}
 
@@ -256,6 +228,22 @@ namespace OptiScan::Core::Config
 	{
 		const json & canObject = this->_jsonRootObject[SystemConfigConstants::Can];
 		this->parseCanBusses(configDatabase, canObject);
+	}
+
+	void SystemConfig::parseCommonCanBusFields(const json & busElement, CanBusObject & canBusObject)
+	{
+		canBusObject._baudRate = busElement.at(SystemConfigConstants::BaudRate);
+		canBusObject._hardwareId = busElement.at(SystemConfigConstants::Hardware);
+		canBusObject._name = busElement.at(SystemConfigConstants::Id);
+		canBusObject.setIdSuffix("Can");
+		if (busElement.contains(SystemConfigConstants::Termination))
+		{
+			canBusObject._termination = busElement.at(SystemConfigConstants::Termination);
+		}
+		if (busElement.contains(SystemConfigConstants::Transmitting))
+		{
+			canBusObject._transmitting = busElement.at(SystemConfigConstants::Transmitting);
+		}
 	}
 
 	void SystemConfig::parseDebugObject(ConfigDatabase & configDatabase)
@@ -281,6 +269,16 @@ namespace OptiScan::Core::Config
 		configDatabase._projectInfos._projectName = projectInfoObject.at(SystemConfigConstants::ProjectName);
 		configDatabase._projectInfos._systemName = projectInfoObject.at(SystemConfigConstants::SystemName);
 		configDatabase._projectInfos._systemVersion = Version::fromString(projectInfoObject.at(SystemConfigConstants::SystemVersion));
+	}
+
+	void SystemConfig::parseStandardCanBusFields(const json & busElement, CanStandardBusObject & canStandardBusObject)
+	{
+		SystemConfig::parseArrayAsString(busElement.at(SystemConfigConstants::DbcNames), canStandardBusObject._dbcNames);
+		if (busElement.contains(SystemConfigConstants::HandledMessages))
+		{
+			canStandardBusObject._handledMessages.emplace();
+			this->parseCanBusHandledMessagesObject(busElement.at(SystemConfigConstants::HandledMessages), *canStandardBusObject._handledMessages);
+		}
 	}
 
 	void SystemConfig::resetAllFields()

@@ -48,12 +48,16 @@ namespace OptiScan::Core::Config
         std::unique_ptr<CanBusObject> parseCanBusObject(const nlohmann::json & busElement);
         /** */
         void parseCanObject(ConfigDatabase & configDatabase);
+    	/** Parse Attributs: BudRate, HardwareId, Name, Termination and Transmitting. */
+    	void parseCommonCanBusFields(const nlohmann::json & busElement, CanBusObject & canBusObject);
         /** */
         void parseDebugObject(ConfigDatabase & configDatabase);
         /** */
         void parseGpsObject(ConfigDatabase & configDatabase);
         /** */
         void parseProjectInfoObject(ConfigDatabase & configDatabase);
+    	/** Parse Attributs: DbcNames, HandledMessages. */
+    	void parseStandardCanBusFields(const nlohmann::json & busElement, CanStandardBusObject & canBusObject);
         /** */
         void resetAllFields();
         /** */
