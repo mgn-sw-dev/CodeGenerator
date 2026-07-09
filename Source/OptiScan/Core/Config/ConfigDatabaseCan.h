@@ -46,22 +46,25 @@ namespace OptiScan::Core::Config
 		return type;
 	}
 
-	enum class GpsSignalType : uint8_t
+	struct CanMessageSignalMap
 	{
-		Unknown = 0,
-		Altitude = 1,
-		Latitude = 2,
-		Longitude = 3
+		std::string _messageName;
+		std::string _signalName;
 	};
 
 	class CanGpsSignalObject
 	{
 	public:
-		GpsSignalType _gpsSignalType;
-		std::vector<std::pair<std::string, std::string>> _messageAndSignalNames;
+		std::vector<CanMessageSignalMap> _altitude;
+		std::vector<CanMessageSignalMap> _latitude;
+		std::vector<CanMessageSignalMap> _longitude;
+	};
 
-		CanGpsSignalObject(const GpsSignalType & gpsSignalType);
-		void clear();
+	class CanHandledMessagesObject
+	{
+	public:
+		std::optional<CanGpsSignalObject> _gps;
+		std::optional<CanMessageSignalMap> _vin;
 	};
 
 	class CanBusObject : public BusObject
@@ -81,7 +84,7 @@ namespace OptiScan::Core::Config
 	{
 	public:
 		std::vector<std::string> _dbcNames;
-		std::optional<std::vector<CanGpsSignalObject>> _gpsMessages;
+		std::optional<CanHandledMessagesObject> _handledMessages;
 
 		CanStandardBusObject(const CanBusType & type);
 		void clear() override;

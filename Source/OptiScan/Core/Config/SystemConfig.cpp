@@ -107,12 +107,6 @@ namespace OptiScan::Core::Config
 
 	}
 
-	void SystemConfig::parseCanObject(ConfigDatabase & configDatabase)
-	{
-		const json & canObject = this->_jsonRootObject[SystemConfigConstants::Can];
-		this->parseCanBusses(configDatabase, canObject);
-	}
-
 	void SystemConfig::parseCanBusses(ConfigDatabase & configDatabase, const json & canObject)
 	{
 		const json & canBusses = canObject.at(SystemConfigConstants::Busses);
@@ -126,18 +120,93 @@ namespace OptiScan::Core::Config
 		}
 	}
 
+	void SystemConfig::parseCanBusDbcArray(const json & dbcArray, vector<string> & dbcNames)
+	{
+		dbcNames.clear();
+		dbcNames.reserve(dbcArray.size());
+		for (const auto & element : dbcArray)
+		{
+			dbcNames.push_back(element);
+		}
+	}
+
+	void SystemConfig::parseArrayAsMessageSignalMap(const json & array, std::vector<CanMessageSignalMap> & messageSignalMap)
+	{
+		for (const auto & element : array)
+		{
+			CanMessageSignalMap messageSignalMapElement;
+			messageSignalMapElement._messageName = element.at(SystemConfigConstants::MessageName);
+			messageSignalMapElement._signalName = element.at(SystemConfigConstants::SignalName);
+			messageSignalMap.push_back(messageSignalMapElement);
+		}
+	}
+
+	void SystemConfig::parseCanBusHandledMessagesObject(const json & jsonObject, CanHandledMessagesObject & canHandledMessages)
+	{
+		if (jsonObject.contains(SystemConfigConstants::Gps))
+		{
+			const json & gpsObject = jsonObject.at(SystemConfigConstants::Gps);
+			if (gpsObject.contains(SystemConfigConstants::Altitude))
+			{
+				canHandledMessages._gps.emplace();
+				const json & altitudeObject = gpsObject.at(SystemConfigConstants::Altitude);
+				SystemConfig::parseArrayAsMessageSignalMap(altitudeObject, canHandledMessages._gps->_altitude);
+			}
+			if (gpsObject.contains(SystemConfigConstants::Latitude))
+			{
+				const json & latitudeObject = gpsObject.at(SystemConfigConstants::Latitude);
+				SystemConfig::parseArrayAsMessageSignalMap(latitudeObject, canHandledMessages._gps->_latitude);
+			}
+			if (gpsObject.contains(SystemConfigConstants::Longitude))
+			{
+				const json & longitudeObject = gpsObject.at(SystemConfigConstants::Longitude);
+				SystemConfig::parseArrayAsMessageSignalMap(longitudeObject, canHandledMessages._gps->_longitude);
+			}
+		}
+		if (jsonObject.contains(SystemConfigConstants::Vin))
+		{
+			canHandledMessages._vin.emplace();
+			const json & vinObject = jsonObject.at(SystemConfigConstants::Vin);
+			canHandledMessages._vin->_messageName = vinObject.at(SystemConfigConstants::MessageName);
+			canHandledMessages._vin->_signalName = vinObject.at(SystemConfigConstants::SignalName);
+		}
+	}
+
 	unique_ptr<CanBusObject> SystemConfig::parseCanBusObject(const json & busElement)
 	{
-		CanBusType const type = canBusTypeFromString(busElement.at(SystemConfigConstants::Type));
 		unique_ptr<CanBusObject> canBusObject;
-
+		string idSuffix;
+		CanBusType const type = canBusTypeFromString(busElement.at(SystemConfigConstants::Type));
 		switch (type)
 		{
 		case CanBusType::Fd:
 			canBusObject = make_unique<CanFdBusObject>(type);
 			break;
 		case CanBusType::Standard:
-			canBusObject = make_unique<CanStandardBusObject>(type);
+			{
+				idSuffix = "Can";
+				unique_ptr<CanStandardBusObject> canStandardBusObject = make_unique<CanStandardBusObject>(type);
+				canStandardBusObject->_baudRate = busElement.at(SystemConfigConstants::BaudRate);
+				this->parseCanBusDbcArray(busElement.at(SystemConfigConstants::DbcNames), canStandardBusObject->_dbcNames);
+				canStandardBusObject->_hardwareId = busElement.at(SystemConfigConstants::Hardware);
+				canStandardBusObject->_name = busElement.at(SystemConfigConstants::Id);
+				canStandardBusObject->setIdSuffix(idSuffix);
+				// optional parameters
+				if (busElement.contains(SystemConfigConstants::Termination))
+				{
+					canStandardBusObject->_termination = busElement.at(SystemConfigConstants::Termination);
+				}
+				if (busElement.contains(SystemConfigConstants::Transmitting))
+				{
+					canStandardBusObject->_transmitting = busElement.at(SystemConfigConstants::Transmitting);
+				}
+				if (busElement.contains(SystemConfigConstants::HandledMessages))
+				{
+					canStandardBusObject->_handledMessages.emplace();
+					this->parseCanBusHandledMessagesObject(busElement.at(SystemConfigConstants::HandledMessages), *canStandardBusObject->_handledMessages);
+				}
+				canBusObject = move(canStandardBusObject);
+			}
 			break;
 		case CanBusType::VoiceToCan:
 			canBusObject = make_unique<CanVoiceToCanBusObject>(type);
@@ -152,6 +221,12 @@ namespace OptiScan::Core::Config
 			throw runtime_error("Unknown can bus type.");
 		}
 		return canBusObject;
+	}
+
+	void SystemConfig::parseCanObject(ConfigDatabase & configDatabase)
+	{
+		const json & canObject = this->_jsonRootObject[SystemConfigConstants::Can];
+		this->parseCanBusses(configDatabase, canObject);
 	}
 
 	void SystemConfig::parseDebugObject(ConfigDatabase & configDatabase)

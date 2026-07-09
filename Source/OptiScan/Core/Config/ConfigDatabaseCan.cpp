@@ -32,7 +32,7 @@ namespace OptiScan::Core::Config
 	CanStandardBusObject::CanStandardBusObject(const CanBusType & type)
 		: CanBusObject(type)
 		, _dbcNames()
-		, _gpsMessages()
+		, _handledMessages()
 	{
 	}
 
@@ -40,7 +40,7 @@ namespace OptiScan::Core::Config
 	{
 		this->CanBusObject::clear();
 		this->_dbcNames.clear();
-		this->_gpsMessages.reset();
+		this->_handledMessages.reset();
 	}
 
 	CanFdBusObject::CanFdBusObject(const CanBusType & type)
@@ -53,17 +53,6 @@ namespace OptiScan::Core::Config
 	{
 		this->CanStandardBusObject::clear();
 		this->_dataBaudRate = 0;
-	}
-
-	CanGpsSignalObject::CanGpsSignalObject(const GpsSignalType & gpsSignalType)
-	   : _gpsSignalType(gpsSignalType)
-	   , _messageAndSignalNames()
-	{
-	}
-
-	void CanGpsSignalObject::clear()
-	{
-		this->_messageAndSignalNames.clear();
 	}
 
 	CanVoiceToCanBusObject::CanVoiceToCanBusObject(const CanBusType & type)

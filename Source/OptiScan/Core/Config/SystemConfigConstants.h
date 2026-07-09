@@ -23,6 +23,7 @@ namespace OptiScan::Core::Config
         static inline const std::string Generation = "Generation";
         static inline const std::string Gps = "Gps";
         static inline const std::string GpsMessages = "GpsMessages";
+        static inline const std::string HandledMessages = "HandledMessages";
         static inline const std::string Hardware = "Hardware";
         static inline const std::string Id = "Id";
         static inline const std::string IncludeVin = "IncludeVin";
@@ -44,6 +45,7 @@ namespace OptiScan::Core::Config
         static inline const std::string Transmitting = "Transmitting";
         static inline const std::string TransportLayerInstance = "TransportLayerInstance";
         static inline const std::string Version = "Version";
+        static inline const std::string Vin = "Vin";
         static inline const std::string Type = "Type";
         static inline const std::string XcpFrequencyMax_Hz = "XcpFrequencyMax_Hz";
         static inline const std::string XcpSelectionTable = "XcpSelectionTable";
