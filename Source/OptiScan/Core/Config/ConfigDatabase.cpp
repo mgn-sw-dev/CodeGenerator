@@ -5,6 +5,16 @@ using namespace std;
 
 namespace OptiScan::Core::Config
 {
+	ConfigCanObject::ConfigCanObject()
+		: _busses()
+		, _frequencyMax_Hz()
+		, _selectionTable()
+		, _standardTrace()
+		, _xcpFrequencyMax_Hz()
+		, _xcpSelectionTable()
+	{
+	}
+
 	ConfigDatabase::ConfigDatabase()
 		: _projectInfos()
 	{

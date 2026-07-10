@@ -17,6 +17,10 @@ set(OptiScanCore_SOURCES
     Config/ConfigDatabaseBus.h
     Config/ConfigDatabaseCan.cpp
     Config/ConfigDatabaseCan.h
+    Config/ConfigDatabaseStandardTrace.cpp
+    Config/ConfigDatabaseStandardTrace.h
+    Config/ConfigDatabaseTrigger.cpp
+    Config/ConfigDatabaseTrigger.h
     Config/SystemConfig.cpp
     Config/SystemConfig.h
     Config/SystemConfigConstants.h

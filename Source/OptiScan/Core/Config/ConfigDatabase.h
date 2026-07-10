@@ -2,6 +2,7 @@
 
 #include <OptiScan/Core/Common/Version.h>
 #include <OptiScan/Core/Config/ConfigDatabaseCan.h>
+#include <OptiScan/Core/Config/ConfigDatabaseStandardTrace.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -11,13 +12,14 @@ namespace OptiScan::Core::Config
     class ConfigCanObject
     {
     public:
-        std::vector<std::unique_ptr<CanBusObject>> _busses = {};
-        std::optional<double> _frequencyMax_Hz = std::nullopt;
-        std::optional<std::string> _selectionTable = std::nullopt;
-        std::optional<double> _xcpFrequencyMax_Hz = std::nullopt;
-        std::optional<std::string> _xcpSelectionTable = std::nullopt;
+        std::vector<std::unique_ptr<CanBusObject>> _busses;
+        std::optional<double> _frequencyMax_Hz;
+        std::optional<std::string> _selectionTable;
+        std::optional<StandardTrace> _standardTrace;
+        std::optional<double> _xcpFrequencyMax_Hz;
+        std::optional<std::string> _xcpSelectionTable;
 
-        ConfigCanObject() = default;
+        ConfigCanObject();
     };
 
     class ConfigDebugObject
