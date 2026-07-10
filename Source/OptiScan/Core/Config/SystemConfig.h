@@ -58,6 +58,10 @@ namespace OptiScan::Core::Config
         void parseProjectInfoObject(ConfigDatabase & configDatabase);
     	/** Parse Attributs: DbcNames, HandledMessages. */
     	void parseStandardCanBusFields(const nlohmann::json & busElement, CanStandardBusObject & canBusObject);
+    	/** */
+    	void parseStandardTrace(const nlohmann::json & busElement, StandardTrace & standardTrace);
+    	/** */
+    	void parseTrigger(const nlohmann::json & triggerElement, Trigger & trigger);
         /** */
         void resetAllFields();
         /** */

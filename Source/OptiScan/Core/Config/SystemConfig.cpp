@@ -231,7 +231,8 @@ namespace OptiScan::Core::Config
 		this->parseCanBusses(canObject, configDatabase._canObject->_busses);
 		if (canObject.contains(SystemConfigConstants::StandardTrace))
 		{
-
+			configDatabase._canObject->_standardTrace.emplace();
+			this->parseStandardTrace(canObject.at(SystemConfigConstants::StandardTrace), *configDatabase._canObject->_standardTrace);
 		}
 		if (canObject.contains(SystemConfigConstants::FrequencyMax_Hz))
 		{
@@ -303,6 +304,60 @@ namespace OptiScan::Core::Config
 		{
 			canStandardBusObject._handledMessages.emplace();
 			this->parseCanBusHandledMessagesObject(busElement.at(SystemConfigConstants::HandledMessages), *canStandardBusObject._handledMessages);
+		}
+	}
+
+	void SystemConfig::parseStandardTrace(const json & busElement, StandardTrace & standardTrace)
+	{
+		SystemConfig::parseArrayAsString(busElement.at(SystemConfigConstants::Busses), standardTrace._busses);
+		standardTrace._frequency_Hz = busElement.at(SystemConfigConstants::Frequency_Hz);
+		standardTrace._prefetchTime_s = busElement.at(SystemConfigConstants::PrefetchTime_s);
+		standardTrace._recordTime_s = busElement.at(SystemConfigConstants::RecordTime_s);
+		standardTrace._version = Version::fromString(busElement.at(SystemConfigConstants::Version));
+		const json & triggerObject = busElement.at(SystemConfigConstants::Trigger);
+		for (const auto & tiggerElement : triggerObject)
+		{
+			Trigger trigger;
+			this->parseTrigger(tiggerElement, trigger);
+			standardTrace._triggers.push_back(trigger);
+		}
+	}
+
+	void SystemConfig::parseTrigger(const json & triggerElement, Trigger & trigger)
+	{
+		TriggerType const type = triggerTypeFromString(triggerElement.at(SystemConfigConstants::Type));
+		trigger._type = type;
+		trigger._bus = triggerElement.at(SystemConfigConstants::Bus);
+		trigger._messageId = stoi(to_string(triggerElement.at(SystemConfigConstants::MessageIdMask)), 0, 16);
+		if (triggerElement.contains(SystemConfigConstants::Signals))
+		{
+			// parse Signals
+		}
+		switch (type)
+		{
+		case TriggerType::VoiceToCanButton:
+			{
+
+			}
+			break;
+		case TriggerType::MessageIdPrefixPartialMatch:
+			{
+
+			}
+			break;
+		case TriggerType::MessagePayloadPartialMatch:
+			{
+
+			}
+			break;
+		case TriggerType::MessageDtcRotmeldungMatch:
+			{
+
+			}
+			break;
+		case TriggerType::Unknown:
+		default:
+			throw runtime_error("Unknown trigger type.");
 		}
 	}
 
