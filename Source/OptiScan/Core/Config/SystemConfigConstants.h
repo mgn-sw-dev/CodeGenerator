@@ -10,6 +10,7 @@ namespace OptiScan::Core::Config
         static inline const std::string A2lName = "A2lName";
         static inline const std::string Altitude = "Altitude";
         static inline const std::string BaudRate = "BaudRate";
+        static inline const std::string Bus = "Bus";
         static inline const std::string Busses = "Busses";
         static inline const std::string Can = "Can";
         static inline const std::string DataBaudRate = "DataBaudRate";
@@ -31,12 +32,14 @@ namespace OptiScan::Core::Config
         static inline const std::string LdfName = "LdfName";
         static inline const std::string Lin = "Lin";
         static inline const std::string Longitude = "Longitude";
+        static inline const std::string MessageIdMask = "MessageIdMask";
         static inline const std::string MessageName = "MessageName";
         static inline const std::string PrefetchTime_s = "PrefetchTime_s";
         static inline const std::string ProjectName = "ProjectName";
         static inline const std::string ProjectInfos = "ProjectInfos";
         static inline const std::string RecordTime_s = "RecordTime_s";
         static inline const std::string SelectionTable = "SelectionTable";
+        static inline const std::string Signals = "Signals";
         static inline const std::string SignalName = "SignalName";
         static inline const std::string StandardTrace = "StandardTrace";
         static inline const std::string SystemName = "SystemName";
@@ -44,6 +47,7 @@ namespace OptiScan::Core::Config
         static inline const std::string Termination = "Termination";
         static inline const std::string Transmitting = "Transmitting";
         static inline const std::string TransportLayerInstance = "TransportLayerInstance";
+        static inline const std::string Trigger = "Trigger";
         static inline const std::string Version = "Version";
         static inline const std::string Vin = "Vin";
         static inline const std::string Type = "Type";
