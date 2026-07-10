@@ -19,7 +19,7 @@ namespace OptiScan::Core::Config
         std::optional<double> _xcpFrequencyMax_Hz;
         std::optional<std::string> _xcpSelectionTable;
 
-        ConfigCanObject();
+        ConfigCanObject() = default;
     };
 
     class ConfigDebugObject
@@ -50,7 +50,7 @@ namespace OptiScan::Core::Config
         std::string _systemName;
         Common::Version _systemVersion;
 
-        ConfigProjectInfos();
+        ConfigProjectInfos() = default;
     };
 
     class ConfigDatabase 
@@ -61,7 +61,7 @@ namespace OptiScan::Core::Config
         ConfigGpsObject _gpsObject;
         ConfigProjectInfos _projectInfos;
 
-        ConfigDatabase();
+        ConfigDatabase() = default;
     };
 
 
