@@ -121,42 +121,6 @@ namespace OptiScan::Core::Config
 		}
 	}
 
-	void SystemConfig::parseCanBusses(const json & canObject, vector<unique_ptr<CanBusObject>> & canBusses)
-	{
-		const json & busses = canObject.at(SystemConfigConstants::Busses);
-		// check if canBusses is array is done by schema validation
-
-		canBusses.clear();
-		canBusses.reserve(busses.size());
-		for (const auto & element : busses)
-		{
-			canBusses.push_back(this->parseCanBusObject(element));
-		}
-	}
-	
-	void SystemConfig::parseArrayAsMessageSignalMap(const json & array, vector<CanMessageSignalMap> & messageSignalMaps)
-	{
-		messageSignalMaps.clear();
-		messageSignalMaps.reserve(array.size());
-		for (const auto & element : array)
-		{
-			CanMessageSignalMap messageSignalMapElement;
-			messageSignalMapElement._messageName = element.at(SystemConfigConstants::MessageName);
-			messageSignalMapElement._signalName = element.at(SystemConfigConstants::SignalName);
-			messageSignalMaps.push_back(messageSignalMapElement);
-		}
-	}
-
-	void SystemConfig::parseArrayAsString(const json & array, vector<string> & strings)
-	{
-		strings.clear();
-		strings.reserve(array.size());
-		for (const auto & element : array)
-		{
-			strings.push_back(element);
-		}
-	}
-
 	uint32_t SystemConfig::parseHexStringAsUInt32(const std::string & hexString)
 	{
 		uint32_t result = 0;
@@ -186,17 +150,17 @@ namespace OptiScan::Core::Config
 			if (gpsObject.contains(SystemConfigConstants::Altitude))
 			{
 				const json & altitudeObject = gpsObject.at(SystemConfigConstants::Altitude);
-				SystemConfig::parseArrayAsMessageSignalMap(altitudeObject, canHandledMessages._gps->_altitude);
+				SystemConfig::parseArrayWith(altitudeObject, canHandledMessages._gps->_altitude, &SystemConfig::parseCanMessageSignalMap);
 			}
 			if (gpsObject.contains(SystemConfigConstants::Latitude))
 			{
 				const json & latitudeObject = gpsObject.at(SystemConfigConstants::Latitude);
-				SystemConfig::parseArrayAsMessageSignalMap(latitudeObject, canHandledMessages._gps->_latitude);
+				SystemConfig::parseArrayWith(latitudeObject, canHandledMessages._gps->_latitude, &SystemConfig::parseCanMessageSignalMap);
 			}
 			if (gpsObject.contains(SystemConfigConstants::Longitude))
 			{
 				const json & longitudeObject = gpsObject.at(SystemConfigConstants::Longitude);
-				SystemConfig::parseArrayAsMessageSignalMap(longitudeObject, canHandledMessages._gps->_longitude);
+				SystemConfig::parseArrayWith(longitudeObject, canHandledMessages._gps->_longitude, &SystemConfig::parseCanMessageSignalMap);
 			}
 		}
 		if (jsonObject.contains(SystemConfigConstants::Vin))
@@ -218,14 +182,14 @@ namespace OptiScan::Core::Config
 			{
 				unique_ptr<CanFdBusObject> canFdBusObject = make_unique<CanFdBusObject>(type);
 				canFdBusObject->_dataBaudRate = busElement.at(SystemConfigConstants::DataBaudRate);
-				this->parseStandardCanBusFields(busElement, *canFdBusObject);
+				SystemConfig::parseStandardCanBusFields(busElement, *canFdBusObject);
 				canBusObject = move(canFdBusObject);
 			}
 			break;
 		case CanBusType::Standard:
 			{
 				unique_ptr<CanStandardBusObject> canStandardBusObject = make_unique<CanStandardBusObject>(type);
-				this->parseStandardCanBusFields(busElement, *canStandardBusObject);
+				SystemConfig::parseStandardCanBusFields(busElement, *canStandardBusObject);
 				canBusObject = move(canStandardBusObject);
 			}
 			break;
@@ -254,15 +218,23 @@ namespace OptiScan::Core::Config
 		default:
 			throw runtime_error("Unknown can bus type.");
 		}
-		this->parseCommonCanBusFields(busElement, *canBusObject);
+		SystemConfig::parseCommonCanBusFields(busElement, *canBusObject);
 		return canBusObject;
+	}
+
+	CanMessageSignalMap SystemConfig::parseCanMessageSignalMap(const json & messageSignalMapElement)
+	{
+		CanMessageSignalMap messageSignalMap;
+		messageSignalMap._messageName = messageSignalMapElement.at(SystemConfigConstants::MessageName);
+		messageSignalMap._signalName = messageSignalMapElement.at(SystemConfigConstants::SignalName);
+		return messageSignalMap;
 	}
 
 	void SystemConfig::parseCanObject(ConfigDatabase & configDatabase)
 	{
 		const json & canObject = this->_jsonRootObject[SystemConfigConstants::Can];
 		configDatabase._canObject.emplace();
-		this->parseCanBusses(canObject, configDatabase._canObject->_busses);
+		SystemConfig::parseArrayWith(canObject.at(SystemConfigConstants::Busses), configDatabase._canObject->_busses, &SystemConfig::parseCanBusObject);
 		this->log("\t- Busses: " + to_string(configDatabase._canObject->_busses.size()));
 		if (canObject.contains(SystemConfigConstants::StandardTrace))
 		{
@@ -274,28 +246,25 @@ namespace OptiScan::Core::Config
 				+"\n\t\t- RecordTime: " + to_string(configDatabase._canObject->_standardTrace->_recordTime_s)
 				+"\n\t\t- Trigger: " + to_string(configDatabase._canObject->_standardTrace->_triggers.size()));
 		}
-		if (canObject.contains(SystemConfigConstants::FrequencyMax_Hz))
+		SystemConfig::parseOptionalValue<double>(canObject, SystemConfigConstants::FrequencyMax_Hz, configDatabase._canObject->_frequencyMax_Hz);
+		SystemConfig::parseOptionalValue<string>(canObject, SystemConfigConstants::SelectionTable, configDatabase._canObject->_selectionTable);
+		SystemConfig::parseOptionalValue<double>(canObject, SystemConfigConstants::XcpFrequencyMax_Hz, configDatabase._canObject->_xcpFrequencyMax_Hz);
+		SystemConfig::parseOptionalValue<string>(canObject, SystemConfigConstants::XcpSelectionTable, configDatabase._canObject->_xcpSelectionTable);
+
+		if (configDatabase._canObject->_frequencyMax_Hz.has_value())
 		{
-			configDatabase._canObject->_frequencyMax_Hz.emplace();
-			configDatabase._canObject->_frequencyMax_Hz = canObject.at(SystemConfigConstants::FrequencyMax_Hz).get<double>();
 			this->log("\t- Frequency Max Hz: " + LogHandler::doubleToString(configDatabase._canObject->_frequencyMax_Hz.value()));
 		}
-		if (canObject.contains(SystemConfigConstants::SelectionTable))
+		if (configDatabase._canObject->_selectionTable.has_value())
 		{
-			configDatabase._canObject->_selectionTable.emplace();
-			configDatabase._canObject->_selectionTable = canObject.at(SystemConfigConstants::SelectionTable).get<string>();
 			this->log("\t- Selection Table: " + configDatabase._canObject->_selectionTable.value());
 		}
-		if (canObject.contains(SystemConfigConstants::XcpFrequencyMax_Hz))
+		if (configDatabase._canObject->_xcpFrequencyMax_Hz.has_value())
 		{
-			configDatabase._canObject->_xcpFrequencyMax_Hz.emplace();
-			configDatabase._canObject->_xcpFrequencyMax_Hz = canObject.at(SystemConfigConstants::XcpFrequencyMax_Hz).get<double>();
 			this->log("\t- XCP Frequency Max Hz: " + LogHandler::doubleToString(configDatabase._canObject->_xcpFrequencyMax_Hz.value()));
 		}
-		if (canObject.contains(SystemConfigConstants::XcpSelectionTable))
+		if (configDatabase._canObject->_xcpSelectionTable.has_value())
 		{
-			configDatabase._canObject->_xcpSelectionTable.emplace();
-			configDatabase._canObject->_xcpSelectionTable = canObject.at(SystemConfigConstants::XcpSelectionTable).get<string>();
 			this->log("\t- XCP Selection Table: " + configDatabase._canObject->_xcpSelectionTable.value());
 		}
 	}
@@ -341,7 +310,7 @@ namespace OptiScan::Core::Config
 	{
 		const json & linObject = this->_jsonRootObject[SystemConfigConstants::Lin];
 		configDatabase._linObject.emplace();
-		this->parseLinBusses(linObject, configDatabase._linObject->_busses);
+		SystemConfig::parseArrayWith(linObject.at(SystemConfigConstants::Busses), configDatabase._linObject->_busses, &SystemConfig::parseLinBusObject);
 		this->log("\t- Busses: " + to_string(configDatabase._linObject->_busses.size()));
 		configDatabase._linObject->_selectionTable = linObject.at(SystemConfigConstants::SelectionTable).get<string>();
 		this->log("\t- Selection Table: " + configDatabase._linObject->_selectionTable);
@@ -355,19 +324,6 @@ namespace OptiScan::Core::Config
 		linBusObject._name = busElement.at(SystemConfigConstants::Id).get<string>();
 		linBusObject.setIdSuffix("Lin");
 		return make_unique<LinBusObject>(linBusObject);
-	}
-
-	void SystemConfig::parseLinBusses(const json & linObject, vector<unique_ptr<LinBusObject>> & linBusses)
-	{
-		const json & busses = linObject.at(SystemConfigConstants::Busses);
-		// check if canBusses is array is done by schema validation
-
-		linBusses.clear();
-		linBusses.reserve(busses.size());
-		for (const auto & element : busses)
-		{
-			linBusses.push_back(this->parseLinBusObject(element));
-		}
 	}
 
 	void SystemConfig::parseProjectInfoObject(ConfigDatabase & configDatabase)
@@ -384,17 +340,17 @@ namespace OptiScan::Core::Config
 
 	void SystemConfig::parseStandardCanBusFields(const json & busElement, CanStandardBusObject & canStandardBusObject)
 	{
-		SystemConfig::parseArrayAsString(busElement.at(SystemConfigConstants::DbcNames), canStandardBusObject._dbcNames);
+		SystemConfig::parseArrayAs<string>(busElement.at(SystemConfigConstants::DbcNames), canStandardBusObject._dbcNames);
 		if (busElement.contains(SystemConfigConstants::HandledMessages))
 		{
 			canStandardBusObject._handledMessages.emplace();
-			this->parseCanBusHandledMessagesObject(busElement.at(SystemConfigConstants::HandledMessages), *canStandardBusObject._handledMessages);
+			SystemConfig::parseCanBusHandledMessagesObject(busElement.at(SystemConfigConstants::HandledMessages), *canStandardBusObject._handledMessages);
 		}
 	}
 
 	void SystemConfig::parseStandardTrace(const json & busElement, StandardTrace & standardTrace)
 	{
-		SystemConfig::parseArrayAsString(busElement.at(SystemConfigConstants::Busses), standardTrace._busses);
+		SystemConfig::parseArrayAs<string>(busElement.at(SystemConfigConstants::Busses), standardTrace._busses);
 		standardTrace._frequency_Hz = busElement.at(SystemConfigConstants::Frequency_Hz).get<double>();
 		standardTrace._prefetchTime_s = busElement.at(SystemConfigConstants::PrefetchTime_s).get<uint8_t>();
 		standardTrace._recordTime_s = busElement.at(SystemConfigConstants::RecordTime_s).get<uint8_t>();

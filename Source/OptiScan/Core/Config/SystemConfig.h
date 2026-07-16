@@ -35,32 +35,29 @@ namespace OptiScan::Core::Config
         void logError(const std::string & message) const;
         /** */
         void logInfo(const std::string & message) const;
-        /** Parse Json Array elementwise. Each element is expected to be a CanMessageSignalMap.
-         * Push CanMessageSignalMap into messageSignalMap.
-         * @param array: Json Array
-         * @param messageSignalMaps: vector of CanMessageSignalMap */
-        static void parseArrayAsMessageSignalMap(const nlohmann::json & array, std::vector<CanMessageSignalMap> & messageSignalMaps);
-        /** Parse Json Array elementwise. Each element is expected to be a string.
-         * Push string into strings.
-         * @param array: Json Array
-         * @param strings: vector of string */
-        static void parseArrayAsString(const nlohmann::json & array, std::vector<std::string> & strings);
+    	/** Parse Json array elementwise.*/
+    	template<typename T>
+    	static void parseArrayAs(const nlohmann::json & array, std::vector<T> & target);
+    	/** */
+    	template<typename T, typename Parser>
+    	static void parseArrayWith(const nlohmann::json & array, std::vector<T> & target, Parser parser);
     	/** Parse Hex String as UInt32 value.
     	 *  @throw runtime_error if conversion fails.
     	 *  @throw invalid_argument if hex string does not fit in uint32. */
     	static uint32_t parseHexStringAsUInt32(const std::string & hexString);
-        /** */
-        void parseCanBusses(const nlohmann::json & canObject, std::vector<std::unique_ptr<CanBusObject>> & canBusses);
-        /** */
-        void parseCanBusHandledMessagesObject(const nlohmann::json & jsonObject, CanHandledMessagesObject & canHandledMessages);
-        /** */
-        std::unique_ptr<CanBusObject> parseCanBusObject(const nlohmann::json & busElement);
+        /** Check and parse can handled massage object properties GPS and VIN. */
+        static void parseCanBusHandledMessagesObject(const nlohmann::json & jsonObject, CanHandledMessagesObject & canHandledMessages);
+    	/** Select by type of can object with properties need to parse.
+		 *  Use unique_ptr for different can bus object types.*/
+        static std::unique_ptr<CanBusObject> parseCanBusObject(const nlohmann::json & busElement);
+    	/** */
+    	static CanMessageSignalMap parseCanMessageSignalMap(const nlohmann::json & signalElement);
         /** */
         void parseCanObject(ConfigDatabase & configDatabase);
     	/** */
     	void parseCanSignals(const nlohmann::json & signalsElement, CanTriggerSignal & canTriggerSignal);
     	/** Parse Attributs: BudRate, HardwareId, Name, Termination and Transmitting. */
-    	void parseCommonCanBusFields(const nlohmann::json & busElement, CanBusObject & canBusObject);
+    	static void parseCommonCanBusFields(const nlohmann::json & busElement, CanBusObject & canBusObject);
         /** */
         void parseDebugObject(ConfigDatabase & configDatabase);
         /** */
@@ -68,13 +65,14 @@ namespace OptiScan::Core::Config
     	/** */
     	void parseLinObject(ConfigDatabase & configDatabase);
     	/** */
-    	std::unique_ptr<LinBusObject> parseLinBusObject(const nlohmann::json & busElement);
+    	static std::unique_ptr<LinBusObject> parseLinBusObject(const nlohmann::json & busElement);
     	/** */
-    	void parseLinBusses(const nlohmann::json & linObject, std::vector<std::unique_ptr<LinBusObject>> & linBusses);
+    	template <typename T>
+    	static void parseOptionalValue(const nlohmann::json & json, const std::string & key, std::optional<T> & target);
         /** */
         void parseProjectInfoObject(ConfigDatabase & configDatabase);
     	/** Parse Attributs: DbcNames, HandledMessages. */
-    	void parseStandardCanBusFields(const nlohmann::json & busElement, CanStandardBusObject & canBusObject);
+    	static void parseStandardCanBusFields(const nlohmann::json & busElement, CanStandardBusObject & canBusObject);
     	/** */
     	void parseStandardTrace(const nlohmann::json & busElement, StandardTrace & standardTrace);
     	/** */
@@ -83,8 +81,8 @@ namespace OptiScan::Core::Config
         void resetAllFields();
         /** */
         void validateAgainstSchema() const;
-
-
     };
 
 }
+#include <OptiScan/Core/Config/SystemConfig.inl.h>
+

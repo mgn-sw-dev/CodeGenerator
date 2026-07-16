@@ -25,6 +25,7 @@ set(OptiScanCore_SOURCES
     Config/ConfigDatabaseTrigger.h
     Config/SystemConfig.cpp
     Config/SystemConfig.h
+    Config/SystemConfig.inl.h
     Config/SystemConfigConstants.h
     Json/JsonSchemaValidator.h
     Json/JsonSchemaValidator.cpp
