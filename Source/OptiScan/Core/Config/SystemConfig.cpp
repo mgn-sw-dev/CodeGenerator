@@ -57,7 +57,7 @@ namespace OptiScan::Core::Config
 		}
 		catch (const exception & error)
 		{
-			this->logError("SystemConfig::loadFromFile: " + error.what());
+			this->logError("SystemConfig::loadFromFile: " + LogHandler::exeptionToString(error));
 			throw runtime_error(error.what());
 		}
 	}
@@ -116,7 +116,11 @@ namespace OptiScan::Core::Config
 			this->logInfo("Can object:");
 			this->parseCanObject(configDatabase);
 		}
-
+		if (this->_jsonRootObject.contains(SystemConfigConstants::Lin))
+		{
+			this->logInfo("Lin object:");
+			this->parseLinObject(configDatabase);
+		}
 	}
 
 	void SystemConfig::parseCanBusses(const json & canObject, vector<unique_ptr<CanBusObject>> & canBusses)
@@ -327,6 +331,39 @@ namespace OptiScan::Core::Config
 	{
 		const json & gpsObject = this->_jsonRootObject[SystemConfigConstants::Gps];
 		configDatabase._gpsObject._frequency_Hz = gpsObject.at(SystemConfigConstants::Frequency_Hz);
+	}
+
+	void SystemConfig::parseLinObject(ConfigDatabase & configDatabase)
+	{
+		const json & linObject = this->_jsonRootObject[SystemConfigConstants::Lin];
+		configDatabase._linObject.emplace();
+		this->parseLinBusses(linObject, configDatabase._linObject->_busses);
+		this->log("\t- Busses: " + to_string(configDatabase._linObject->_busses.size()));
+		configDatabase._linObject->_selectionTable = linObject.at(SystemConfigConstants::SelectionTable).get<string>();
+		this->log("\t- Selection Table: " + configDatabase._linObject->_selectionTable);
+	}
+
+	std::unique_ptr<LinBusObject> SystemConfig::parseLinBusObject(const json & busElement)
+	{
+		LinBusObject linBusObject;
+		linBusObject._ldfName = busElement.at(SystemConfigConstants::LdfName).get<string>();
+		linBusObject._hardwareId = busElement.at(SystemConfigConstants::Hardware).get<uint8_t>();
+		linBusObject._name = busElement.at(SystemConfigConstants::Id).get<string>();
+		linBusObject.setIdSuffix("Lin");
+		return make_unique<LinBusObject>(linBusObject);
+	}
+
+	void SystemConfig::parseLinBusses(const json & linObject, vector<unique_ptr<LinBusObject>> & linBusses)
+	{
+		const json & busses = linObject.at(SystemConfigConstants::Busses);
+		// check if canBusses is array is done by schema validation
+
+		linBusses.clear();
+		linBusses.reserve(linBusses.size());
+		for (const auto & element : busses)
+		{
+			linBusses.push_back(this->parseLinBusObject(element));
+		}
 	}
 
 	void SystemConfig::parseProjectInfoObject(ConfigDatabase & configDatabase)

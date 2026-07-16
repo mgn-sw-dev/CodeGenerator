@@ -69,7 +69,7 @@ namespace OptiScan::Core::Config
         std::optional<ConfigCanObject> _canObject;
         ConfigDebugObject _debugObject;
         ConfigGpsObject _gpsObject;
-        ConfigLinObject _linObject;
+        std::optional<ConfigLinObject> _linObject;
         ConfigProjectInfos _projectInfos;
 
         ConfigDatabase() = default;

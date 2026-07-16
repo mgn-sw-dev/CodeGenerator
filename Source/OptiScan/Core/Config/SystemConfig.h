@@ -61,6 +61,12 @@ namespace OptiScan::Core::Config
         void parseDebugObject(ConfigDatabase & configDatabase);
         /** */
         void parseGpsObject(ConfigDatabase & configDatabase);
+    	/** */
+    	void parseLinObject(ConfigDatabase & configDatabase);
+    	/** */
+    	std::unique_ptr<LinBusObject> parseLinBusObject(const nlohmann::json & busElement);
+    	/** */
+    	void parseLinBusses(const nlohmann::json & linObject, std::vector<std::unique_ptr<LinBusObject>> & linBusses);
         /** */
         void parseProjectInfoObject(ConfigDatabase & configDatabase);
     	/** Parse Attributs: DbcNames, HandledMessages. */
