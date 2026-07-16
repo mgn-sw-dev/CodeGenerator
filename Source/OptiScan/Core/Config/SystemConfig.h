@@ -78,7 +78,8 @@ namespace OptiScan::Core::Config
     	/** Required properties: Frequency_Hz, PrefetchTime_s, RecordTime_s, Version, Trigger. */
     	static void parseStandardTrace(const nlohmann::json & busElement, StandardTrace & standardTrace);
     	/** Required properties: selected by trigger type
-    	 * Optional properties: Signals */
+    	 * Optional properties: Signals
+    	 * @throw runtime_error if trigger is invalid. */
     	static void parseTrigger(const nlohmann::json & triggerElement, Trigger & trigger);
         /** */
         void reset();

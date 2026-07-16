@@ -335,16 +335,14 @@ namespace OptiScan::Core::Config
 
 	void SystemConfig::parseTrigger(const json & triggerElement, Trigger & trigger)
 	{
-		TriggerType const type = triggerTypeFromString(triggerElement.at(SystemConfigConstants::EventType).get<string>());
-		trigger._type = type;
+		trigger.clear();
+		trigger.setTriggerType(triggerElement.at(SystemConfigConstants::EventType).get<string>());
 		if (triggerElement.contains(SystemConfigConstants::Signals))
 		{
 			SystemConfig::parseArrayWith(triggerElement.at(SystemConfigConstants::Signals), trigger._signals, &SystemConfig::parseCanSignals);
 		}
-		switch (type)
+		switch (trigger._type)
 		{
-		case TriggerType::VoiceToCanButton:
-			break;
 		case TriggerType::MessageIdPrefixPartialMatch:
 			{
 				trigger._bus = triggerElement.at(SystemConfigConstants::Bus).get<string>();
@@ -361,9 +359,14 @@ namespace OptiScan::Core::Config
 				trigger._triggerValueSize = triggerElement.at(SystemConfigConstants::TriggerValueSize).get<uint32_t>();
 			}
 			break;
+		case TriggerType::VoiceToCanButton:
 		case TriggerType::Unknown:
 		default:
-			throw runtime_error("Unknown trigger type.");
+			break;
+		}
+		if (!trigger.isValid())
+		{
+			throw runtime_error("SystemConfig::parseTrigger: Invalid trigger object.");
 		}
 	}
 

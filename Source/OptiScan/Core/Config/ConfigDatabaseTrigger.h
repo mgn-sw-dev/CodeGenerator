@@ -15,32 +15,6 @@ namespace OptiScan::Core::Config
 		MessageDtcRotmeldungMatch   = 4,
 	};
 
-	inline TriggerType triggerTypeFromString(const std::string & triggerTypeString)
-	{
-		TriggerType type;
-		if (triggerTypeString == "VoiceToCanButton")
-		{
-			type = TriggerType::VoiceToCanButton;
-		}
-		else if (triggerTypeString == "MessageIdPrefixPartialMatch")
-		{
-			type = TriggerType::MessageIdPrefixPartialMatch;
-		}
-		else if (triggerTypeString == "MessagePayloadPartialMatch")
-		{
-			type = TriggerType::MessagePayloadPartialMatch;
-		}
-		else if (triggerTypeString == "MessagePegasusDtcRotmeldungMatch")
-		{
-			type = TriggerType::MessageDtcRotmeldungMatch;
-		}
-		else
-		{
-			throw std::runtime_error("Unknown trigger type: " + triggerTypeString);
-		}
-		return type;
-	}
-
 	struct CanTriggerSignal
 	{
 		std::string _bus;
@@ -61,6 +35,14 @@ namespace OptiScan::Core::Config
 		TriggerType _type = TriggerType::Unknown;
 
 		Trigger() = default;
+		/** */
+		void clear();
+		/** */
+		bool isValid() const;
+		/** */
+		void setTriggerType(const TriggerType type);
+		/** */
+		void setTriggerType(const std::string & typeString);
 	};
 
 }
