@@ -11,9 +11,10 @@ namespace OptiScan::Core::Config
     {
     public:
         SystemConfig();
-        /** Load Configuration File.
+        /** Load Configuration File and validate against json schema.
          *  @param configPath: Path to the configuration json file.
-         *  @throw runtime_error: For loading config file and validating config file. */
+         *  @throw runtime_error: from @ref loadConfigFile.
+         *  @throw runtime_error: if validation failed. */
         void loadFromFile(const std::string & configPath);
         /**
          *  @throw runtime_error: If config file is not loaded.*/
@@ -24,7 +25,9 @@ namespace OptiScan::Core::Config
         nlohmann::json _jsonRootObject;
         LogHandler * _logHandler;
 
-        /** */
+        /** Open file and parse as nlohmann::json object.
+         * @throw runtime_error: If file failed to open.
+         * @throw runtime_error: If JSON Parse Error. */
         void loadConfigFile(const std::string & configPath, nlohmann::json & jsonRootObject) const;
     	/** */
     	void log(const std::string & message) const;
@@ -43,7 +46,8 @@ namespace OptiScan::Core::Config
          * @param strings: vector of string */
         static void parseArrayAsString(const nlohmann::json & array, std::vector<std::string> & strings);
     	/** Parse Hex String as UInt32 value.
-    	 *  @throw runtime_error if conversion fails. */
+    	 *  @throw runtime_error if conversion fails.
+    	 *  @throw invalid_argument if hex string does not fit in uint32. */
     	static uint32_t parseHexStringAsUInt32(const std::string & hexString);
         /** */
         void parseCanBusses(const nlohmann::json & canObject, std::vector<std::unique_ptr<CanBusObject>> & canBusses);

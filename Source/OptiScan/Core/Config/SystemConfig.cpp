@@ -23,8 +23,7 @@ namespace OptiScan::Core::Config
 		ifstream file(configPath);
 		if (!file.is_open())
 		{
-			this->logError("SystemConfig::loadConfigFile: Failed to open file: " + configPath);
-			throw runtime_error("Failed to open file: " + configPath);
+			throw runtime_error("SystemConfig::loadConfigFile:Failed to open file: " + configPath);
 		}
 		try
 		{
@@ -32,8 +31,7 @@ namespace OptiScan::Core::Config
 		}
 		catch (const json::parse_error & error)
 		{
-			this->logError("SystemConfig::loadConfigFile: JSON Parse Error: " + string(error.what()));
-			throw runtime_error("JSON Parse Error: " + string(error.what()));
+			throw runtime_error("SystemConfig::loadConfigFile: JSON Parse Error: " + string(error.what()));
 		}
 	}
 
@@ -57,7 +55,7 @@ namespace OptiScan::Core::Config
 		}
 		catch (const exception & error)
 		{
-			this->logError("SystemConfig::loadFromFile: " + LogHandler::exeptionToString(error));
+			this->logError("SystemConfig::loadFromFile: " + string(error.what()));
 			throw runtime_error(error.what());
 		}
 	}
@@ -129,7 +127,7 @@ namespace OptiScan::Core::Config
 		// check if canBusses is array is done by schema validation
 
 		canBusses.clear();
-		canBusses.reserve(canBusses.size());
+		canBusses.reserve(busses.size());
 		for (const auto & element : busses)
 		{
 			canBusses.push_back(this->parseCanBusObject(element));
@@ -164,7 +162,13 @@ namespace OptiScan::Core::Config
 		uint32_t result = 0;
 		try
 		{
-			result = static_cast<uint32_t>(stoul(hexString, nullptr, 16));
+			size_t parsedChars = 0;
+			const unsigned long value = stoul(hexString, &parsedChars, 16);
+			if (parsedChars != hexString.size() || value > numeric_limits<uint32_t>::max())
+			{
+				throw invalid_argument("Invalid uint32 hex string: " + hexString);
+			}
+			result = static_cast<uint32_t>(value);
 		}
 		catch (const exception & e)
 		{
@@ -359,7 +363,7 @@ namespace OptiScan::Core::Config
 		// check if canBusses is array is done by schema validation
 
 		linBusses.clear();
-		linBusses.reserve(linBusses.size());
+		linBusses.reserve(busses.size());
 		for (const auto & element : busses)
 		{
 			linBusses.push_back(this->parseLinBusObject(element));

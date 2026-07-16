@@ -14,11 +14,4 @@ namespace OptiScan::Core
 		return oss.str();
 	}
 
-	std::string LogHandler::exeptionToString(const std::exception & e)
-	{
-		stringstream ss;
-		ss << e.what();
-		return ss.str();
-	}
-
 }
