@@ -21,6 +21,7 @@ namespace OptiScan::Core::Database
 		{
 			this->_systemConfig.setLogHandler(this->_logHandler);
 		}
+		this->_configDatabase.clear();
 		this->_systemConfig.parse(this->_configDatabase);
 	}
 

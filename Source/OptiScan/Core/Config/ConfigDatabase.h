@@ -20,7 +20,9 @@ namespace OptiScan::Core::Config
         std::optional<double> _xcpFrequencyMax_Hz;
         std::optional<std::string> _xcpSelectionTable;
 
-        ConfigCanObject() = default;
+        ConfigCanObject();
+        /** */
+        void clear();
     };
 
     class ConfigDebugObject
@@ -30,6 +32,8 @@ namespace OptiScan::Core::Config
         bool _vinIncluded = false;
 
         ConfigDebugObject() = default;
+        /** */
+        void clear();
     };
 
     class ConfigGpsObject
@@ -38,6 +42,8 @@ namespace OptiScan::Core::Config
         double _frequency_Hz = 0.0;
 
         ConfigGpsObject() = default;
+        /** */
+        void clear();
     };
 
     class ConfigLinObject
@@ -46,7 +52,9 @@ namespace OptiScan::Core::Config
         std::vector<LinBusObject> _busses;
         std::string _selectionTable;
 
-        ConfigLinObject() = default;
+        ConfigLinObject();
+        /** */
+        void clear();
     };
 
     class ConfigProjectInfos
@@ -60,7 +68,9 @@ namespace OptiScan::Core::Config
         std::string _systemName;
         Common::Version _systemVersion;
 
-        ConfigProjectInfos() = default;
+        ConfigProjectInfos();
+        /** */
+        void clear();
     };
 
     class ConfigDatabase 
@@ -72,7 +82,9 @@ namespace OptiScan::Core::Config
         std::optional<ConfigLinObject> _linObject;
         ConfigProjectInfos _projectInfos;
 
-        ConfigDatabase() = default;
+        ConfigDatabase();
+        /** */
+        void clear();
     };
 
 
