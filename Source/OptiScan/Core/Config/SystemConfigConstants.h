@@ -16,7 +16,9 @@ namespace OptiScan::Core::Config
         static inline const std::string DataBaudRate = "DataBaudRate";
         static inline const std::string DbcNames = "DbcNames";
         static inline const std::string Customer = "Customer";
+        static inline const std::string DbcName = "DbcName";
         static inline const std::string Debug = "Debug";
+        static inline const std::string EventType = "EventType";
         static inline const std::string FirmwareVersion = "FirmwareVersion";
         static inline const std::string FleetManagementRelease = "FleetManagementRelease";
         static inline const std::string Frequency_Hz = "Frequency_Hz";
@@ -32,6 +34,7 @@ namespace OptiScan::Core::Config
         static inline const std::string LdfName = "LdfName";
         static inline const std::string Lin = "Lin";
         static inline const std::string Longitude = "Longitude";
+        static inline const std::string MessageId = "MessageId";
         static inline const std::string MessageIdMask = "MessageIdMask";
         static inline const std::string MessageName = "MessageName";
         static inline const std::string PrefetchTime_s = "PrefetchTime_s";
@@ -48,6 +51,9 @@ namespace OptiScan::Core::Config
         static inline const std::string Transmitting = "Transmitting";
         static inline const std::string TransportLayerInstance = "TransportLayerInstance";
         static inline const std::string Trigger = "Trigger";
+        static inline const std::string TriggerValue = "TriggerValue";
+        static inline const std::string TriggerValueOffset = "TriggerValueOffset";
+        static inline const std::string TriggerValueSize = "TriggerValueSize";
         static inline const std::string Version = "Version";
         static inline const std::string Vin = "Vin";
         static inline const std::string Type = "Type";

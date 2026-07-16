@@ -143,6 +143,20 @@ namespace OptiScan::Core::Config
 		}
 	}
 
+	uint32_t SystemConfig::parseHexStringAsUInt32(const std::string & hexString)
+	{
+		uint32_t result = 0;
+		try
+		{
+			result = static_cast<uint32_t>(stoul(hexString, nullptr, 16));
+		}
+		catch (const exception & e)
+		{
+			throw runtime_error("Failed to parse hex string: " + hexString + ". Error: " + e.what());
+		}
+		return result;
+	}
+
 	void SystemConfig::parseCanBusHandledMessagesObject(const json & jsonObject, CanHandledMessagesObject & canHandledMessages)
 	{
 		if (jsonObject.contains(SystemConfigConstants::Gps))
@@ -256,6 +270,14 @@ namespace OptiScan::Core::Config
 		}
 	}
 
+	void SystemConfig::parseCanSignals(const json & signalsElement, CanTriggerSignal & canTriggerSignal)
+	{
+		canTriggerSignal._bus = signalsElement.at(SystemConfigConstants::Bus).get<string>();
+		canTriggerSignal._dbcName = signalsElement.at(SystemConfigConstants::DbcName).get<string>();
+		canTriggerSignal._messageId = SystemConfig::parseHexStringAsUInt32(signalsElement.at(SystemConfigConstants::MessageId).get<string>());
+		canTriggerSignal._signalName = signalsElement.at(SystemConfigConstants::SignalName).get<string>();
+	}
+
 	void SystemConfig::parseCommonCanBusFields(const json & busElement, CanBusObject & canBusObject)
 	{
 		canBusObject._baudRate = busElement.at(SystemConfigConstants::BaudRate);
@@ -310,10 +332,10 @@ namespace OptiScan::Core::Config
 	void SystemConfig::parseStandardTrace(const json & busElement, StandardTrace & standardTrace)
 	{
 		SystemConfig::parseArrayAsString(busElement.at(SystemConfigConstants::Busses), standardTrace._busses);
-		standardTrace._frequency_Hz = busElement.at(SystemConfigConstants::Frequency_Hz);
-		standardTrace._prefetchTime_s = busElement.at(SystemConfigConstants::PrefetchTime_s);
-		standardTrace._recordTime_s = busElement.at(SystemConfigConstants::RecordTime_s);
-		standardTrace._version = Version::fromString(busElement.at(SystemConfigConstants::Version));
+		standardTrace._frequency_Hz = busElement.at(SystemConfigConstants::Frequency_Hz).get<double>();
+		standardTrace._prefetchTime_s = busElement.at(SystemConfigConstants::PrefetchTime_s).get<uint8_t>();
+		standardTrace._recordTime_s = busElement.at(SystemConfigConstants::RecordTime_s).get<uint8_t>();
+		standardTrace._version = Version::fromString(busElement.at(SystemConfigConstants::Version).get<string>());
 		const json & triggerObject = busElement.at(SystemConfigConstants::Trigger);
 		for (const auto & tiggerElement : triggerObject)
 		{
@@ -325,34 +347,35 @@ namespace OptiScan::Core::Config
 
 	void SystemConfig::parseTrigger(const json & triggerElement, Trigger & trigger)
 	{
-		TriggerType const type = triggerTypeFromString(triggerElement.at(SystemConfigConstants::Type));
+		TriggerType const type = triggerTypeFromString(triggerElement.at(SystemConfigConstants::EventType).get<string>());
 		trigger._type = type;
-		trigger._bus = triggerElement.at(SystemConfigConstants::Bus);
-		trigger._messageId = stoi(to_string(triggerElement.at(SystemConfigConstants::MessageIdMask)), 0, 16);
 		if (triggerElement.contains(SystemConfigConstants::Signals))
 		{
-			// parse Signals
+			for (const auto & signalElement : triggerElement.at(SystemConfigConstants::Signals))
+			{
+				CanTriggerSignal canTriggerSignal;
+				this->parseCanSignals(signalElement, canTriggerSignal);
+				trigger._signals.push_back(canTriggerSignal);
+			}
 		}
 		switch (type)
 		{
 		case TriggerType::VoiceToCanButton:
-			{
-
-			}
 			break;
 		case TriggerType::MessageIdPrefixPartialMatch:
 			{
-
+				trigger._bus = triggerElement.at(SystemConfigConstants::Bus).get<string>();
+				trigger._messageId = SystemConfig::parseHexStringAsUInt32(triggerElement.at(SystemConfigConstants::MessageIdMask).get<string>());
 			}
 			break;
 		case TriggerType::MessagePayloadPartialMatch:
-			{
-
-			}
-			break;
 		case TriggerType::MessageDtcRotmeldungMatch:
 			{
-
+				trigger._bus = triggerElement.at(SystemConfigConstants::Bus).get<string>();
+				trigger._messageId = SystemConfig::parseHexStringAsUInt32(triggerElement.at(SystemConfigConstants::MessageIdMask).get<string>());
+				trigger._triggerValue = SystemConfig::parseHexStringAsUInt32(triggerElement.at(SystemConfigConstants::TriggerValue).get<string>());
+				trigger._triggerValueOffset = triggerElement.at(SystemConfigConstants::TriggerValueOffset).get<uint32_t>();
+				trigger._triggerValueSize = triggerElement.at(SystemConfigConstants::TriggerValueSize).get<uint32_t>();
 			}
 			break;
 		case TriggerType::Unknown:

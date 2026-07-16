@@ -1,6 +1,8 @@
 #pragma once
 
-
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace OptiScan::Core::Config
 {
@@ -28,7 +30,7 @@ namespace OptiScan::Core::Config
 		{
 			type = TriggerType::MessagePayloadPartialMatch;
 		}
-		else if (triggerTypeString == "MessageDtcRotmeldungMatch")
+		else if (triggerTypeString == "MessagePegasusDtcRotmeldungMatch")
 		{
 			type = TriggerType::MessageDtcRotmeldungMatch;
 		}
@@ -43,7 +45,7 @@ namespace OptiScan::Core::Config
 	{
 		std::string _bus;
 		std::string _dbcName;
-		std::string _messageName;
+		uint32_t _messageId;
 		std::string _signalName;
 	};
 

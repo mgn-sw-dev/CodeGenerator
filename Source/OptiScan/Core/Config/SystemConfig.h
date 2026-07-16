@@ -40,6 +40,9 @@ namespace OptiScan::Core::Config
          * @param array: Json Array
          * @param strings: vector of string */
         static void parseArrayAsString(const nlohmann::json & array, std::vector<std::string> & strings);
+    	/** Parse Hex String as UInt32 value.
+    	 *  @throw runtime_error if conversion fails. */
+    	static uint32_t parseHexStringAsUInt32(const std::string & hexString);
         /** */
         void parseCanBusses(const nlohmann::json & canObject, std::vector<std::unique_ptr<CanBusObject>> & canBusses);
         /** */
@@ -48,6 +51,8 @@ namespace OptiScan::Core::Config
         std::unique_ptr<CanBusObject> parseCanBusObject(const nlohmann::json & busElement);
         /** */
         void parseCanObject(ConfigDatabase & configDatabase);
+    	/** */
+    	void parseCanSignals(const nlohmann::json & signalsElement, CanTriggerSignal & canTriggerSignal);
     	/** Parse Attributs: BudRate, HardwareId, Name, Termination and Transmitting. */
     	void parseCommonCanBusFields(const nlohmann::json & busElement, CanBusObject & canBusObject);
         /** */
