@@ -1,14 +1,12 @@
-#include <OptiScan/Core/Config/SystemConfig.h>
+#include <OptiScan/Core/Database/SystemDatabase.h>
 #include <OptiScan/View/Console/ConsoleLogHandler.h>
 
 int main(int argc, char *argv[])
 {
-	OptiScan::Core::Config::ConfigDatabase configDatabase;
 	OptiScan::View::Console::ConsoleLogHandler logHandler;
-    OptiScan::Core::Config::SystemConfig systemConfig;
-	systemConfig.setLogHandler(&logHandler);
-	systemConfig.loadFromFile("C:/CodeGenerator/Test/ConfigTest.json");
-	systemConfig.parse(configDatabase);
+    OptiScan::Core::Database::SystemDatabase systemDatabase;
+	systemDatabase.setLogHandler(&logHandler);
+	systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigTest.json");
 	return 0;
 
 #if 0
