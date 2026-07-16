@@ -34,6 +34,8 @@ namespace OptiScan::Core::Config
         ConfigDebugObject() = default;
         /** */
         void clear();
+        /** */
+        bool hasValue() const;
     };
 
     class ConfigGpsObject
@@ -44,6 +46,8 @@ namespace OptiScan::Core::Config
         ConfigGpsObject() = default;
         /** */
         void clear();
+        /** */
+        bool hasValue() const;
     };
 
     class ConfigLinObject
@@ -71,6 +75,8 @@ namespace OptiScan::Core::Config
         ConfigProjectInfos();
         /** */
         void clear();
+        /** */
+        bool hasValue() const;
     };
 
     class ConfigDatabase 
@@ -85,6 +91,8 @@ namespace OptiScan::Core::Config
         ConfigDatabase();
         /** */
         void clear();
+        /** */
+        bool hasValue() const;
     };
 
 

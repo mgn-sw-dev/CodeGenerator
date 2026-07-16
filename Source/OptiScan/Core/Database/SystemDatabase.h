@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OptiScan/Core/Config/SystemConfig.h>
+#include <filesystem>
 
 namespace OptiScan::Core::Database
 {
@@ -12,11 +13,23 @@ namespace OptiScan::Core::Database
         /** */
         void loadFromConfigFile(const std::string & configPath);
         /** */
+        void loadSelectionTables();
+        /** */
         void setLogHandler(LogHandler * logHandler);
     private:
         Config::ConfigDatabase _configDatabase;
         LogHandler * _logHandler;
         Config::SystemConfig _systemConfig;
+        std::filesystem::path _systemPath;
+
+        /** */
+        void loadCanSelectionTableFromJson(const std::filesystem::path & selectionTablePath);
+        /** */
+        void loadLinSelectionTableFromJson(const std::filesystem::path & selectionTablePath);
+        /** */
+        void loadXcpSelectionTableFromJson(const std::filesystem::path & selectionTablePath);
+        /** */
+        void logError(const std::string & message) const;
     };
 
 }

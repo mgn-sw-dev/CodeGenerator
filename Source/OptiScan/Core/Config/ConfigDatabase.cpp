@@ -45,15 +45,32 @@ namespace OptiScan::Core::Config
 
 	}
 
+	bool ConfigDatabase::hasValue() const
+	{
+		return this->_debugObject.hasValue() &&
+			this->_gpsObject.hasValue() &&
+			this->_projectInfos.hasValue();
+	}
+
 	void ConfigDebugObject::clear()
 	{
 		this->_frequency_Hz = 0.0;
 		this->_vinIncluded = false;
 	}
 
+	bool ConfigDebugObject::hasValue() const
+	{
+		return this->_frequency_Hz > 0.0;
+	}
+
 	void ConfigGpsObject::clear()
 	{
 		this->_frequency_Hz = 0.0;
+	}
+
+	bool ConfigGpsObject::hasValue() const
+	{
+		return this->_frequency_Hz > 0.0;
 	}
 
 	ConfigLinObject::ConfigLinObject()
@@ -88,5 +105,16 @@ namespace OptiScan::Core::Config
 		this->_projectName.clear();
 		this->_systemName.clear();
 		this->_systemVersion = Version();
+	}
+
+	bool ConfigProjectInfos::hasValue() const
+	{
+		return this->_customer.size() > 0 &&
+			this->_firmwareVersion != Version() &&
+			this->_fleetManagementRelease.size() > 0 &&
+			this->_generation > 0 &&
+			this->_projectName.size() > 0 &&
+			this->_systemName.size() > 0 &&
+			this->_systemVersion != Version();
 	}
 }

@@ -7,6 +7,7 @@ int main(int argc, char *argv[])
     OptiScan::Core::Database::SystemDatabase systemDatabase;
 	systemDatabase.setLogHandler(&logHandler);
 	systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigTest.json");
+	systemDatabase.loadSelectionTables();
 	return 0;
 
 #if 0
