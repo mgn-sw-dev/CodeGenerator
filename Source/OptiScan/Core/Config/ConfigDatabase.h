@@ -2,6 +2,7 @@
 
 #include <OptiScan/Core/Common/Version.h>
 #include <OptiScan/Core/Config/ConfigDatabaseCan.h>
+#include <OptiScan/Core/Config/ConfigDatabaseLin.h>
 #include <OptiScan/Core/Config/ConfigDatabaseStandardTrace.h>
 #include <memory>
 #include <string>
@@ -39,6 +40,15 @@ namespace OptiScan::Core::Config
         ConfigGpsObject() = default;
     };
 
+    class ConfigLinObject
+    {
+    public:
+        std::vector<std::unique_ptr<LinBusObject>> _busses;
+        std::string _selectionTable;
+
+        ConfigLinObject() = default;
+    };
+
     class ConfigProjectInfos
     {
     public:
@@ -59,6 +69,7 @@ namespace OptiScan::Core::Config
         std::optional<ConfigCanObject> _canObject;
         ConfigDebugObject _debugObject;
         ConfigGpsObject _gpsObject;
+        ConfigLinObject _linObject;
         ConfigProjectInfos _projectInfos;
 
         ConfigDatabase() = default;

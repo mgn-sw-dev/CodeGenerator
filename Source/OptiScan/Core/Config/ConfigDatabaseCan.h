@@ -1,10 +1,10 @@
 #pragma once
+
+#include <OptiScan/Core/Common/Version.h>
 #include <OptiScan/Core/Config/ConfigDatabaseBus.h>
 #include <optional>
 #include <stdexcept>
 #include <vector>
-
-#include "OptiScan/Core/Common/Version.h"
 
 namespace OptiScan::Core::Config
 {
