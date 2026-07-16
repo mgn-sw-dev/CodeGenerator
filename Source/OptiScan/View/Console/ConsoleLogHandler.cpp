@@ -6,6 +6,11 @@ using namespace std;
 
 namespace OptiScan::View::Console
 {
+	void ConsoleLogHandler::log(const string & message)
+	{
+		cout << message << endl;
+	}
+
 	void ConsoleLogHandler::logError(const string & message)
 	{
 		cerr << "[ERROR] " << message << endl;

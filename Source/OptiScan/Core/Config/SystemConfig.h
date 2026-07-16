@@ -26,6 +26,8 @@ namespace OptiScan::Core::Config
 
         /** */
         void loadConfigFile(const std::string & configPath, nlohmann::json & jsonRootObject) const;
+    	/** */
+    	void log(const std::string & message) const;
         /** */
         void logError(const std::string & message) const;
         /** */

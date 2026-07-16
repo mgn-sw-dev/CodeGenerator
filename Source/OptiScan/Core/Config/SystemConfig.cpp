@@ -23,6 +23,7 @@ namespace OptiScan::Core::Config
 		ifstream file(configPath);
 		if (!file.is_open())
 		{
+			this->logError("SystemConfig::loadConfigFile: Failed to open file: " + configPath);
 			throw runtime_error("Failed to open file: " + configPath);
 		}
 		try
@@ -31,6 +32,7 @@ namespace OptiScan::Core::Config
 		}
 		catch (const json::parse_error & error)
 		{
+			this->logError("SystemConfig::loadConfigFile: JSON Parse Error: " + string(error.what()));
 			throw runtime_error("JSON Parse Error: " + string(error.what()));
 		}
 	}
@@ -55,8 +57,16 @@ namespace OptiScan::Core::Config
 		}
 		catch (const exception & error)
 		{
-			this->logError(error.what());
+			this->logError("SystemConfig::loadFromFile: " + error.what());
 			throw runtime_error(error.what());
+		}
+	}
+
+	void SystemConfig::log(const string & message) const
+	{
+		if (this->_logHandler)
+		{
+			this->_logHandler->log(message);
 		}
 	}
 
@@ -80,6 +90,7 @@ namespace OptiScan::Core::Config
 	{
 		if (this->_jsonRootObject.is_null())
 		{
+			this->logError("SystemConfig::parse: Config file is not loaded. Call loadFromFile() first.");
 			throw runtime_error("Config file is not loaded. Call loadFromFile() first.");
 		}
 		this->logInfo("Parse config file");
@@ -102,6 +113,7 @@ namespace OptiScan::Core::Config
 		// optional objects
 		if (this->_jsonRootObject.contains(SystemConfigConstants::Can))
 		{
+			this->logInfo("Can object:");
 			this->parseCanObject(configDatabase);
 		}
 
@@ -243,30 +255,40 @@ namespace OptiScan::Core::Config
 		const json & canObject = this->_jsonRootObject[SystemConfigConstants::Can];
 		configDatabase._canObject.emplace();
 		this->parseCanBusses(canObject, configDatabase._canObject->_busses);
+		this->log("\t- Busses: " + to_string(configDatabase._canObject->_busses.size()));
 		if (canObject.contains(SystemConfigConstants::StandardTrace))
 		{
 			configDatabase._canObject->_standardTrace.emplace();
 			this->parseStandardTrace(canObject.at(SystemConfigConstants::StandardTrace), *configDatabase._canObject->_standardTrace);
+			this->log("\t- Standard Trace:"
+				"\n\t\t- Busses: " + to_string(configDatabase._canObject->_standardTrace->_busses.size())
+				+"\n\t\t- PrefetchTime: " + to_string(configDatabase._canObject->_standardTrace->_prefetchTime_s)
+				+"\n\t\t- RecordTime: " + to_string(configDatabase._canObject->_standardTrace->_recordTime_s)
+				+"\n\t\t- Trigger: " + to_string(configDatabase._canObject->_standardTrace->_triggers.size()));
 		}
 		if (canObject.contains(SystemConfigConstants::FrequencyMax_Hz))
 		{
 			configDatabase._canObject->_frequencyMax_Hz.emplace();
-			configDatabase._canObject->_frequencyMax_Hz = canObject.at(SystemConfigConstants::FrequencyMax_Hz);
+			configDatabase._canObject->_frequencyMax_Hz = canObject.at(SystemConfigConstants::FrequencyMax_Hz).get<double>();
+			this->log("\t- Frequency Max Hz: " + LogHandler::doubleToString(configDatabase._canObject->_frequencyMax_Hz.value()));
 		}
 		if (canObject.contains(SystemConfigConstants::SelectionTable))
 		{
 			configDatabase._canObject->_selectionTable.emplace();
-			configDatabase._canObject->_selectionTable = canObject.at(SystemConfigConstants::SelectionTable);
+			configDatabase._canObject->_selectionTable = canObject.at(SystemConfigConstants::SelectionTable).get<string>();
+			this->log("\t- Selection Table: " + configDatabase._canObject->_selectionTable.value());
 		}
 		if (canObject.contains(SystemConfigConstants::XcpFrequencyMax_Hz))
 		{
 			configDatabase._canObject->_xcpFrequencyMax_Hz.emplace();
-			configDatabase._canObject->_xcpFrequencyMax_Hz = canObject.at(SystemConfigConstants::XcpFrequencyMax_Hz);
+			configDatabase._canObject->_xcpFrequencyMax_Hz = canObject.at(SystemConfigConstants::XcpFrequencyMax_Hz).get<double>();
+			this->log("\t- XCP Frequency Max Hz: " + LogHandler::doubleToString(configDatabase._canObject->_xcpFrequencyMax_Hz.value()));
 		}
 		if (canObject.contains(SystemConfigConstants::XcpSelectionTable))
 		{
 			configDatabase._canObject->_xcpSelectionTable.emplace();
-			configDatabase._canObject->_xcpSelectionTable = canObject.at(SystemConfigConstants::XcpSelectionTable);
+			configDatabase._canObject->_xcpSelectionTable = canObject.at(SystemConfigConstants::XcpSelectionTable).get<string>();
+			this->log("\t- XCP Selection Table: " + configDatabase._canObject->_xcpSelectionTable.value());
 		}
 	}
 
