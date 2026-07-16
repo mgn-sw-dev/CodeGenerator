@@ -49,35 +49,39 @@ namespace OptiScan::Core::Config
     	/** Select by type of can object with properties need to parse.
     	 * @throw runtime_error if can bus object is invalid. */
         static void parseCanBusObject(const nlohmann::json & busElement, CanBusObject & canBusObject);
-    	/** */
+    	/** Properties MessageName and SignalName. */
     	static void parseCanMessageSignalMap(const nlohmann::json & signalElement, CanMessageSignalMap & canMessageSignalMap);
-        /** */
+        /** Required properties: Busses.
+         *  Optional properties: StandardTrace, FrequencyMax_Hz, SelectionTable, XcpFrequencyMax_Hz, XcpSelectionTable.*/
         void parseCanObject(ConfigDatabase & configDatabase);
-    	/** */
-    	void parseCanSignals(const nlohmann::json & signalsElement, CanTriggerSignal & canTriggerSignal);
-    	/** Parse Attributs: BudRate, HardwareId, Name, Termination and Transmitting. */
+    	/** Required properties: Bus, DbcName, MessageId, SignalName.*/
+    	static void parseCanSignals(const nlohmann::json & signalsElement, CanTriggerSignal & canTriggerSignal);
+    	/** Required properties: BudRate, HardwareId, Name
+    	 *  Optional properties: Termination, Transmitting. */
     	static void parseCommonCanBusFields(const nlohmann::json & busElement, CanBusObject & canBusObject);
-        /** */
+        /** Required properties: Frequency_Hz, IncludeVin. */
         void parseDebugObject(ConfigDatabase & configDatabase);
-        /** */
+        /** Required properties: Frequency_Hz. */
         void parseGpsObject(ConfigDatabase & configDatabase);
-    	/** */
+    	/** Required properties: Busses, SelectionTable*/
     	void parseLinObject(ConfigDatabase & configDatabase);
-    	/** */
+    	/** Required properties: LdfName, Hardware, Id. */
     	static void parseLinBusObject(const nlohmann::json & busElement, LinBusObject & linBusObject);
     	/** */
     	template <typename T>
     	static void parseOptionalValue(const nlohmann::json & json, const std::string & key, std::optional<T> & target);
-        /** */
+        /** Required properties: Customer, FirmwareVersion, FleetManagementRelease, Generation, ProjectName, SystemName, SystemVersion. */
         void parseProjectInfoObject(ConfigDatabase & configDatabase);
-    	/** Parse Attributs: DbcNames, HandledMessages. */
+    	/** Required properties: DbcNames
+    	 *  Optional properties: HandledMessages. */
     	static void parseStandardCanBusFields(const nlohmann::json & busElement, CanBusObject & canBusObject);
-    	/** */
-    	void parseStandardTrace(const nlohmann::json & busElement, StandardTrace & standardTrace);
-    	/** */
-    	void parseTrigger(const nlohmann::json & triggerElement, Trigger & trigger);
+    	/** Required properties: Frequency_Hz, PrefetchTime_s, RecordTime_s, Version, Trigger. */
+    	static void parseStandardTrace(const nlohmann::json & busElement, StandardTrace & standardTrace);
+    	/** Required properties: selected by trigger type
+    	 * Optional properties: Signals */
+    	static void parseTrigger(const nlohmann::json & triggerElement, Trigger & trigger);
         /** */
-        void resetAllFields();
+        void reset();
         /** */
         void validateAgainstSchema() const;
     };

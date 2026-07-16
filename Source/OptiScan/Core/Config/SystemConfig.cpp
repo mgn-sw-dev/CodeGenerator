@@ -37,7 +37,7 @@ namespace OptiScan::Core::Config
 
 	void SystemConfig::loadFromFile(const string & configPath)
 	{
-		this->resetAllFields();
+		this->reset();
 		this->logInfo("Loading configuration file: " + configPath);
 		try
 		{
@@ -167,8 +167,8 @@ namespace OptiScan::Core::Config
 		{
 			canHandledMessages._vin.emplace();
 			const json & vinObject = jsonObject.at(SystemConfigConstants::Vin);
-			canHandledMessages._vin->_messageName = vinObject.at(SystemConfigConstants::MessageName);
-			canHandledMessages._vin->_signalName = vinObject.at(SystemConfigConstants::SignalName);
+			canHandledMessages._vin->_messageName = vinObject.at(SystemConfigConstants::MessageName).get<string>();
+			canHandledMessages._vin->_signalName = vinObject.at(SystemConfigConstants::SignalName).get<string>();
 		}
 	}
 
@@ -208,8 +208,8 @@ namespace OptiScan::Core::Config
 
 	void SystemConfig::parseCanMessageSignalMap(const json & signalElement, CanMessageSignalMap & canMessageSignalMap)
 	{
-		canMessageSignalMap._messageName = signalElement.at(SystemConfigConstants::MessageName);
-		canMessageSignalMap._signalName = signalElement.at(SystemConfigConstants::SignalName);
+		canMessageSignalMap._messageName = signalElement.at(SystemConfigConstants::MessageName).get<string>();
+		canMessageSignalMap._signalName = signalElement.at(SystemConfigConstants::SignalName).get<string>();
 	}
 
 	void SystemConfig::parseCanObject(ConfigDatabase & configDatabase)
@@ -261,31 +261,25 @@ namespace OptiScan::Core::Config
 
 	void SystemConfig::parseCommonCanBusFields(const json & busElement, CanBusObject & canBusObject)
 	{
-		canBusObject._baudRate = busElement.at(SystemConfigConstants::BaudRate);
-		canBusObject._hardwareId = busElement.at(SystemConfigConstants::Hardware);
-		canBusObject._name = busElement.at(SystemConfigConstants::Id);
+		canBusObject._baudRate = busElement.at(SystemConfigConstants::BaudRate).get<uint32_t>();
+		canBusObject._hardwareId = busElement.at(SystemConfigConstants::Hardware).get<uint8_t>();
+		canBusObject._name = busElement.at(SystemConfigConstants::Id).get<string>();
 		canBusObject.setIdSuffix("Can");
-		if (busElement.contains(SystemConfigConstants::Termination))
-		{
-			canBusObject._termination = busElement.at(SystemConfigConstants::Termination);
-		}
-		if (busElement.contains(SystemConfigConstants::Transmitting))
-		{
-			canBusObject._transmitting = busElement.at(SystemConfigConstants::Transmitting);
-		}
+		SystemConfig::parseOptionalValue<bool>(busElement, SystemConfigConstants::Termination, canBusObject._termination);
+		SystemConfig::parseOptionalValue<bool>(busElement, SystemConfigConstants::Transmitting, canBusObject._transmitting);
 	}
 
 	void SystemConfig::parseDebugObject(ConfigDatabase & configDatabase)
 	{
 		const json & debugObject = this->_jsonRootObject[SystemConfigConstants::Debug];
-		configDatabase._debugObject._frequency_Hz = debugObject.at(SystemConfigConstants::Frequency_Hz);
-		configDatabase._debugObject._vinIncluded = debugObject.at(SystemConfigConstants::IncludeVin);
+		configDatabase._debugObject._frequency_Hz = debugObject.at(SystemConfigConstants::Frequency_Hz).get<double>();
+		configDatabase._debugObject._vinIncluded = debugObject.at(SystemConfigConstants::IncludeVin).get<bool>();
 	}
 
 	void SystemConfig::parseGpsObject(ConfigDatabase & configDatabase)
 	{
 		const json & gpsObject = this->_jsonRootObject[SystemConfigConstants::Gps];
-		configDatabase._gpsObject._frequency_Hz = gpsObject.at(SystemConfigConstants::Frequency_Hz);
+		configDatabase._gpsObject._frequency_Hz = gpsObject.at(SystemConfigConstants::Frequency_Hz).get<double>();
 	}
 
 	void SystemConfig::parseLinObject(ConfigDatabase & configDatabase)
@@ -310,13 +304,13 @@ namespace OptiScan::Core::Config
 	void SystemConfig::parseProjectInfoObject(ConfigDatabase & configDatabase)
 	{
 		const json & projectInfoObject = this->_jsonRootObject[SystemConfigConstants::ProjectInfos];
-		configDatabase._projectInfos._customer = projectInfoObject.at(SystemConfigConstants::Customer);
-		configDatabase._projectInfos._firmwareVersion = Version::fromString(projectInfoObject.at(SystemConfigConstants::FirmwareVersion));
-		configDatabase._projectInfos._fleetManagementRelease = projectInfoObject.at(SystemConfigConstants::FleetManagementRelease);
-		configDatabase._projectInfos._generation = projectInfoObject.at(SystemConfigConstants::Generation);
-		configDatabase._projectInfos._projectName = projectInfoObject.at(SystemConfigConstants::ProjectName);
-		configDatabase._projectInfos._systemName = projectInfoObject.at(SystemConfigConstants::SystemName);
-		configDatabase._projectInfos._systemVersion = Version::fromString(projectInfoObject.at(SystemConfigConstants::SystemVersion));
+		configDatabase._projectInfos._customer = projectInfoObject.at(SystemConfigConstants::Customer).get<string>();
+		configDatabase._projectInfos._firmwareVersion = Version::fromString(projectInfoObject.at(SystemConfigConstants::FirmwareVersion).get<string>());
+		configDatabase._projectInfos._fleetManagementRelease = projectInfoObject.at(SystemConfigConstants::FleetManagementRelease).get<string>();
+		configDatabase._projectInfos._generation = projectInfoObject.at(SystemConfigConstants::Generation).get<uint8_t>();
+		configDatabase._projectInfos._projectName = projectInfoObject.at(SystemConfigConstants::ProjectName).get<string>();
+		configDatabase._projectInfos._systemName = projectInfoObject.at(SystemConfigConstants::SystemName).get<string>();
+		configDatabase._projectInfos._systemVersion = Version::fromString(projectInfoObject.at(SystemConfigConstants::SystemVersion).get<string>());
 	}
 
 	void SystemConfig::parseStandardCanBusFields(const json & busElement, CanBusObject & canBusObject)
@@ -336,13 +330,7 @@ namespace OptiScan::Core::Config
 		standardTrace._prefetchTime_s = busElement.at(SystemConfigConstants::PrefetchTime_s).get<uint8_t>();
 		standardTrace._recordTime_s = busElement.at(SystemConfigConstants::RecordTime_s).get<uint8_t>();
 		standardTrace._version = Version::fromString(busElement.at(SystemConfigConstants::Version).get<string>());
-		const json & triggerObject = busElement.at(SystemConfigConstants::Trigger);
-		for (const auto & tiggerElement : triggerObject)
-		{
-			Trigger trigger;
-			this->parseTrigger(tiggerElement, trigger);
-			standardTrace._triggers.push_back(trigger);
-		}
+		SystemConfig::parseArrayWith(busElement.at(SystemConfigConstants::Trigger), standardTrace._triggers, &SystemConfig::parseTrigger);
 	}
 
 	void SystemConfig::parseTrigger(const json & triggerElement, Trigger & trigger)
@@ -351,12 +339,7 @@ namespace OptiScan::Core::Config
 		trigger._type = type;
 		if (triggerElement.contains(SystemConfigConstants::Signals))
 		{
-			for (const auto & signalElement : triggerElement.at(SystemConfigConstants::Signals))
-			{
-				CanTriggerSignal canTriggerSignal;
-				this->parseCanSignals(signalElement, canTriggerSignal);
-				trigger._signals.push_back(canTriggerSignal);
-			}
+			SystemConfig::parseArrayWith(triggerElement.at(SystemConfigConstants::Signals), trigger._signals, &SystemConfig::parseCanSignals);
 		}
 		switch (type)
 		{
@@ -384,7 +367,7 @@ namespace OptiScan::Core::Config
 		}
 	}
 
-	void SystemConfig::resetAllFields()
+	void SystemConfig::reset()
 	{
 		this->_jsonRootObject = json();
 	}

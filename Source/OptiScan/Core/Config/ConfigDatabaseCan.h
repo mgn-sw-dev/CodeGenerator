@@ -46,8 +46,8 @@ namespace OptiScan::Core::Config
 		std::vector<std::string> _dbcNames;
 		std::optional<CanHandledMessagesObject> _handledMessages;
 		CanBusType _type;
-		bool _termination;
-		bool _transmitting;
+		std::optional<bool> _termination;
+		std::optional<bool> _transmitting;
 		std::string _transportLayerInstance;
 		Common::Version _voiceToCanVersion;
 

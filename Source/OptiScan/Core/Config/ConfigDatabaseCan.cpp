@@ -14,8 +14,8 @@ namespace OptiScan::Core::Config
 		, _dbcNames()
 		, _handledMessages()
 		, _type(CanBusType::Unknown)
-		, _termination(false)
-		, _transmitting(false)
+		, _termination()
+		, _transmitting()
 		, _transportLayerInstance()
 		, _voiceToCanVersion()
 	{
@@ -30,8 +30,8 @@ namespace OptiScan::Core::Config
 		this->_dbcNames.clear();
 		this->_handledMessages.reset();
 		this->_type = CanBusType::Unknown;
-		this->_termination = false;
-		this->_transmitting = false;
+		this->_termination .reset();
+		this->_transmitting.reset();
 		this->_transportLayerInstance.clear();
 		this->_voiceToCanVersion = Version();
 	}
@@ -53,17 +53,17 @@ namespace OptiScan::Core::Config
 				break;
 			case CanBusType::VoiceToCan:
 				result = this->_voiceToCanVersion != Version() &&
-						this->_termination != false &&
-						this->_transmitting != false;
+						this->_termination.has_value() &&
+						this->_transmitting.has_value();
 				break;
 			case CanBusType::Xcp:
 				result = this->_a2lName.size() > 0 &&
-						this->_transmitting != false;
+						this->_transmitting.has_value();
 				break;
 			case CanBusType::XcpPlus:
 				result = this->_a2lName.size() > 0 &&
 						this->_transportLayerInstance.size() > 0 &&
-						this->_transmitting != false;
+						this->_transmitting.has_value();
 				break;
 			case CanBusType::Unknown:
 			default:
