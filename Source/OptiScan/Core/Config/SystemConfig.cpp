@@ -18,7 +18,7 @@ namespace OptiScan::Core::Config
 	{
 	}
 
-	void SystemConfig::loadConfigFile(const string & configPath, json & jsonRootObject) const
+	void SystemConfig::loadConfigFile(const string & configPath, json & jsonRootObject)
 	{
 		ifstream file(configPath);
 		if (!file.is_open())
@@ -172,62 +172,44 @@ namespace OptiScan::Core::Config
 		}
 	}
 
-	unique_ptr<CanBusObject> SystemConfig::parseCanBusObject(const json & busElement)
+	void SystemConfig::parseCanBusObject(const json & busElement, CanBusObject & canBusObject)
 	{
-		unique_ptr<CanBusObject> canBusObject;
-		CanBusType const type = canBusTypeFromString(busElement.at(SystemConfigConstants::Type));
-		switch (type)
+		canBusObject.clear();
+		SystemConfig::parseCommonCanBusFields(busElement, canBusObject);
+		canBusObject.setCanType(busElement.at(SystemConfigConstants::Type).get<string>());
+		switch (canBusObject._type)
 		{
 		case CanBusType::Fd:
-			{
-				unique_ptr<CanFdBusObject> canFdBusObject = make_unique<CanFdBusObject>(type);
-				canFdBusObject->_dataBaudRate = busElement.at(SystemConfigConstants::DataBaudRate);
-				SystemConfig::parseStandardCanBusFields(busElement, *canFdBusObject);
-				canBusObject = move(canFdBusObject);
-			}
+			canBusObject._dataBaudRate = busElement.at(SystemConfigConstants::DataBaudRate).get<uint32_t>();
+			SystemConfig::parseStandardCanBusFields(busElement, canBusObject);
 			break;
 		case CanBusType::Standard:
-			{
-				unique_ptr<CanStandardBusObject> canStandardBusObject = make_unique<CanStandardBusObject>(type);
-				SystemConfig::parseStandardCanBusFields(busElement, *canStandardBusObject);
-				canBusObject = move(canStandardBusObject);
-			}
+			SystemConfig::parseStandardCanBusFields(busElement, canBusObject);
 			break;
 		case CanBusType::VoiceToCan:
-			{
-				unique_ptr<CanVoiceToCanBusObject> voiceCanObject = make_unique<CanVoiceToCanBusObject>(type);
-				voiceCanObject->_version = Version::fromString(busElement.at(SystemConfigConstants::Version));
-				canBusObject = move(voiceCanObject);
-			}
+			canBusObject._voiceToCanVersion = Version::fromString(busElement.at(SystemConfigConstants::Version).get<string>());
 			break;
 		case CanBusType::Xcp:
-			{
-				unique_ptr<CanXcpBusObject> xcpBusObject = make_unique<CanXcpBusObject>(type);
-				xcpBusObject->_a2lName = busElement.at(SystemConfigConstants::A2lName);
-				canBusObject = move(xcpBusObject);
-			}
+			canBusObject._a2lName = busElement.at(SystemConfigConstants::A2lName).get<string>();
 			break;
 		case CanBusType::XcpPlus:
-			{
-				unique_ptr<CanXcpPlusBusObject> xcpPlusBusObject = make_unique<CanXcpPlusBusObject>(type);
-				xcpPlusBusObject->_a2lName = busElement.at(SystemConfigConstants::A2lName);
-				xcpPlusBusObject->_transportLayerInstance = busElement.at(SystemConfigConstants::TransportLayerInstance);
-				canBusObject = move(xcpPlusBusObject);
-			}
+			canBusObject._a2lName = busElement.at(SystemConfigConstants::A2lName).get<string>();
+			canBusObject._transportLayerInstance = busElement.at(SystemConfigConstants::TransportLayerInstance).get<string>();
 			break;
+		case CanBusType::Unknown:
 		default:
-			throw runtime_error("Unknown can bus type.");
+			break;
 		}
-		SystemConfig::parseCommonCanBusFields(busElement, *canBusObject);
-		return canBusObject;
+		if (!canBusObject.isValid())
+		{
+			throw runtime_error("SystemConfig::parseCanBusObject: Invalid can bus object.");
+		}
 	}
 
-	CanMessageSignalMap SystemConfig::parseCanMessageSignalMap(const json & messageSignalMapElement)
+	void SystemConfig::parseCanMessageSignalMap(const json & signalElement, CanMessageSignalMap & canMessageSignalMap)
 	{
-		CanMessageSignalMap messageSignalMap;
-		messageSignalMap._messageName = messageSignalMapElement.at(SystemConfigConstants::MessageName);
-		messageSignalMap._signalName = messageSignalMapElement.at(SystemConfigConstants::SignalName);
-		return messageSignalMap;
+		canMessageSignalMap._messageName = signalElement.at(SystemConfigConstants::MessageName);
+		canMessageSignalMap._signalName = signalElement.at(SystemConfigConstants::SignalName);
 	}
 
 	void SystemConfig::parseCanObject(ConfigDatabase & configDatabase)
@@ -316,14 +298,13 @@ namespace OptiScan::Core::Config
 		this->log("\t- Selection Table: " + configDatabase._linObject->_selectionTable);
 	}
 
-	std::unique_ptr<LinBusObject> SystemConfig::parseLinBusObject(const json & busElement)
+	void SystemConfig::parseLinBusObject(const json & busElement, LinBusObject & linBusObject)
 	{
-		LinBusObject linBusObject;
+		linBusObject.clear();
 		linBusObject._ldfName = busElement.at(SystemConfigConstants::LdfName).get<string>();
 		linBusObject._hardwareId = busElement.at(SystemConfigConstants::Hardware).get<uint8_t>();
 		linBusObject._name = busElement.at(SystemConfigConstants::Id).get<string>();
 		linBusObject.setIdSuffix("Lin");
-		return make_unique<LinBusObject>(linBusObject);
 	}
 
 	void SystemConfig::parseProjectInfoObject(ConfigDatabase & configDatabase)
@@ -338,13 +319,13 @@ namespace OptiScan::Core::Config
 		configDatabase._projectInfos._systemVersion = Version::fromString(projectInfoObject.at(SystemConfigConstants::SystemVersion));
 	}
 
-	void SystemConfig::parseStandardCanBusFields(const json & busElement, CanStandardBusObject & canStandardBusObject)
+	void SystemConfig::parseStandardCanBusFields(const json & busElement, CanBusObject & canBusObject)
 	{
-		SystemConfig::parseArrayAs<string>(busElement.at(SystemConfigConstants::DbcNames), canStandardBusObject._dbcNames);
+		SystemConfig::parseArrayAs<string>(busElement.at(SystemConfigConstants::DbcNames), canBusObject._dbcNames);
 		if (busElement.contains(SystemConfigConstants::HandledMessages))
 		{
-			canStandardBusObject._handledMessages.emplace();
-			SystemConfig::parseCanBusHandledMessagesObject(busElement.at(SystemConfigConstants::HandledMessages), *canStandardBusObject._handledMessages);
+			canBusObject._handledMessages.emplace();
+			SystemConfig::parseCanBusHandledMessagesObject(busElement.at(SystemConfigConstants::HandledMessages), *canBusObject._handledMessages);
 		}
 	}
 

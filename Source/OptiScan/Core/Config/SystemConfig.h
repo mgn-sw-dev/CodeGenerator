@@ -16,8 +16,7 @@ namespace OptiScan::Core::Config
          *  @throw runtime_error: from @ref loadConfigFile.
          *  @throw runtime_error: if validation failed. */
         void loadFromFile(const std::string & configPath);
-        /**
-         *  @throw runtime_error: If config file is not loaded.*/
+        /** @throw runtime_error: If config file is not loaded.*/
         void parse(ConfigDatabase & configDatabase);
         /** */
         void setLogHandler(LogHandler * logHandler);
@@ -28,7 +27,7 @@ namespace OptiScan::Core::Config
         /** Open file and parse as nlohmann::json object.
          * @throw runtime_error: If file failed to open.
          * @throw runtime_error: If JSON Parse Error. */
-        void loadConfigFile(const std::string & configPath, nlohmann::json & jsonRootObject) const;
+        static void loadConfigFile(const std::string & configPath, nlohmann::json & jsonRootObject);
     	/** */
     	void log(const std::string & message) const;
         /** */
@@ -48,10 +47,10 @@ namespace OptiScan::Core::Config
         /** Check and parse can handled massage object properties GPS and VIN. */
         static void parseCanBusHandledMessagesObject(const nlohmann::json & jsonObject, CanHandledMessagesObject & canHandledMessages);
     	/** Select by type of can object with properties need to parse.
-		 *  Use unique_ptr for different can bus object types.*/
-        static std::unique_ptr<CanBusObject> parseCanBusObject(const nlohmann::json & busElement);
+    	 * @throw runtime_error if can bus object is invalid. */
+        static void parseCanBusObject(const nlohmann::json & busElement, CanBusObject & canBusObject);
     	/** */
-    	static CanMessageSignalMap parseCanMessageSignalMap(const nlohmann::json & signalElement);
+    	static void parseCanMessageSignalMap(const nlohmann::json & signalElement, CanMessageSignalMap & canMessageSignalMap);
         /** */
         void parseCanObject(ConfigDatabase & configDatabase);
     	/** */
@@ -65,14 +64,14 @@ namespace OptiScan::Core::Config
     	/** */
     	void parseLinObject(ConfigDatabase & configDatabase);
     	/** */
-    	static std::unique_ptr<LinBusObject> parseLinBusObject(const nlohmann::json & busElement);
+    	static void parseLinBusObject(const nlohmann::json & busElement, LinBusObject & linBusObject);
     	/** */
     	template <typename T>
     	static void parseOptionalValue(const nlohmann::json & json, const std::string & key, std::optional<T> & target);
         /** */
         void parseProjectInfoObject(ConfigDatabase & configDatabase);
     	/** Parse Attributs: DbcNames, HandledMessages. */
-    	static void parseStandardCanBusFields(const nlohmann::json & busElement, CanStandardBusObject & canBusObject);
+    	static void parseStandardCanBusFields(const nlohmann::json & busElement, CanBusObject & canBusObject);
     	/** */
     	void parseStandardTrace(const nlohmann::json & busElement, StandardTrace & standardTrace);
     	/** */

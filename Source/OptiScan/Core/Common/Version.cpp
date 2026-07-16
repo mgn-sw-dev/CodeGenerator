@@ -77,6 +77,11 @@ namespace OptiScan::Core::Common
 		return tie(this->_major, this->_minor, this->_patch ) == tie(other._major, other._minor, other._patch);
 	}
 
+	bool Version::operator != (const Version & other) const
+	{
+		return tie(this->_major, this->_minor, this->_patch ) != tie(other._major, other._minor, other._patch);
+	}
+
 	bool Version::operator < (const Version & other) const
 	{
 		return tie(this->_major, this->_minor, this->_patch ) < tie(other._major, other._minor, other._patch);

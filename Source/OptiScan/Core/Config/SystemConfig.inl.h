@@ -22,7 +22,9 @@ namespace OptiScan::Core::Config
 		target.reserve(array.size());
 		for (const auto & element : array)
 		{
-			target.push_back(parser(element));
+			T targetElement;
+			parser(element, targetElement);
+			target.push_back(std::move(targetElement));
 		}
 	}
 

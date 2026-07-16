@@ -29,6 +29,8 @@ namespace OptiScan::Core::Common
         /** */
         bool operator == (const Version & other) const;
         /** */
+        bool operator != (const Version & other) const;
+        /** */
         bool operator < (const Version & other) const;
 
 

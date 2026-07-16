@@ -13,7 +13,7 @@ namespace OptiScan::Core::Config
     class ConfigCanObject
     {
     public:
-        std::vector<std::unique_ptr<CanBusObject>> _busses;
+        std::vector<CanBusObject> _busses;
         std::optional<double> _frequencyMax_Hz;
         std::optional<std::string> _selectionTable;
         std::optional<StandardTrace> _standardTrace;
@@ -43,7 +43,7 @@ namespace OptiScan::Core::Config
     class ConfigLinObject
     {
     public:
-        std::vector<std::unique_ptr<LinBusObject>> _busses;
+        std::vector<LinBusObject> _busses;
         std::string _selectionTable;
 
         ConfigLinObject() = default;
