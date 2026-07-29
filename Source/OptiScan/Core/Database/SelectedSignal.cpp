@@ -24,20 +24,6 @@ namespace OptiScan::Core::Database
 
 	void SelectedSignal::clear()
 	{
-		this->_a2lName.clear();
-		this->_busId.clear();
-		this->_dbcName.clear();
-		this->_displayName.clear();
-		this->_frameName.clear();
-		this->_frameId.clear();
-		this->_hardwareId = 0;
-		this->_ldfName.clear();
-		this->_messageId.clear();
-		this->_messageName.clear();
-		this->_nodeName.clear();
-		this->_sampleFrequency_Hz = 0.0;
-		this->_signalName.clear();
-		this->_signalType = SelectedSignalType::Unknown;
-		this->_xcpPlus = false;
+		*this = SelectedSignal();
 	}
 }
