@@ -8,6 +8,8 @@ int main(int argc, char *argv[])
 	systemDatabase.setLogHandler(&logHandler);
 	systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigBevLongHaul.json");
 	systemDatabase.loadSelectionTables();
+	systemDatabase.loadMapping();
+	systemDatabase.loadVmms();
 	return 0;
 
 #if 0

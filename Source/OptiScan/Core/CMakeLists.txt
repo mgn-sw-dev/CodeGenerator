@@ -30,6 +30,8 @@ set(OptiScanCore_SOURCES
     Database/SelectionTableConstants.h
     Database/SystemDatabase.cpp
     Database/SystemDatabase.h
+    Database/SystemMapping.cpp
+    Database/SystemMapping.h
     Config/SystemConfig.cpp
     Config/SystemConfig.h
     Config/SystemConfig.inl.h

@@ -14,10 +14,54 @@ namespace OptiScan::Core::Database
 		, _configDatabase()
 		, _linSelectionTable()
 		, _logHandler(nullptr)
+		, _mapping()
 		, _systemConfig()
 		, _systemPath()
 		, _xcpSelectionTable()
 	{
+	}
+
+	void SystemDatabase::loadMapping()
+	{
+		if (this->_configDatabase.hasValue())
+		{
+			this->_mapping.clear();
+			if (this->_configDatabase._canObject.has_value())
+			{
+				for (const CanBusObject & canBus : this->_configDatabase._canObject.value()._busses)
+				{
+					MappingCanObject mapping;
+					mapping._busName = canBus._name;
+					switch (canBus._type)
+					{
+					case CanBusType::Standard:
+					case CanBusType::Fd:
+						mapping._vmmNames = canBus._dbcNames;
+						break;
+					case CanBusType::Xcp:
+					case CanBusType::XcpPlus:
+						mapping._vmmNames = { canBus._a2lName };
+						break;
+					case CanBusType::VoiceToCan:
+					case CanBusType::Unknown:
+					default:
+						break;
+					}
+					this->_mapping.setCanMapping(canBus._hardwareId, mapping);
+				}
+			}
+			if (this->_configDatabase._linObject.has_value())
+			{
+				for (const LinBusObject & linBus : this->_configDatabase._linObject.value()._busses)
+				{
+					MappingLinObject mapping;
+					mapping._busName = linBus._name;
+					mapping._ldfName = linBus._ldfName;
+					this->_mapping.setLinMapping(linBus._hardwareId, mapping);
+				}
+			}
+			this->logInfo("System mapping loaded");
+		}
 	}
 
 	void SystemDatabase::loadFromConfigFile(const string & filePath)
@@ -75,6 +119,35 @@ namespace OptiScan::Core::Database
 				this->logError("SystemDatabase::loadSelectionTables: " + string(error.what()));
 				throw;
 			}
+		}
+	}
+
+	void SystemDatabase::loadVmms()
+	{
+		if (this->_configDatabase.hasValue())
+		{
+			if (this->_configDatabase._canObject.has_value())
+			{
+				for (const CanBusObject & canBus : this->_configDatabase._canObject.value()._busses)
+				{
+					if (canBus._type == CanBusType::Standard || canBus._type == CanBusType::Fd)
+					{
+						this->logInfo("Load CanBus " + to_string(canBus._hardwareId));
+						for (const string & dbcName : canBus._dbcNames)
+						{
+							 this->log("\t- DBC: " + dbcName);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	void SystemDatabase::log(const std::string & message) const
+	{
+		if (this->_logHandler)
+		{
+			this->_logHandler->log(message);
 		}
 	}
 
