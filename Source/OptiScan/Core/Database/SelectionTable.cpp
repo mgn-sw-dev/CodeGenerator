@@ -1,5 +1,6 @@
 
 #include <OptiScan/Core/Database/SelectionTable.h>
+#include <OptiScan/Core/Database/SelectionTableConstants.h>
 #include <OptiScan/Core/Json/JsonFile.h>
 
 using namespace OptiScan::Core::Json;
@@ -58,22 +59,22 @@ namespace OptiScan::Core::Database
 			{
 				SelectedSignal signal = SelectedSignal();
 				signal._signalType = SelectedSignalType::Can;
-				signal._signalName = jsonSignal["signalName"].get<string>();
-				signal._sampleFrequency_Hz = jsonSignal["sampleRateInHz"].get<double>();
-				if (jsonSignal.contains("DisplayName"))
+				signal._signalName = jsonSignal[SelectionTableConstants::SignalName].get<string>();
+				signal._sampleFrequency_Hz = jsonSignal[SelectionTableConstants::SampleRateInHz].get<double>();
+				if (jsonSignal.contains(SelectionTableConstants::DisplayName))
 				{
-					signal._signalName = jsonSignal["DisplayName"].get<string>();
+					signal._signalName = jsonSignal[SelectionTableConstants::DisplayName].get<string>();
 				}
 				else
 				{
 					signal._displayName = signal._signalName;
 				}
-				const json canDbcObject = jsonSignal.at("canDbc");
-				SelectionTable::removeFileExtension(canDbcObject["fileName"].get<string>(), signal._dbcName);
+				const json canDbcObject = jsonSignal.at(SelectionTableConstants::CanDbc);
+				SelectionTable::removeFileExtension(canDbcObject[SelectionTableConstants::FileName].get<string>(), signal._dbcName);
 
-				const json canMessageObject = jsonSignal.at("canMessage");
-				signal._messageName = canMessageObject["name"].get<string>();
-				signal._messageId = canMessageObject["frameId"].get<string>();
+				const json canMessageObject = jsonSignal.at(SelectionTableConstants::CanMessage);
+				signal._messageName = canMessageObject[SelectionTableConstants::Name].get<string>();
+				signal._messageId = canMessageObject[SelectionTableConstants::FrameId].get<string>();
 
 				this->_selectedSignals.push_back(signal);
 			}
@@ -98,23 +99,23 @@ namespace OptiScan::Core::Database
 			{
 				SelectedSignal signal = SelectedSignal();
 				signal._signalType = SelectedSignalType::Lin;
-				signal._signalName = jsonSignal["signalName"].get<string>();
-				signal._sampleFrequency_Hz = jsonSignal["sampleRateInHz"].get<double>();
-				if (jsonSignal.contains("DisplayName"))
+				signal._signalName = jsonSignal[SelectionTableConstants::SignalName].get<string>();
+				signal._sampleFrequency_Hz = jsonSignal[SelectionTableConstants::SampleRateInHz].get<double>();
+				if (jsonSignal.contains(SelectionTableConstants::DisplayName))
 				{
-					signal._signalName = jsonSignal["DisplayName"].get<string>();
+					signal._signalName = jsonSignal[SelectionTableConstants::DisplayName].get<string>();
 				}
 				else
 				{
 					signal._displayName = signal._signalName;
 				}
 
-				const json linLdfObject = jsonSignal.at("linLdf");
-				SelectionTable::removeFileExtension(linLdfObject["fileName"].get<string>(), signal._ldfName);
+				const json linLdfObject = jsonSignal.at(SelectionTableConstants::LinLdf);
+				SelectionTable::removeFileExtension(linLdfObject[SelectionTableConstants::FileName].get<string>(), signal._ldfName);
 
-				const json linFrameObject = jsonSignal.at("linFrame");
-				signal._frameId = to_string(linFrameObject["id"].get<uint32_t>());
-				signal._frameName = linFrameObject["name"].get<string>();
+				const json linFrameObject = jsonSignal.at(SelectionTableConstants::LinFrame);
+				signal._frameId = to_string(linFrameObject[SelectionTableConstants::Id].get<uint32_t>());
+				signal._frameName = linFrameObject[SelectionTableConstants::Name].get<string>();
 
 				this->_selectedSignals.push_back(signal);
 			}
