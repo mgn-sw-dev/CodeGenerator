@@ -23,11 +23,5 @@ namespace OptiScan::Core::Database
 
     private:
         nlohmann::json _jsonRootObject;
-        /** Open file and parse as nlohmann::json object.
-         * @throw runtime_error: If file failed to open.
-         * @throw runtime_error: If JSON Parse Error.
-         * @todo: Same method like in System config: Maby common json class with static method. */
-        static void loadFromJson(const std::string & filePath, nlohmann::json & jsonRootObject);
-    
     };
 }
