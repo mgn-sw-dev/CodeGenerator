@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OptiScan/Core/Config/SystemConfig.h>
+#include <OptiScan/Core/Database/CanDatabase.h>
 #include <OptiScan/Core/Database/SelectionTable.h>
 #include <OptiScan/Core/Database/SystemMapping.h>
 #include <filesystem>
@@ -11,6 +12,7 @@ namespace OptiScan::Core::Database
     class SystemDatabase
     {
     public:
+        std::vector<CanDatabase> _canDatabases;
         CanSelectionTable _canSelectionTable;
         LinSelectionTable _linSelectionTable;
         SystemMapping _mapping;

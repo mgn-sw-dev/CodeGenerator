@@ -10,7 +10,8 @@ namespace OptiScan::Core::Database
 {
 
 	SystemDatabase::SystemDatabase()
-		: _canSelectionTable()
+		: _canDatabases()
+		, _canSelectionTable()
 		, _configDatabase()
 		, _linSelectionTable()
 		, _logHandler(nullptr)
@@ -135,7 +136,20 @@ namespace OptiScan::Core::Database
 						this->logInfo("Load CanBus " + to_string(canBus._hardwareId));
 						for (const string & dbcName : canBus._dbcNames)
 						{
-							 this->log("\t- DBC: " + dbcName);
+							this->log("\t- DBC: " + dbcName);
+							CanDatabase canDatabase = CanDatabase();
+							canDatabase._name = dbcName;
+							filesystem::path dbcPath = this->_systemPath / dbcName += ".dbc";
+							try
+							{
+								canDatabase.loadDbcDatabase(dbcPath);
+							}
+							catch (const exception & error)
+							{
+								this->logError(string(error.what()));
+								throw;
+							}
+							this->_canDatabases.push_back(canDatabase);
 						}
 					}
 				}
