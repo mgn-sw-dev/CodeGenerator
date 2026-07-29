@@ -1,7 +1,6 @@
 
 #include <OptiScan/Core/Database/SelectionTable.h>
 #include <OptiScan/Core/Json/JsonFile.h>
-#include <fstream>
 
 using namespace OptiScan::Core::Json;
 using namespace nlohmann;
@@ -19,20 +18,32 @@ namespace OptiScan::Core::Database
 		this->_selectionTable.clear();
 	}
 
+	bool SelectionTable::hasValue() const
+	{
+		return !this->_selectionTable.empty();
+	}
+
 	void SelectionTable::loadJsonFile(const filesystem::path & selectionTablePath)
 	{
 		this->_selectionTable.clear();
-		try
+		JsonFile::loadJsonFile(selectionTablePath, this->_jsonRootObject);
+	}
+
+	void SelectionTable::removeFileExtension(const string & fileName, string & result)
+	{
+		size_t pos = fileName.find_last_of(".");
+		if (pos != string::npos)
 		{
-			JsonFile::loadJsonFile(selectionTablePath, this->_jsonRootObject);
-		}
-		catch (const exception & error)
-		{
-			throw;
+			result = fileName.substr(0, pos);
 		}
 	}
 
-	void SelectionTable::parse()
+	CanSelectionTable::CanSelectionTable()
+		: SelectionTable()
+	{
+	}
+
+	void CanSelectionTable::parse()
 	{
 		this->_selectionTable.clear();
 
@@ -40,18 +51,91 @@ namespace OptiScan::Core::Database
 		{
 			if (!this->_jsonRootObject.is_array())
 			{
-				throw runtime_error("SelectionTable::parse: Selection table JSON is not an array.");
+				throw runtime_error("CanSelectionTable::parse: Selection table JSON is not an array.");
 			}
 
 			for (const auto & jsonSignal : this->_jsonRootObject)
 			{
 				SelectedSignal signal = SelectedSignal();
-				signal._signalName = jsonSignal["signalName"];
-				signal._sampleFrequency_Hz = jsonSignal["sampleRateInHz"];
 				signal._signalType = SelectedSignalType::Can;
+				signal._signalName = jsonSignal["signalName"].get<string>();
+				signal._sampleFrequency_Hz = jsonSignal["sampleRateInHz"].get<double>();
+				if (jsonSignal.contains("DisplayName"))
+				{
+					signal._signalName = jsonSignal["DisplayName"].get<string>();
+				}
+				else
+				{
+					signal._displayName = signal._signalName;
+				}
+				const json canDbcObject = jsonSignal.at("canDbc");
+				SelectionTable::removeFileExtension(canDbcObject["fileName"].get<string>(), signal._dbcName);
+
+				const json canMessageObject = jsonSignal.at("canMessage");
+				signal._messageName = canMessageObject["name"].get<string>();
+				signal._messageId = canMessageObject["frameId"].get<string>();
+
 				this->_selectionTable.push_back(signal);
 			}
 		}
 	}
 
+	LinSelectionTable::LinSelectionTable()
+		: SelectionTable()
+	{
+	}
+
+	void LinSelectionTable::parse()
+	{
+		this->_selectionTable.clear();
+		if (!this->_jsonRootObject.is_null())
+		{
+			if (!this->_jsonRootObject.is_array())
+			{
+				throw runtime_error("LinSelectionTable::parse: Selection table JSON is not an array.");
+			}
+			for (const auto & jsonSignal : this->_jsonRootObject)
+			{
+				SelectedSignal signal = SelectedSignal();
+				signal._signalType = SelectedSignalType::Lin;
+				signal._signalName = jsonSignal["signalName"].get<string>();
+				signal._sampleFrequency_Hz = jsonSignal["sampleRateInHz"].get<double>();
+				if (jsonSignal.contains("DisplayName"))
+				{
+					signal._signalName = jsonSignal["DisplayName"].get<string>();
+				}
+				else
+				{
+					signal._displayName = signal._signalName;
+				}
+
+				const json linLdfObject = jsonSignal.at("linLdf");
+				SelectionTable::removeFileExtension(linLdfObject["fileName"].get<string>(), signal._ldfName);
+
+				const json linFrameObject = jsonSignal.at("linFrame");
+				signal._frameId = linFrameObject["Id"].get<string>();
+				signal._frameName = linFrameObject["Name"].get<string>();
+
+				this->_selectionTable.push_back(signal);
+			}
+		}
+	}
+
+	XcpSelectionTable::XcpSelectionTable()
+		: SelectionTable()
+	{
+	}
+
+	void XcpSelectionTable::parse()
+	{
+		this->_selectionTable.clear();
+		if (!this->_jsonRootObject.is_null())
+		{
+			if (!this->_jsonRootObject.is_array())
+			{
+				throw runtime_error("XcpSelectionTable::parse: Selection table JSON is not an array.");
+			}
+			// ToDo
+		}
+	}
 }

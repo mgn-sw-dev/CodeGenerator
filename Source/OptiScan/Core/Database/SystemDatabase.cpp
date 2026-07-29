@@ -1,6 +1,5 @@
 
 #include <OptiScan/Core/Database/SystemDatabase.h>
-#include <OptiScan/Core/Database/SelectionTable.h>
 #include <OptiScan/Core/Json/JsonFile.h>
 
 using namespace OptiScan::Core::Config;
@@ -11,10 +10,13 @@ namespace OptiScan::Core::Database
 {
 
 	SystemDatabase::SystemDatabase()
-		: _configDatabase()
+		: _canSelectionTable()
+		, _configDatabase()
+		, _linSelectionTable()
 		, _logHandler(nullptr)
 		, _systemConfig()
 		, _systemPath()
+		, _xcpSelectionTable()
 	{
 	}
 
@@ -43,20 +45,23 @@ namespace OptiScan::Core::Database
 					{
 						filesystem::path canSelectionTablePath;
 						JsonFile::buildJsonPathWithExtension(this->_systemPath, this->_configDatabase._canObject->_selectionTable.value(), canSelectionTablePath);
-						SelectionTable selectionTable;
-						selectionTable.loadJsonFile(canSelectionTablePath);
-						selectionTable.parse();
+						this->_canSelectionTable.loadJsonFile(canSelectionTablePath);
+						this->_canSelectionTable.parse();
 					}
 					if (this->_configDatabase._canObject->_xcpSelectionTable.has_value())
 					{
 						filesystem::path xcpSelectionTablePath;
 						JsonFile::buildJsonPathWithExtension(this->_systemPath, this->_configDatabase._canObject->_xcpSelectionTable.value(), xcpSelectionTablePath);
+						this->_xcpSelectionTable.loadJsonFile(xcpSelectionTablePath);
+						this->_xcpSelectionTable.parse();
 					}
 				}
 				if (this->_configDatabase._linObject.has_value())
 				{
 					filesystem::path linSelectionTablePath;
-					JsonFile::buildJsonPathWithExtension(this->_systemPath, this->_configDatabase._canObject->_xcpSelectionTable.value(), linSelectionTablePath);
+					JsonFile::buildJsonPathWithExtension(this->_systemPath, this->_configDatabase._linObject->_selectionTable, linSelectionTablePath);
+					this->_linSelectionTable.loadJsonFile(linSelectionTablePath);
+					this->_linSelectionTable.parse();
 				}
 			}
 			catch (const exception & error)

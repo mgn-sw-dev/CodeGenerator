@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OptiScan/Core/Config/SystemConfig.h>
+#include <OptiScan/Core/Database/SelectionTable.h>
 #include <filesystem>
 
 namespace OptiScan::Core::Database
@@ -9,6 +10,10 @@ namespace OptiScan::Core::Database
     class SystemDatabase
     {
     public:
+        CanSelectionTable _canSelectionTable;
+        LinSelectionTable _linSelectionTable;
+        XcpSelectionTable _xcpSelectionTable;
+
         SystemDatabase();
         /** */
         void loadFromConfigFile(const std::string & configPath);

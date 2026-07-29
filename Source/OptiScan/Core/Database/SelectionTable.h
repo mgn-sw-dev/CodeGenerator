@@ -14,14 +14,44 @@ namespace OptiScan::Core::Database
         std::vector<SelectedSignal> _selectionTable;
 
         SelectionTable();
+        virtual ~SelectionTable() = default;
+        /** */
+        void clear();
+        /** */
+        bool hasValue() const;
         /** @throw runtime_error if selection table file does not exist. */
         void loadJsonFile(const std::filesystem::path & selectionTablePath);
         /** */
-        void parse();
-        /** */
-        void clear();
+        virtual void parse() = 0;
 
-    private:
+    protected:
         nlohmann::json _jsonRootObject;
+
+        static void removeFileExtension(const std::string & fileName, std::string & result);
     };
+
+    class CanSelectionTable : public SelectionTable
+    {
+    public:
+        CanSelectionTable();
+        /** */
+        virtual void parse() override;
+    };
+
+    class LinSelectionTable : public SelectionTable
+    {
+    public:
+        LinSelectionTable();
+        /** */
+        virtual void parse() override;
+    };
+
+    class XcpSelectionTable : public SelectionTable
+    {
+    public:
+        XcpSelectionTable();
+        /** */
+        virtual void parse() override;
+    };
+
 }
