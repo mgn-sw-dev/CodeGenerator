@@ -24,10 +24,6 @@ namespace OptiScan::Core::Config
         nlohmann::json _jsonRootObject;
         LogHandler * _logHandler;
 
-        /** Open file and parse as nlohmann::json object.
-         * @throw runtime_error: If file failed to open.
-         * @throw runtime_error: If JSON Parse Error. */
-        static void loadConfigFile(const std::string & configPath, nlohmann::json & jsonRootObject);
     	/** */
     	void log(const std::string & message) const;
         /** */

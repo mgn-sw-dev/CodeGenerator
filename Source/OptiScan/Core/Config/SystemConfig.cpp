@@ -1,12 +1,14 @@
 
 #include <OptiScan/Core/Config/SystemConfig.h>
 #include <OptiScan/Core/Config/SystemConfigConstants.h>
+#include <OptiScan/Core/Json/JsonFile.h>
 #include <OptiScan/Core/Json/JsonSchemaValidator.h>
 #include <fstream>
 #include <memory>
 
 
 using namespace OptiScan::Core::Common;
+using namespace OptiScan::Core::Json;
 using namespace nlohmann;
 using namespace std;
 
@@ -18,30 +20,13 @@ namespace OptiScan::Core::Config
 	{
 	}
 
-	void SystemConfig::loadConfigFile(const string & configPath, json & jsonRootObject)
-	{
-		ifstream file(configPath);
-		if (!file.is_open())
-		{
-			throw runtime_error("SystemConfig::loadConfigFile:Failed to open file: " + configPath);
-		}
-		try
-		{
-			file >> jsonRootObject;
-		}
-		catch (const json::parse_error & error)
-		{
-			throw runtime_error("SystemConfig::loadConfigFile: JSON Parse Error: " + string(error.what()));
-		}
-	}
-
 	void SystemConfig::loadFromFile(const string & configPath)
 	{
 		this->reset();
 		this->logInfo("Loading configuration file: " + configPath);
 		try
 		{
-			this->loadConfigFile(configPath, this->_jsonRootObject);
+			JsonFile::loadJsonFile(configPath, this->_jsonRootObject);
 		}
 		catch (const exception & error)
 		{
