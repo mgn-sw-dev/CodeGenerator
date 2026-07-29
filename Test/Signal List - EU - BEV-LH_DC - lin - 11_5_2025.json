@@ -1,0 +1,1730 @@
+[
+  {
+    "signalName": "AhChrgCycle_Cval_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "Ah",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 51,
+      "name": "IBS_Frm4",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "AhDischrgCycle_Cval_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "Ah",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 51,
+      "name": "IBS_Frm4",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "AvgQscntCurrRestPhase_Cval_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 51,
+      "name": "IBS_Frm4",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "O_mA",
+        "value": 0
+      },
+      {
+        "mode": "m20_mA",
+        "value": 1
+      },
+      {
+        "mode": "m40_mA",
+        "value": 2
+      },
+      {
+        "mode": "m60_mA",
+        "value": 3
+      },
+      {
+        "mode": "m80_mA",
+        "value": 4
+      },
+      {
+        "mode": "m100_mA",
+        "value": 5
+      },
+      {
+        "mode": "m120_mA",
+        "value": 6
+      },
+      {
+        "mode": "m140_mA",
+        "value": 7
+      },
+      {
+        "mode": "m160_mA",
+        "value": 8
+      },
+      {
+        "mode": "m180_mA",
+        "value": 9
+      },
+      {
+        "mode": "m200_mA",
+        "value": 10
+      },
+      {
+        "mode": "m220_mA",
+        "value": 11
+      },
+      {
+        "mode": "m240_mA",
+        "value": 12
+      },
+      {
+        "mode": "m260_mA",
+        "value": 13
+      },
+      {
+        "mode": "m280_mA",
+        "value": 14
+      },
+      {
+        "mode": "m300_mA",
+        "value": 15
+      },
+      {
+        "mode": "m320_mA",
+        "value": 16
+      },
+      {
+        "mode": "m340_mA",
+        "value": 17
+      },
+      {
+        "mode": "m360_mA",
+        "value": 18
+      },
+      {
+        "mode": "m380_mA",
+        "value": 19
+      },
+      {
+        "mode": "m400_mA",
+        "value": 20
+      },
+      {
+        "mode": "m420_mA",
+        "value": 21
+      },
+      {
+        "mode": "m440_mA",
+        "value": 22
+      },
+      {
+        "mode": "m460_mA",
+        "value": 23
+      },
+      {
+        "mode": "m480_mA",
+        "value": 24
+      },
+      {
+        "mode": "m500_mA",
+        "value": 25
+      },
+      {
+        "mode": "m520_mA",
+        "value": 26
+      },
+      {
+        "mode": "m540_mA",
+        "value": 27
+      },
+      {
+        "mode": "m560_mA",
+        "value": 28
+      },
+      {
+        "mode": "m580_mA",
+        "value": 29
+      },
+      {
+        "mode": "m600_mA",
+        "value": 30
+      },
+      {
+        "mode": "m620_mA",
+        "value": 31
+      },
+      {
+        "mode": "m640_mA",
+        "value": 32
+      },
+      {
+        "mode": "m660_mA",
+        "value": 33
+      },
+      {
+        "mode": "m680_mA",
+        "value": 34
+      },
+      {
+        "mode": "m700_mA",
+        "value": 35
+      },
+      {
+        "mode": "m720_mA",
+        "value": 36
+      },
+      {
+        "mode": "m740_mA",
+        "value": 37
+      },
+      {
+        "mode": "m760_mA",
+        "value": 38
+      },
+      {
+        "mode": "m780_mA",
+        "value": 39
+      },
+      {
+        "mode": "m800_mA",
+        "value": 40
+      },
+      {
+        "mode": "m820_mA",
+        "value": 41
+      },
+      {
+        "mode": "m840_mA",
+        "value": 42
+      },
+      {
+        "mode": "m860_mA",
+        "value": 43
+      },
+      {
+        "mode": "m880_mA",
+        "value": 44
+      },
+      {
+        "mode": "m900_mA",
+        "value": 45
+      },
+      {
+        "mode": "m920_mA",
+        "value": 46
+      },
+      {
+        "mode": "m940_mA",
+        "value": 47
+      },
+      {
+        "mode": "m960_mA",
+        "value": 48
+      },
+      {
+        "mode": "m980_mA",
+        "value": 49
+      },
+      {
+        "mode": "m1000_mA",
+        "value": 50
+      },
+      {
+        "mode": "m1050_mA",
+        "value": 51
+      },
+      {
+        "mode": "m1100_mA",
+        "value": 52
+      },
+      {
+        "mode": "m1150_mA",
+        "value": 53
+      },
+      {
+        "mode": "m1200_mA",
+        "value": 54
+      },
+      {
+        "mode": "m1250_mA",
+        "value": 55
+      },
+      {
+        "mode": "m1300_mA",
+        "value": 56
+      },
+      {
+        "mode": "m1350_mA",
+        "value": 57
+      },
+      {
+        "mode": "m1400_mA",
+        "value": 58
+      },
+      {
+        "mode": "m1450_mA",
+        "value": 59
+      },
+      {
+        "mode": "m1500_mA",
+        "value": 60
+      },
+      {
+        "mode": "m1550_mA",
+        "value": 61
+      },
+      {
+        "mode": "m1600_mA",
+        "value": 62
+      },
+      {
+        "mode": "m1650_mA",
+        "value": 63
+      },
+      {
+        "mode": "m1700_mA",
+        "value": 64
+      },
+      {
+        "mode": "m1750_mA",
+        "value": 65
+      },
+      {
+        "mode": "m1800_mA",
+        "value": 66
+      },
+      {
+        "mode": "m1850_mA",
+        "value": 67
+      },
+      {
+        "mode": "m1900_mA",
+        "value": 68
+      },
+      {
+        "mode": "m1950_mA",
+        "value": 69
+      },
+      {
+        "mode": "m2000_mA",
+        "value": 70
+      },
+      {
+        "mode": "m2050_mA",
+        "value": 71
+      },
+      {
+        "mode": "m2100_mA",
+        "value": 72
+      },
+      {
+        "mode": "m2150_mA",
+        "value": 73
+      },
+      {
+        "mode": "m2200_mA",
+        "value": 74
+      },
+      {
+        "mode": "m2250_mA",
+        "value": 75
+      },
+      {
+        "mode": "m2300_mA",
+        "value": 76
+      },
+      {
+        "mode": "m2350_mA",
+        "value": 77
+      },
+      {
+        "mode": "m2400_mA",
+        "value": 78
+      },
+      {
+        "mode": "m2450_mA",
+        "value": 79
+      },
+      {
+        "mode": "m2500_mA",
+        "value": 80
+      },
+      {
+        "mode": "m2550_mA",
+        "value": 81
+      },
+      {
+        "mode": "m2600_mA",
+        "value": 82
+      },
+      {
+        "mode": "m2650_mA",
+        "value": 83
+      },
+      {
+        "mode": "m2700_mA",
+        "value": 84
+      },
+      {
+        "mode": "m2750_mA",
+        "value": 85
+      },
+      {
+        "mode": "m2800_mA",
+        "value": 86
+      },
+      {
+        "mode": "m2850_mA",
+        "value": 87
+      },
+      {
+        "mode": "m2900_mA",
+        "value": 88
+      },
+      {
+        "mode": "m2950_mA",
+        "value": 89
+      },
+      {
+        "mode": "m3000_mA",
+        "value": 90
+      },
+      {
+        "mode": "m5_A",
+        "value": 91
+      },
+      {
+        "mode": "m7_A",
+        "value": 92
+      },
+      {
+        "mode": "m9_A",
+        "value": 93
+      },
+      {
+        "mode": "m11_A",
+        "value": 94
+      },
+      {
+        "mode": "m13_A",
+        "value": 95
+      },
+      {
+        "mode": "m15_A",
+        "value": 96
+      },
+      {
+        "mode": "m17_A",
+        "value": 97
+      },
+      {
+        "mode": "m19_A",
+        "value": 98
+      },
+      {
+        "mode": "m21_A",
+        "value": 99
+      },
+      {
+        "mode": "m23_A",
+        "value": 100
+      },
+      {
+        "mode": "m25_A",
+        "value": 101
+      },
+      {
+        "mode": "m27_A",
+        "value": 102
+      },
+      {
+        "mode": "m29_A",
+        "value": 103
+      },
+      {
+        "mode": "m31_A",
+        "value": 104
+      },
+      {
+        "mode": "m33_A",
+        "value": 105
+      },
+      {
+        "mode": "m35_A",
+        "value": 106
+      },
+      {
+        "mode": "m37_A",
+        "value": 107
+      },
+      {
+        "mode": "m39_A",
+        "value": 108
+      },
+      {
+        "mode": "m41_A",
+        "value": 109
+      },
+      {
+        "mode": "m43_A",
+        "value": 110
+      },
+      {
+        "mode": "m45_A",
+        "value": 111
+      },
+      {
+        "mode": "m47_A",
+        "value": 112
+      },
+      {
+        "mode": "m49_A",
+        "value": 113
+      },
+      {
+        "mode": "m51_A",
+        "value": 114
+      },
+      {
+        "mode": "m53_A",
+        "value": 115
+      },
+      {
+        "mode": "m55_A",
+        "value": 116
+      },
+      {
+        "mode": "m57_A",
+        "value": 117
+      },
+      {
+        "mode": "m59_A",
+        "value": 118
+      },
+      {
+        "mode": "m61_A",
+        "value": 119
+      },
+      {
+        "mode": "m63_A",
+        "value": 120
+      },
+      {
+        "mode": "m65_A",
+        "value": 121
+      },
+      {
+        "mode": "m67_A",
+        "value": 122
+      },
+      {
+        "mode": "m69_A",
+        "value": 123
+      },
+      {
+        "mode": "m71_A",
+        "value": 124
+      },
+      {
+        "mode": "m73_A",
+        "value": 125
+      },
+      {
+        "mode": "m75_A",
+        "value": 126
+      },
+      {
+        "mode": "SNA",
+        "value": 127
+      }
+    ]
+  },
+  {
+    "signalName": "BatConfidenceIndex_Stat",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 49,
+      "name": "IBS_Frm2",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "INIT_40",
+        "value": 0
+      },
+      {
+        "mode": "INIT_50",
+        "value": 1
+      },
+      {
+        "mode": "INIT_60",
+        "value": 2
+      },
+      {
+        "mode": "INIT_70",
+        "value": 3
+      },
+      {
+        "mode": "INIT_80",
+        "value": 4
+      },
+      {
+        "mode": "INIT_90",
+        "value": 5
+      },
+      {
+        "mode": "INIT_100",
+        "value": 6
+      },
+      {
+        "mode": "SNA",
+        "value": 7
+      }
+    ]
+  },
+  {
+    "signalName": "BatCpctyFull_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "Ah",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 49,
+      "name": "IBS_Frm2",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "BatCpctyRest_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "Ah",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 49,
+      "name": "IBS_Frm2",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "BatCurr_Stat_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 48,
+      "name": "IBS_Frm1",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "OK",
+        "value": 0
+      },
+      {
+        "mode": "CURR_UFLW",
+        "value": 1
+      },
+      {
+        "mode": "CURR_OFLW",
+        "value": 2
+      },
+      {
+        "mode": "SNA",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "signalName": "BatDpDischrgRestPhase_Stat_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 49,
+      "name": "IBS_Frm2",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "FALSE",
+        "value": 0
+      },
+      {
+        "mode": "TRUE",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "signalName": "BatMaxU0_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "V_PC",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 18,
+      "name": "SCA_Frm3",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "BatMaxU0_Cval_IBS3",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "V_PC",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 55,
+      "name": "SCA_Frm4",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "BatMinU0_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "V_PC",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 18,
+      "name": "SCA_Frm3",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "BatMinU0_Cval_IBS3",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "V_PC",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 55,
+      "name": "SCA_Frm4",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "BatPlDscnFl_Stat_E2E",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 52,
+      "name": "IBS_Frm5_AR2",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "NOFLT",
+        "value": 0
+      },
+      {
+        "mode": "FAULT",
+        "value": 1
+      },
+      {
+        "mode": "ERR",
+        "value": 2
+      },
+      {
+        "mode": "SNA",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "signalName": "BatRplcmntCntr_Cval_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "NoUnit",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 50,
+      "name": "IBS_Frm3",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "BatRstCntr_Cval_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "NoUnit",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 50,
+      "name": "IBS_Frm3",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "BatSOFeStrExtLig_Cval_E2E",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "V",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 52,
+      "name": "IBS_Frm5_AR2",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "BatSOH_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "%",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 49,
+      "name": "IBS_Frm2",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "BatTemp_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "°C",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 49,
+      "name": "IBS_Frm2",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "BatTemp_Stat_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 48,
+      "name": "IBS_Frm1",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "OK",
+        "value": 0
+      },
+      {
+        "mode": "TEMP_UFLW",
+        "value": 1
+      },
+      {
+        "mode": "TEMP_OFLW",
+        "value": 2
+      },
+      {
+        "mode": "SNA",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "signalName": "BatType_Stat",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 18,
+      "name": "SCA_Frm3",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "PbCa",
+        "value": 0
+      },
+      {
+        "mode": "PbSb",
+        "value": 1
+      },
+      {
+        "mode": "ENHF",
+        "value": 2
+      },
+      {
+        "mode": "GEL",
+        "value": 3
+      },
+      {
+        "mode": "AGM",
+        "value": 4
+      },
+      {
+        "mode": "ERR",
+        "value": 14
+      },
+      {
+        "mode": "SNA",
+        "value": 15
+      }
+    ]
+  },
+  {
+    "signalName": "BatType_Stat_IBS3",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 55,
+      "name": "SCA_Frm4",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "PbCa",
+        "value": 0
+      },
+      {
+        "mode": "PbSb",
+        "value": 1
+      },
+      {
+        "mode": "ENHF",
+        "value": 2
+      },
+      {
+        "mode": "GEL",
+        "value": 3
+      },
+      {
+        "mode": "AGM",
+        "value": 4
+      },
+      {
+        "mode": "ERR",
+        "value": 14
+      },
+      {
+        "mode": "SNA",
+        "value": 15
+      }
+    ]
+  },
+  {
+    "signalName": "CapLossTop_Cval_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "Ah",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 51,
+      "name": "IBS_Frm4",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "CcksmIBSSfPrm_Cval_E2E",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "NoUnit",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 52,
+      "name": "IBS_Frm5_AR2",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "EqulbrErr_Stat_E2E",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 52,
+      "name": "IBS_Frm5_AR2",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "NOERR",
+        "value": 0
+      },
+      {
+        "mode": "ERR",
+        "value": 1
+      },
+      {
+        "mode": "RES",
+        "value": 2
+      },
+      {
+        "mode": "SNA",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "signalName": "ExtBatChrgDtct_Stat_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 49,
+      "name": "IBS_Frm2",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "FALSE",
+        "value": 0
+      },
+      {
+        "mode": "TRUE",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "signalName": "FullChrgDet_Cval_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 49,
+      "name": "IBS_Frm2",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "FALSE",
+        "value": 0
+      },
+      {
+        "mode": "TRUE",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "signalName": "HVCurr_Cval_CPH_CAB1",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "A",
+    "linLdf": {
+      "name": "Thermo LIN1 [2023_31a]",
+      "baudRate": 19200,
+      "fileName": "THERMO_LIN1_2023_31a.ldf"
+    },
+    "linFrame": {
+      "id": 24,
+      "name": "CPH_CAB1_C01",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "HV_DCCurr_Cval_ERC",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "A",
+    "linLdf": {
+      "name": "Thermo LIN1 [2023_31a]",
+      "baudRate": 19200,
+      "fileName": "THERMO_LIN1_2023_31a.ldf"
+    },
+    "linFrame": {
+      "id": 31,
+      "name": "ERC_Frm1",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "HVVolt_Cval_CPH_CAB1",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "V",
+    "linLdf": {
+      "name": "Thermo LIN1 [2023_31a]",
+      "baudRate": 19200,
+      "fileName": "THERMO_LIN1_2023_31a.ldf"
+    },
+    "linFrame": {
+      "id": 24,
+      "name": "CPH_CAB1_C01",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "HV_Volt_Cval_ERC",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "V",
+    "linLdf": {
+      "name": "Thermo LIN1 [2023_31a]",
+      "baudRate": 19200,
+      "fileName": "THERMO_LIN1_2023_31a.ldf"
+    },
+    "linFrame": {
+      "id": 31,
+      "name": "ERC_Frm1",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "IBattMinLastCrank_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "A",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 50,
+      "name": "IBS_Frm3",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "IBattMinLastCrank_Cval_IBS3",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "A",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 53,
+      "name": "IBS_Frm6",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "IBSErr_Stat",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 48,
+      "name": "IBS_Frm1",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "NOERR",
+        "value": 0
+      },
+      {
+        "mode": "ERR",
+        "value": 1
+      },
+      {
+        "mode": "RES",
+        "value": 2
+      },
+      {
+        "mode": "SNA",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "signalName": "IncIntResOrVoltDrop_Stat_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 48,
+      "name": "IBS_Frm1",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "FALSE",
+        "value": 0
+      },
+      {
+        "mode": "TRUE",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "signalName": "MeasSig2_Stat_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 49,
+      "name": "IBS_Frm2",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "FALSE",
+        "value": 0
+      },
+      {
+        "mode": "TRUE",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "signalName": "MeasSig3_Stat_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 49,
+      "name": "IBS_Frm2",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "FALSE",
+        "value": 0
+      },
+      {
+        "mode": "TRUE",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "signalName": "MinBatCpctyCRANK_Cval_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "Ah",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 50,
+      "name": "IBS_Frm3",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "MinBatCpctyCRANK_Cval_IBS3",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "Ah",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 53,
+      "name": "IBS_Frm6",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "NmbrOfCycls_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "%",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 52,
+      "name": "IBS_Frm5_AR2",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "NomCapDetBat_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "A",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 18,
+      "name": "SCA_Frm3",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "NomCapDetBat_Cval_IBS3",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "A",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 55,
+      "name": "SCA_Frm4",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "NTC_BatTermTemp_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "°C",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 48,
+      "name": "IBS_Frm1",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "PowerCons_Cval_ERC",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "kW",
+    "linLdf": {
+      "name": "Thermo LIN1 [2023_31a]",
+      "baudRate": 19200,
+      "fileName": "THERMO_LIN1_2023_31a.ldf"
+    },
+    "linFrame": {
+      "id": 31,
+      "name": "ERC_Frm1",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "Ri_Crank_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "mOhm",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 50,
+      "name": "IBS_Frm3",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "Ri_Crank_Cval_IBS3",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "mOhm",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 53,
+      "name": "IBS_Frm6",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "Ri_Impdnc_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "mOhm",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 48,
+      "name": "IBS_Frm1",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "SOC_LoTlrnc_Cval_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "%",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 51,
+      "name": "IBS_Frm4",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "SOC_UpTlrnc_Cval_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "%",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 51,
+      "name": "IBS_Frm4",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "SOH_CnfdncIndex_Stat_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 51,
+      "name": "IBS_Frm4",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "INIT_40",
+        "value": 0
+      },
+      {
+        "mode": "INIT_50",
+        "value": 1
+      },
+      {
+        "mode": "INIT_60",
+        "value": 2
+      },
+      {
+        "mode": "INIT_70",
+        "value": 3
+      },
+      {
+        "mode": "INIT_80",
+        "value": 4
+      },
+      {
+        "mode": "INIT_90",
+        "value": 5
+      },
+      {
+        "mode": "INIT_100",
+        "value": 6
+      },
+      {
+        "mode": "SNA",
+        "value": 7
+      }
+    ]
+  },
+  {
+    "signalName": "TmInSrv_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "h",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 51,
+      "name": "IBS_Frm4",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "UBattMinLastCrank_Cval",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "V",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 50,
+      "name": "IBS_Frm3",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "UBattMinLastCrank_Cval_IBS3",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": "V",
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 53,
+      "name": "IBS_Frm6",
+      "byteSize": 8
+    },
+    "choices": null
+  },
+  {
+    "signalName": "VltRppl_Rq_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 53,
+      "name": "IBS_Frm6",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "NACT",
+        "value": 0
+      },
+      {
+        "mode": "ACT",
+        "value": 1
+      },
+      {
+        "mode": "ERR",
+        "value": 2
+      },
+      {
+        "mode": "SNA",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "signalName": "Wupd_Stat_IBS",
+    "signalDescription": null,
+    "sampleRateInHz": 1,
+    "unit": null,
+    "linLdf": {
+      "name": "SamLin2 [2024_20a]",
+      "baudRate": 19200,
+      "fileName": "SAM_LIN2_2024_20a.ldf"
+    },
+    "linFrame": {
+      "id": 48,
+      "name": "IBS_Frm1",
+      "byteSize": 8
+    },
+    "choices": [
+      {
+        "mode": "NO_WUP",
+        "value": 0
+      },
+      {
+        "mode": "ACTIVE_WUP",
+        "value": 1
+      },
+      {
+        "mode": "RES",
+        "value": 2
+      },
+      {
+        "mode": "SNA",
+        "value": 3
+      }
+    ]
+  }
+]

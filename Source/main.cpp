@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 	OptiScan::View::Console::ConsoleLogHandler logHandler;
     OptiScan::Core::Database::SystemDatabase systemDatabase;
 	systemDatabase.setLogHandler(&logHandler);
-	systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigTest.json");
+	systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigBevLongHaul.json");
 	systemDatabase.loadSelectionTables();
 	return 0;
 

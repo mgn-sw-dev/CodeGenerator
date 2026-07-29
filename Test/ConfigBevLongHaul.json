@@ -1,0 +1,141 @@
+{
+  "$schema": "C:\\CodeGenerator\\Test\\ConfigSchema.json",
+  "ProjectInfos": {
+    "Customer": "DaimlerTruck",
+    "FirmwareVersion": "0.0.0",
+    "FleetManagementRelease": "v0x",
+    "Generation": 2,
+    "ProjectName": "BevLongHaul",
+    "SystemName": "BevLongHaul",
+    "SystemVersion": "0.0"
+  },
+  "Can": {
+    "Busses": [
+      {
+        "Hardware": 1,
+        "Id": "BbExt",
+        "Type": "Fd",
+        "BaudRate": 500e+3,
+        "DataBaudRate": 5e+6,
+        "DbcNames": [ "BACKBONE_EXT_CAN_2025_31a" ]
+      },
+      {
+        "Hardware": 2,
+        "Id": "Nrg",
+        "Type": "Fd",
+        "BaudRate": 500e+3,
+        "DataBaudRate": 5e+6,
+        "DbcNames": [ "NRG_CANFD_CAN_2023_31a" ]
+      },
+      {
+        "Hardware": 3,
+        "Id": "Ead",
+        "Type": "Fd",
+        "BaudRate": 500e+3,
+        "DataBaudRate": 5e+6,
+        "DbcNames": [ "EAD_CANFD_CAN_2023_31a" ]
+      },
+      {
+        "Hardware": 4,
+        "Id": "Inverter",
+        "Type": "Fd",
+        "BaudRate": 500e+3,
+        "DataBaudRate": 5e+6,
+        "DbcNames": [ "INVERTER_CANFD_CAN_2023_31a" ]
+      },
+      {
+        "Hardware": 5,
+        "Id": "Charging1",
+        "Type": "Fd",
+        "BaudRate": 500e+3,
+        "DataBaudRate": 5e+6,
+        "DbcNames": [ "CHARGING_CANFD1_CAN_2023_31a" ]
+      },
+      {
+        "Hardware": 6,
+        "Id": "Charging3",
+        "Type": "Fd",
+        "BaudRate": 500e+3,
+        "DataBaudRate": 5e+6,
+        "DbcNames": [ "CHARGING_CANFD3_CAN_2023_31a" ]
+      },
+      {
+        "Hardware": 7,
+        "Id": "Battery",
+        "Type": "Fd",
+        "BaudRate": 500e+3,
+        "DataBaudRate": 5e+6,
+        "DbcNames": [ "240102BatteryCAN" ]
+      },
+      {
+        "Hardware": 8,
+        "Id": "Thermo",
+        "Type": "Standard",
+        "BaudRate": 500e+3,
+        "DbcNames": [ "THERMO_CAN_dbc_2023_31a" ]
+      },
+      {
+        "Hardware": 9,
+        "Id": "DriveTrain",
+        "Type": "Standard",
+        "BaudRate": 666666,
+        "DbcNames": [ "B2Ece_eDrive_2023_BEV_Longhaul_EMG_NAFTAce_2027_DRIVETRAIN_CAN_dbc_2023_31a" ]
+      },
+      {
+        "Hardware": 10,
+        "Id": "Exterior",
+        "Type": "Standard",
+        "BaudRate": 500e+3,
+        "DbcNames": [
+          "EXTERIOR_dbc_2023_31a",
+          "CGW_MBT_667kB_EXTERIOR_Routing_dbc_2023_07a1",
+          "EHPS2_EXTERIOR_dbc_2023_46a",
+          "EHPS3_EXTERIOR_dbc_2023_07a",
+          "EHPS4_EXTERIOR_dbc_2023_46a"
+        ]
+      },
+      {
+        "Hardware": 11,
+        "Id": "Chassis",
+        "Type": "Standard",
+        "BaudRate": 666666,
+        "DbcNames": [
+          "CHASSIS_667kB_dbc_2023_31a_patched",
+          "CGW_MBT_667kB_CHASSIS_667kB_Routing_dbc_2023_07a1"
+        ]
+      },
+      {
+        "Hardware": 12,
+        "Id": "BbInt",
+        "Type": "Fd",
+        "BaudRate": 500e+3,
+        "DataBaudRate": 5e+6,
+        "DbcNames": [ "B2Ece_eDrive_2023_BEV_Longhaul_EMG_NAFTAce_2027_BACKBONE_INT_CAN_2023_31a" ]
+      }
+    ],
+    "FrequencyMax_Hz": 10,
+    "SelectionTable": "Signal List - EU - BEV-LH_DC - can - 3_13_2026"
+  },
+  "Debug": {
+    "Frequency_Hz": 0.1,
+    "IncludeVin": true
+  },
+  "Gps": {
+    "Frequency_Hz": 0.5
+  },
+  "Lin": {
+    "Busses": [
+      {
+        "Hardware": 1,
+        "Id": "Thermo",
+        "LdfName": "THERMO_LIN1_2023_31a"
+      },
+      {
+        "Hardware": 2,
+        "Id": "Sam",
+        "LdfName": "SAM_LIN2_2024_20a"
+      }
+    ],
+    "SelectionTable": "Signal List - EU - BEV-LH_DC - lin - 11_5_2025"
+  }
+}
