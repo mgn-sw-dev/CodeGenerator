@@ -128,7 +128,27 @@ namespace OptiScan::Core::Database
 			{
 				throw runtime_error("XcpSelectionTable::parse: Selection table JSON is not an array.");
 			}
-			// ToDo
+			for (const auto & jsonSignal : this->_jsonRootObject)
+			{
+				SelectedSignal signal = SelectedSignal();
+				signal._signalType = SelectedSignalType::Xcp;
+				signal._signalName = jsonSignal[SelectionTableConstants::SignalName].get<string>();
+				signal._sampleFrequency_Hz = jsonSignal[SelectionTableConstants::SampleRateInHz].get<double>();
+				if (jsonSignal.contains(SelectionTableConstants::DisplayName))
+				{
+					signal._displayName = jsonSignal[SelectionTableConstants::DisplayName].get<string>();
+				}
+				else
+				{
+					signal._displayName = signal._signalName;
+				}
+
+				const json xcpVariableObject = jsonSignal.at(SelectionTableConstants::XcpVariable);
+				signal._a2lName =path(xcpVariableObject[SelectionTableConstants::FileName].get<string>()).stem().string();
+				signal._xcpPlus = xcpVariableObject[SelectionTableConstants::XcpPlus].get<bool>();
+
+				this->_selectedSignals.push_back(signal);
+			}
 		}
 	}
 }

@@ -18,5 +18,7 @@ namespace OptiScan::Core::Database
 		static inline const std::string Name = "name";
 		static inline const std::string SampleRateInHz = "sampleRateInHz";
 		static inline const std::string SignalName = "signalName";
+		static inline const std::string XcpPlus = "xcpPlus";
+		static inline const std::string XcpVariable = "xcpVariable";
 	};
 }
