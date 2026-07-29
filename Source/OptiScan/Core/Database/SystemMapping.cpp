@@ -8,8 +8,7 @@ namespace OptiScan::Core::Database
 		: _canMappings(SystemMapping::MaxCans)
 		, _linMappings(SystemMapping::MaxLins)
 	{
-		this->_canMappings.assign(SystemMapping::MaxCans, MappingCanObject());
-		this->_linMappings.assign(SystemMapping::MaxLins, MappingLinObject());
+		this->clear();
 	}
 
 	void SystemMapping::clear()
