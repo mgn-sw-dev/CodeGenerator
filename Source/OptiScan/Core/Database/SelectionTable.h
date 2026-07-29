@@ -11,18 +11,18 @@ namespace OptiScan::Core::Database
     class SelectionTable 
     {
     public:
+        std::vector<SelectedSignal> _selectionTable;
+
         SelectionTable();
-        virtual ~SelectionTable() = default;
         /** @throw runtime_error if selection table file does not exist. */
         void loadJsonFile(const std::filesystem::path & selectionTablePath);
         /** */
-        virtual void parse() = 0;
+        void parse();
         /** */
         void clear();
-    protected:
-        nlohmann::json _jsonRootObject;
-        std::vector<SelectedSignal> _selectionTable;
+
     private:
+        nlohmann::json _jsonRootObject;
         /** Open file and parse as nlohmann::json object.
          * @throw runtime_error: If file failed to open.
          * @throw runtime_error: If JSON Parse Error.
@@ -30,13 +30,4 @@ namespace OptiScan::Core::Database
         static void loadFromJson(const std::string & filePath, nlohmann::json & jsonRootObject);
     
     };
-
-    class CanSelectionTable : public SelectionTable
-    {
-    public:
-        CanSelectionTable() = default;
-        /**  */
-        virtual void parse() override;
-    };
-
 }

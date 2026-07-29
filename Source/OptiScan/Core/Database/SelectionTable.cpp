@@ -12,6 +12,11 @@ namespace OptiScan::Core::Database
 	{
 	}
 
+	void SelectionTable::clear()
+	{
+		this->_selectionTable.clear();
+	}
+
 	void SelectionTable::loadJsonFile(const filesystem::path & selectionTablePath)
 	{
 		this->_selectionTable.clear();
@@ -19,7 +24,14 @@ namespace OptiScan::Core::Database
 		{
 			throw runtime_error("CanSelectionTable::loadFromFile: Selection table file '" + selectionTablePath.string() + "' does not exist.");
 		}
-		this->loadFromJson(selectionTablePath.string(), this->_jsonRootObject);
+		try
+		{
+			this->loadFromJson(selectionTablePath.string(), this->_jsonRootObject);
+		}
+		catch (const exception & error)
+		{
+			throw;
+		}
 	}
 
 	void SelectionTable::loadFromJson(const std::string & filePath, json & jsonRootObject)
@@ -39,13 +51,26 @@ namespace OptiScan::Core::Database
 		}
 	}
 
-	void SelectionTable::clear()
+	void SelectionTable::parse()
 	{
 		this->_selectionTable.clear();
+
+		if (!this->_jsonRootObject.is_null())
+		{
+			if (!this->_jsonRootObject.is_array())
+			{
+				throw runtime_error("SelectionTable::parse: Selection table JSON is not an array.");
+			}
+
+			for (const auto & jsonSignal : this->_jsonRootObject)
+			{
+				SelectedSignal signal = SelectedSignal();
+				signal._signalName = jsonSignal["signalName"];
+				signal._sampleFrequency_Hz = jsonSignal["sampleRateInHz"];
+				signal._signalType = SelectedSignalType::Can;
+				this->_selectionTable.push_back(signal);
+			}
+		}
 	}
 
-	void CanSelectionTable::parse()
-	{
-
-	}
 }

@@ -1,6 +1,8 @@
 
 #include <OptiScan/Core/Database/SystemDatabase.h>
 
+#include <OptiScan/Core/Database/SelectionTable.h>
+
 using namespace OptiScan::Core::Config;
 using namespace std;
 
@@ -21,7 +23,9 @@ namespace OptiScan::Core::Database
 		{
 			throw runtime_error("SystemDatabase::loadSelectionTable: Selection table file '" + selectionTablePath.string() + "' does not exist.");
 		}
-
+		SelectionTable selectionTable;
+		selectionTable.loadJsonFile(selectionTablePath);
+		selectionTable.parse();
 	}
 
 	void SystemDatabase::loadLinSelectionTableFromJson(const filesystem::path & selectionTablePath)
