@@ -113,8 +113,8 @@ namespace OptiScan::Core::Database
 				SelectionTable::removeFileExtension(linLdfObject["fileName"].get<string>(), signal._ldfName);
 
 				const json linFrameObject = jsonSignal.at("linFrame");
-				signal._frameId = linFrameObject["Id"].get<string>();
-				signal._frameName = linFrameObject["Name"].get<string>();
+				signal._frameId = to_string(linFrameObject["id"].get<uint32_t>());
+				signal._frameName = linFrameObject["name"].get<string>();
 
 				this->_selectionTable.push_back(signal);
 			}

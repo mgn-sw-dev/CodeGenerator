@@ -47,6 +47,8 @@ namespace OptiScan::Core::Database
 						JsonFile::buildJsonPathWithExtension(this->_systemPath, this->_configDatabase._canObject->_selectionTable.value(), canSelectionTablePath);
 						this->_canSelectionTable.loadJsonFile(canSelectionTablePath);
 						this->_canSelectionTable.parse();
+						this->logInfo("Load Can selection table: " + canSelectionTablePath.string()
+							+ "\n\t- SignalsCount: " + to_string(this->_canSelectionTable._selectionTable.size()));
 					}
 					if (this->_configDatabase._canObject->_xcpSelectionTable.has_value())
 					{
@@ -54,14 +56,18 @@ namespace OptiScan::Core::Database
 						JsonFile::buildJsonPathWithExtension(this->_systemPath, this->_configDatabase._canObject->_xcpSelectionTable.value(), xcpSelectionTablePath);
 						this->_xcpSelectionTable.loadJsonFile(xcpSelectionTablePath);
 						this->_xcpSelectionTable.parse();
+						this->logInfo("Load XCP selection table: " + xcpSelectionTablePath.string()
+							+"\n\t- SignalsCount: " + to_string(this->_xcpSelectionTable._selectionTable.size()));
 					}
 				}
 				if (this->_configDatabase._linObject.has_value())
 				{
 					filesystem::path linSelectionTablePath;
 					JsonFile::buildJsonPathWithExtension(this->_systemPath, this->_configDatabase._linObject->_selectionTable, linSelectionTablePath);
-					this->_linSelectionTable.loadJsonFile(linSelectionTablePath);
-					this->_linSelectionTable.parse();
+					 this->_linSelectionTable.loadJsonFile(linSelectionTablePath);
+					 this->_linSelectionTable.parse();
+					this->logInfo("Load Lin selection table: " + linSelectionTablePath.string()
+						+ "\n\t- SignalsCount: " + to_string(this->_linSelectionTable._selectionTable.size()));
 				}
 			}
 			catch (const exception & error)
@@ -77,6 +83,14 @@ namespace OptiScan::Core::Database
 		if (this->_logHandler)
 		{
 			this->_logHandler->logError(message);
+		}
+	}
+
+	void SystemDatabase::logInfo(const std::string & message) const
+	{
+		if (this->_logHandler)
+		{
+			this->_logHandler->logInfo(message);
 		}
 	}
 

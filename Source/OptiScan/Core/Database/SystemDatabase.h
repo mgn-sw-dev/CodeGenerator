@@ -29,6 +29,8 @@ namespace OptiScan::Core::Database
 
         /** */
         void logError(const std::string & message) const;
+        /** */
+        void logInfo(const std::string & message) const;
     };
 
 }
