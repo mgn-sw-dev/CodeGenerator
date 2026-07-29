@@ -23,12 +23,6 @@ namespace OptiScan::Core::Database
         std::filesystem::path _systemPath;
 
         /** */
-        void loadCanSelectionTableFromJson(const std::filesystem::path & selectionTablePath);
-        /** */
-        void loadLinSelectionTableFromJson(const std::filesystem::path & selectionTablePath);
-        /** */
-        void loadXcpSelectionTableFromJson(const std::filesystem::path & selectionTablePath);
-        /** */
         void logError(const std::string & message) const;
     };
 

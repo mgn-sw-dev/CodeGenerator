@@ -7,6 +7,9 @@ namespace OptiScan::Core::Json
     class JsonFile 
     {
     public:
+        /** */
+        static void buildJsonPathWithExtension(const std::filesystem::path & systemPath, const std::string & jsonFileName,
+            std::filesystem::path & jsonPath);
         /** Load Json from file path to nlohmann::json object
          * @throw runtime_error if file does not exist.
          * @throw runtime_error if file could not be opened.

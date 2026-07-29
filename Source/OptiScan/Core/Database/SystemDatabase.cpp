@@ -1,9 +1,10 @@
 
 #include <OptiScan/Core/Database/SystemDatabase.h>
-
 #include <OptiScan/Core/Database/SelectionTable.h>
+#include <OptiScan/Core/Json/JsonFile.h>
 
 using namespace OptiScan::Core::Config;
+using namespace OptiScan::Core::Json;
 using namespace std;
 
 namespace OptiScan::Core::Database
@@ -15,26 +16,6 @@ namespace OptiScan::Core::Database
 		, _systemConfig()
 		, _systemPath()
 	{
-	}
-
-	void SystemDatabase::loadCanSelectionTableFromJson(const filesystem::path & selectionTablePath)
-	{
-		if (!filesystem::exists(selectionTablePath))
-		{
-			throw runtime_error("SystemDatabase::loadSelectionTable: Selection table file '" + selectionTablePath.string() + "' does not exist.");
-		}
-		SelectionTable selectionTable;
-		selectionTable.loadJsonFile(selectionTablePath);
-		selectionTable.parse();
-	}
-
-	void SystemDatabase::loadLinSelectionTableFromJson(const filesystem::path & selectionTablePath)
-	{
-
-		if (!filesystem::exists(selectionTablePath))
-		{
-			throw runtime_error("SystemDatabase::loadSelectionTable: Selection table file '" + selectionTablePath.string() + "' does not exist.");
-		}
 	}
 
 	void SystemDatabase::loadFromConfigFile(const string & filePath)
@@ -60,34 +41,22 @@ namespace OptiScan::Core::Database
 				{
 					if (this->_configDatabase._canObject->_selectionTable.has_value())
 					{
-						filesystem::path canSelectionTablePath(this->_systemPath);
-						canSelectionTablePath.append(this->_configDatabase._canObject->_selectionTable.value());
-						if (!canSelectionTablePath.has_extension())
-						{
-							canSelectionTablePath += ".json";
-						}
-						this->loadCanSelectionTableFromJson(canSelectionTablePath);
+						filesystem::path canSelectionTablePath;
+						JsonFile::buildJsonPathWithExtension(this->_systemPath, this->_configDatabase._canObject->_selectionTable.value(), canSelectionTablePath);
+						SelectionTable selectionTable;
+						selectionTable.loadJsonFile(canSelectionTablePath);
+						selectionTable.parse();
 					}
 					if (this->_configDatabase._canObject->_xcpSelectionTable.has_value())
 					{
-						filesystem::path xcpSelectionTablePath(this->_systemPath);
-						xcpSelectionTablePath.append(this->_configDatabase._canObject->_selectionTable.value());
-						if (!xcpSelectionTablePath.has_extension())
-						{
-							xcpSelectionTablePath += ".json";
-						}
-						this->loadXcpSelectionTableFromJson(xcpSelectionTablePath);
+						filesystem::path xcpSelectionTablePath;
+						JsonFile::buildJsonPathWithExtension(this->_systemPath, this->_configDatabase._canObject->_xcpSelectionTable.value(), xcpSelectionTablePath);
 					}
 				}
 				if (this->_configDatabase._linObject.has_value())
 				{
-					filesystem::path linSelectionTablePath(this->_systemPath);
-					linSelectionTablePath.append(this->_configDatabase._canObject->_selectionTable.value());
-					if (!linSelectionTablePath.has_extension())
-					{
-						linSelectionTablePath += ".json";
-					}
-					this->loadLinSelectionTableFromJson(linSelectionTablePath);
+					filesystem::path linSelectionTablePath;
+					JsonFile::buildJsonPathWithExtension(this->_systemPath, this->_configDatabase._canObject->_xcpSelectionTable.value(), linSelectionTablePath);
 				}
 			}
 			catch (const exception & error)
@@ -95,14 +64,6 @@ namespace OptiScan::Core::Database
 				this->logError("SystemDatabase::loadSelectionTables: " + string(error.what()));
 				throw;
 			}
-		}
-	}
-
-	void SystemDatabase::loadXcpSelectionTableFromJson(const filesystem::path & selectionTablePath)
-	{
-		if (!filesystem::exists(selectionTablePath))
-		{
-			throw runtime_error("SystemDatabase::loadSelectionTable: Selection table file '" + selectionTablePath.string() + "' does not exist.");
 		}
 	}
 

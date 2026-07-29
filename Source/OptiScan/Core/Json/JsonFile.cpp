@@ -4,12 +4,24 @@
 
 using namespace nlohmann;
 using namespace std;
+using namespace std::filesystem;
 
 namespace OptiScan::Core::Json
 {
-	void JsonFile::loadJsonFile(const std::filesystem::path & jsonPath, json & jsonRootObject)
+void JsonFile::buildJsonPathWithExtension(const path & systemPath, const string & jsonFileName, path & jsonPath)
+{
+	jsonPath.clear();
+	jsonPath = systemPath;
+	jsonPath.append(jsonFileName);
+	if (!jsonPath.has_extension())
 	{
-		if (!filesystem::exists(jsonPath))
+		jsonPath += ".json";
+	}
+}
+
+void JsonFile::loadJsonFile(const path & jsonPath, json & jsonRootObject)
+	{
+		if (!exists(jsonPath))
 		{
 			throw runtime_error("JsonFile::loadJsonFile: Json file '" + jsonPath.string() + "' does not exist.");
 		}
