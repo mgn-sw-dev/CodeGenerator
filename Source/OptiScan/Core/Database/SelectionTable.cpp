@@ -6,6 +6,7 @@
 using namespace OptiScan::Core::Json;
 using namespace nlohmann;
 using namespace std;
+using namespace std::filesystem;
 
 namespace OptiScan::Core::Database
 {
@@ -28,15 +29,6 @@ namespace OptiScan::Core::Database
 	{
 		this->clear();
 		JsonFile::loadJsonFile(selectionTablePath, this->_jsonRootObject);
-	}
-
-	void SelectionTable::removeFileExtension(const string & fileName, string & result)
-	{
-		size_t pos = fileName.find_last_of(".");
-		if (pos != string::npos)
-		{
-			result = fileName.substr(0, pos);
-		}
 	}
 
 	CanSelectionTable::CanSelectionTable()
@@ -63,14 +55,14 @@ namespace OptiScan::Core::Database
 				signal._sampleFrequency_Hz = jsonSignal[SelectionTableConstants::SampleRateInHz].get<double>();
 				if (jsonSignal.contains(SelectionTableConstants::DisplayName))
 				{
-					signal._signalName = jsonSignal[SelectionTableConstants::DisplayName].get<string>();
+					signal._displayName = jsonSignal[SelectionTableConstants::DisplayName].get<string>();
 				}
 				else
 				{
 					signal._displayName = signal._signalName;
 				}
 				const json canDbcObject = jsonSignal.at(SelectionTableConstants::CanDbc);
-				SelectionTable::removeFileExtension(canDbcObject[SelectionTableConstants::FileName].get<string>(), signal._dbcName);
+				signal._dbcName = path(canDbcObject[SelectionTableConstants::FileName].get<string>()).stem().string();
 
 				const json canMessageObject = jsonSignal.at(SelectionTableConstants::CanMessage);
 				signal._messageName = canMessageObject[SelectionTableConstants::Name].get<string>();
@@ -103,7 +95,7 @@ namespace OptiScan::Core::Database
 				signal._sampleFrequency_Hz = jsonSignal[SelectionTableConstants::SampleRateInHz].get<double>();
 				if (jsonSignal.contains(SelectionTableConstants::DisplayName))
 				{
-					signal._signalName = jsonSignal[SelectionTableConstants::DisplayName].get<string>();
+					signal._displayName = jsonSignal[SelectionTableConstants::DisplayName].get<string>();
 				}
 				else
 				{
@@ -111,7 +103,7 @@ namespace OptiScan::Core::Database
 				}
 
 				const json linLdfObject = jsonSignal.at(SelectionTableConstants::LinLdf);
-				SelectionTable::removeFileExtension(linLdfObject[SelectionTableConstants::FileName].get<string>(), signal._ldfName);
+				signal._ldfName = path(linLdfObject[SelectionTableConstants::FileName].get<string>()).stem().string();
 
 				const json linFrameObject = jsonSignal.at(SelectionTableConstants::LinFrame);
 				signal._frameId = to_string(linFrameObject[SelectionTableConstants::Id].get<uint32_t>());

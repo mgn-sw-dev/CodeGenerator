@@ -26,8 +26,6 @@ namespace OptiScan::Core::Database
 
     protected:
         nlohmann::json _jsonRootObject;
-
-        static void removeFileExtension(const std::string & fileName, std::string & result);
     };
 
     class CanSelectionTable : public SelectionTable
