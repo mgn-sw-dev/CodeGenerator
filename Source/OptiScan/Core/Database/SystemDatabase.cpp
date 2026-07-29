@@ -48,7 +48,7 @@ namespace OptiScan::Core::Database
 						this->_canSelectionTable.loadJsonFile(canSelectionTablePath);
 						this->_canSelectionTable.parse();
 						this->logInfo("Load Can selection table: " + canSelectionTablePath.string()
-							+ "\n\t- SignalsCount: " + to_string(this->_canSelectionTable._selectionTable.size()));
+							+ "\n\t- SignalsCount: " + to_string(this->_canSelectionTable._selectedSignals.size()));
 					}
 					if (this->_configDatabase._canObject->_xcpSelectionTable.has_value())
 					{
@@ -57,7 +57,7 @@ namespace OptiScan::Core::Database
 						this->_xcpSelectionTable.loadJsonFile(xcpSelectionTablePath);
 						this->_xcpSelectionTable.parse();
 						this->logInfo("Load XCP selection table: " + xcpSelectionTablePath.string()
-							+"\n\t- SignalsCount: " + to_string(this->_xcpSelectionTable._selectionTable.size()));
+							+"\n\t- SignalsCount: " + to_string(this->_xcpSelectionTable._selectedSignals.size()));
 					}
 				}
 				if (this->_configDatabase._linObject.has_value())
@@ -67,7 +67,7 @@ namespace OptiScan::Core::Database
 					 this->_linSelectionTable.loadJsonFile(linSelectionTablePath);
 					 this->_linSelectionTable.parse();
 					this->logInfo("Load Lin selection table: " + linSelectionTablePath.string()
-						+ "\n\t- SignalsCount: " + to_string(this->_linSelectionTable._selectionTable.size()));
+						+ "\n\t- SignalsCount: " + to_string(this->_linSelectionTable._selectedSignals.size()));
 				}
 			}
 			catch (const exception & error)

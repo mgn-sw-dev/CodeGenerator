@@ -9,23 +9,23 @@ using namespace std;
 namespace OptiScan::Core::Database
 {
 	SelectionTable::SelectionTable()
-		: _selectionTable()
+		: _selectedSignals()
 	{
 	}
 
 	void SelectionTable::clear()
 	{
-		this->_selectionTable.clear();
+		this->_selectedSignals.clear();
 	}
 
 	bool SelectionTable::hasValue() const
 	{
-		return !this->_selectionTable.empty();
+		return !this->_selectedSignals.empty();
 	}
 
 	void SelectionTable::loadJsonFile(const filesystem::path & selectionTablePath)
 	{
-		this->_selectionTable.clear();
+		this->clear();
 		JsonFile::loadJsonFile(selectionTablePath, this->_jsonRootObject);
 	}
 
@@ -45,7 +45,7 @@ namespace OptiScan::Core::Database
 
 	void CanSelectionTable::parse()
 	{
-		this->_selectionTable.clear();
+		this->clear();
 
 		if (!this->_jsonRootObject.is_null())
 		{
@@ -75,7 +75,7 @@ namespace OptiScan::Core::Database
 				signal._messageName = canMessageObject["name"].get<string>();
 				signal._messageId = canMessageObject["frameId"].get<string>();
 
-				this->_selectionTable.push_back(signal);
+				this->_selectedSignals.push_back(signal);
 			}
 		}
 	}
@@ -87,7 +87,7 @@ namespace OptiScan::Core::Database
 
 	void LinSelectionTable::parse()
 	{
-		this->_selectionTable.clear();
+		this->clear();
 		if (!this->_jsonRootObject.is_null())
 		{
 			if (!this->_jsonRootObject.is_array())
@@ -116,7 +116,7 @@ namespace OptiScan::Core::Database
 				signal._frameId = to_string(linFrameObject["id"].get<uint32_t>());
 				signal._frameName = linFrameObject["name"].get<string>();
 
-				this->_selectionTable.push_back(signal);
+				this->_selectedSignals.push_back(signal);
 			}
 		}
 	}
@@ -128,7 +128,7 @@ namespace OptiScan::Core::Database
 
 	void XcpSelectionTable::parse()
 	{
-		this->_selectionTable.clear();
+		this->clear();
 		if (!this->_jsonRootObject.is_null())
 		{
 			if (!this->_jsonRootObject.is_array())

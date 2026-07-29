@@ -11,7 +11,7 @@ namespace OptiScan::Core::Database
     class SelectionTable 
     {
     public:
-        std::vector<SelectedSignal> _selectionTable;
+        std::vector<SelectedSignal> _selectedSignals;
 
         SelectionTable();
         virtual ~SelectionTable() = default;
