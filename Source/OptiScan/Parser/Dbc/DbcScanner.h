@@ -90,6 +90,11 @@ namespace OptiScan::Parser::Dbc
         /** @return false If end of stream detected.
          *  @throws DbcFormatException. */
         bool fillScanBuffer(size_t count = 1);
+        /** */
+        DbcScanChar popScanBufferFront();
+        /** Get @c _scanBuffer.front() value and push to @c _token._text.
+         *  Erase @c _scanBuffer.front() element. */
+        void popScanBufferFrontToToken();
         /** @return false If end of stream detected.
          *  @throws DbcFormatException. */
         bool readCharFromStream(char & c);
