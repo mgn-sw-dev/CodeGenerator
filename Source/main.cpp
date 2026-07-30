@@ -1,15 +1,18 @@
 #include <OptiScan/Core/Database/SystemDatabase.h>
 #include <OptiScan/View/Console/ConsoleLogHandler.h>
+#include <OptiScan/Core/Database/CanDatabase.h>
 
 int main(int argc, char *argv[])
 {
 	OptiScan::View::Console::ConsoleLogHandler logHandler;
-    OptiScan::Core::Database::SystemDatabase systemDatabase;
-	systemDatabase.setLogHandler(&logHandler);
-	systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigBevLongHaul.json");
-	systemDatabase.loadSelectionTables();
-	systemDatabase.loadMapping();
-	systemDatabase.loadVmms();
+	OptiScan::Core::Database::CanDatabase canDatabase;
+	canDatabase.loadDbcDatabase("C:/CodeGenerator/Test/240102BatteryCAN.dbc");
+	// OptiScan::Core::Database::SystemDatabase systemDatabase;
+	// systemDatabase.setLogHandler(&logHandler);
+	// systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigBevLongHaul.json");
+	// systemDatabase.loadSelectionTables();
+	// systemDatabase.loadMapping();
+	// systemDatabase.loadVmms();
 	return 0;
 
 #if 0
