@@ -15,6 +15,7 @@ set(OptiScanParser_SOURCES
     Dbc/DbcFormat.h
     Dbc/DbcFormatException.cpp
     Dbc/DbcFormatException.h
+    Dbc/DbcKeyword.h
     Dbc/DbcParser.cpp
     Dbc/DbcParser.h
     Dbc/DbcScanner.cpp
