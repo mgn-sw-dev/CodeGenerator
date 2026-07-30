@@ -1,6 +1,7 @@
 #pragma once
 
-#include <fstream>
+#include <cstdint>
+#include <istream>
 #include <string>
 #include <vector>
 
@@ -62,7 +63,19 @@ namespace OptiScan::Parser::Dbc
     {
     public:
         DbcScanner(std::istream * input);
-        /** @throw invalide_argiment if unknown token. */
+        /** */
+        static bool isCharDecimalSeparator(const char & c);
+        /** */
+        static bool isCharDigit(const char & c);
+        /** */
+        static bool isCharExponentStart(const char & c);
+        /** */
+        static bool isCharIdentifier(const char & c);
+        /** */
+        static bool isCharIdentifierStart(const char & c);
+        /** */
+        static bool isCharWhiteSpace(const char & c);
+        /** @throw DbcFormatException if unknown token. */
         void scanNext();
         /** @return DbcScanPosition. */
         const DbcScanPosition & streamPosition() const;
@@ -74,6 +87,30 @@ namespace OptiScan::Parser::Dbc
         std::istream * _stream;
         DbcScanPosition _streamPosition;
         DbcToken _token;
+        /** @return false If end of stream detected.
+         *  @throws DbcFormatException. */
+        bool fillScanBuffer(size_t count = 1);
+        /** @return false If end of stream detected.
+         *  @throws DbcFormatException. */
+        bool readCharFromStream(char & c);
+        /** @return false If end of stream detected.
+         *  @throws DbcFormatException. */
+        bool readCharFromStreamToScanBuffer();
+        /** @return false If not end of line.
+         *  @throws DbcFormatException. */
+        bool readEndOfLine();
+        /** @return false If not identifier.
+         *  @throws DbcFormatException. */
+        bool readIdentifier();
+        /** @return false If not literal integer or literal real.
+         *  @throws DbcFormatException. */
+        bool readLiteralIntegerOrReal();
+        /** @return false If not literal string.
+         *  @throws DbcFormatException. */
+        bool readLiteralString();
+        /** @return false If not operator.
+         *  @throws DbcFormatException. */
+        bool readOperator();
     };
 
 }
