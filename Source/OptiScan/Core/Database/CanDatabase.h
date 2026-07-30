@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OptiScan/Core/Database/DbcDatabase.h>
+#include <Optiscan/Parser/Dbc/DbcDatabase.h>
 #include <filesystem>
 #include <string>
 
@@ -9,7 +9,7 @@ namespace OptiScan::Core::Database
     class CanDatabase 
     {
     public:
-        DbcDatabase _dbcDatabase;
+        Parser::Dbc::DbcDatabase _dbcDatabase;
         std::string _name;
 
         CanDatabase();

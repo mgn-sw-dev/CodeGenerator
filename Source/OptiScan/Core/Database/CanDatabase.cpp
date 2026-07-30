@@ -1,7 +1,9 @@
 
 #include <OptiScan/Core/Database/CanDatabase.h>
+#include <OptiScan/Parser/Dbc/DbcParser.h>
 #include <fstream>
 
+using namespace OptiScan::Parser::Dbc;
 using namespace std;
 using namespace std::filesystem;
 
@@ -30,7 +32,8 @@ namespace OptiScan::Core::Database
 		{
 			throw runtime_error("CanDatabase::loadDbcDatabase: Dbc file '" + dbcPath.string() + "' could not be opened.");
 		}
-		// ToDo: parse dbc file to _dbcDatabase
+		DbcParser parser(&file);
+		parser.parse(this->_dbcDatabase);
 	}
 
 }

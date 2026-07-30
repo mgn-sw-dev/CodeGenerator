@@ -1,6 +1,6 @@
 #pragma once
 
-namespace OptiScan::Core::Database
+namespace OptiScan::Parser::Dbc
 {
     class DbcDatabase
     {
