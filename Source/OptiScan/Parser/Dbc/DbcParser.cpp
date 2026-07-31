@@ -282,6 +282,7 @@ namespace OptiScan::Parser::Dbc
 			case DbcKeywordKind::BS_:
 				break;
 			case DbcKeywordKind::BU_:
+				this->parseNodes(dbcDatabase._nodes);
 				break;
 			case DbcKeywordKind::CM_:
 				break;
@@ -447,6 +448,21 @@ namespace OptiScan::Parser::Dbc
 			}
 			this->_tokenStackCount++;
 		}
+	}
+
+void DbcParser::parseNodes(vector<string> & nodes)
+	{
+		this->matchKeyword(DbcKeyword::BU_);
+		this->readNextToken();
+		this->matchToken(DbcTokenKind::OperatorColon);
+		this->readNextToken();
+		while (!this->tryMatchToken(DbcTokenKind::EndOfLine))
+		{
+			string id;
+			this->parseIdentifier(id);
+			nodes.push_back(id);
+		}
+		this->parseEndOfLine();
 	}
 
 	const DbcToken & DbcParser::token() const

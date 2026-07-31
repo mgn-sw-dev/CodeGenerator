@@ -61,6 +61,7 @@ namespace OptiScan::Parser::Dbc
         std::vector<DbcAttributeSignal> _attributeSignals;
         DbcBitTiming _bitTiming;
         std::vector<std::string> _newSymbols;
+        std::vector<std::string> _nodes;
         std::string _version;
     };
 

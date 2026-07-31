@@ -68,6 +68,8 @@ namespace OptiScan::Parser::Dbc
         void parseVersion(std::string & version);
         /** @throws DbcFormatException */
         void readNextToken();
+        /** @throws DbcFormatException. */
+        void parseNodes(std::vector<std::string> & nodes);
         /** @throws DbcInvalidOperationException. */
         void tokenStackBegin();
         /** @throws DbcInvalidOperationException. */
