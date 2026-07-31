@@ -13,6 +13,9 @@ namespace OptiScan::Parser::Dbc
     class DbcSignal;
     class DbcSignalAttribute;
     class DbcSignalBase;
+    class DbcSignalEnvVarValueDescriptions;
+    class DbcSignalValueDescriptions;
+    class DbcValueDescription;
 
     using DbcAttributeValue = std::variant<std::monostate, std::string, uint32_t, int32_t, double>;
 
@@ -181,6 +184,8 @@ namespace OptiScan::Parser::Dbc
         std::vector<DbcMessage> _messages;
         std::vector<std::string> _newSymbols;
         std::vector<std::string> _nodes;
+        std::vector<DbcSignalValueDescriptions> _signalValueDescriptions;
+        std::vector<DbcSignalEnvVarValueDescriptions> _signalEnvVarValueDescriptions;
         std::string _version;
     };
 
@@ -238,6 +243,30 @@ namespace OptiScan::Parser::Dbc
         uint32_t _startBit = 0;
         /** */
         DbcSignal() = default;
+    };
+
+    class DbcSignalEnvVarValueDescriptions
+    {
+    public:
+        std::vector<DbcValueDescription> _descriptions;
+        std::string _envVarName;
+    };
+
+    class DbcSignalValueDescriptions
+    {
+    public:
+        std::vector<DbcValueDescription> _descriptions;
+        uint32_t _messageId;
+        std::string _signalName;
+    };
+
+    class DbcValueDescription
+    {
+    public:
+        std::string _description;
+        double _value = 0.0;
+        /** */
+        DbcValueDescription() = default;
     };
 
 }

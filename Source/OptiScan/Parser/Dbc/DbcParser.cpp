@@ -421,6 +421,7 @@ namespace OptiScan::Parser::Dbc
 			case DbcKeywordKind::SGTYPE_:
 				break;
 			case DbcKeywordKind::VAL_:
+				this->parseValueDescriptions(dbcDatabase);
 				break;
 			case DbcKeywordKind::VAL_TABLE_:
 				break;
@@ -759,6 +760,51 @@ namespace OptiScan::Parser::Dbc
 			rethrow_exception(error);
 		}
 	}
+
+	void DbcParser::parseValueDescription(vector<DbcValueDescription> & descriptions)
+	{
+		DbcValueDescription entry;
+		this->parseFloat64(entry._value);
+		this->parseString(entry._description);
+		descriptions.push_back(entry);
+	}
+
+	void DbcParser::parseValueDescriptions(DbcDatabase & dbcDatabase)
+	{
+		DbcToken const token = this->token();
+		this->matchKeyword(DbcKeyword::VAL_);
+		this->readNextToken();
+		if (this->tryMatchToken(DbcTokenKind::LiteralInteger))
+		{
+			DbcSignalValueDescriptions item;
+			this->parseUInt32(item._messageId);
+			this->parseIdentifier(item._signalName);
+			while (!this->tryMatchToken(DbcTokenKind::OperatorSemicolon))
+			{
+				this->parseValueDescription(item._descriptions);
+			}
+			this->readNextToken();
+			this->parseEndOfLine();
+			dbcDatabase._signalValueDescriptions.push_back(item);
+		}
+		else if (this->tryMatchToken(DbcTokenKind::Identifier))
+		{
+			DbcSignalEnvVarValueDescriptions item;
+			this->parseIdentifier(item._envVarName);
+			while (!this->tryMatchToken(DbcTokenKind::OperatorSemicolon))
+			{
+				this->parseValueDescription(item._descriptions);
+			}
+			this->readNextToken();
+			this->parseEndOfLine();
+			dbcDatabase._signalEnvVarValueDescriptions.push_back(item);
+		}
+		else
+		{
+			this->parseTailOfUnknownKeywordLine(token);
+		}
+	}
+
 	void DbcParser::parseVersion(string & version)
 	{
 		this->matchKeyword(DbcKeyword::VERSION);
