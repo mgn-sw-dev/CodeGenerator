@@ -8,14 +8,20 @@
 
 namespace OptiScan::Parser::Dbc
 {
-
+    class DbcExtendedMultiplexing;
     class DbcMessage;
+    class DbcMessageTransmitters;
+    class DbcMultiplexorValueRange;
     class DbcSignal;
     class DbcSignalAttribute;
     class DbcSignalBase;
     class DbcSignalEnvVarValueDescriptions;
+    class DbcSignalGroup;
+    class DbcSignalType;
+    class DbcSignalTypeReference;
     class DbcSignalValueDescriptions;
     class DbcValueDescription;
+    class DbcValueTable;
 
     using DbcAttributeValue = std::variant<std::monostate, std::string, uint32_t, int32_t, double>;
 
@@ -181,18 +187,33 @@ namespace OptiScan::Parser::Dbc
         std::vector<DbcCommentMessage> _commentMessages;
         std::vector<DbcCommentNode> _commentNodes;
         std::vector<DbcCommentSignal> _commentSignals;
+        std::vector<DbcExtendedMultiplexing> _extendedMultiplexing;
         std::vector<DbcMessage> _messages;
+        std::vector<DbcMessageTransmitters> _messageTransmitters;
         std::vector<std::string> _newSymbols;
         std::vector<std::string> _nodes;
+        std::vector<DbcSignalGroup> _signalGroups;
+        std::vector<DbcSignalType> _signalTypes;
+        std::vector<DbcSignalTypeReference> _signalTypeReferences;
         std::vector<DbcSignalValueDescriptions> _signalValueDescriptions;
         std::vector<DbcSignalEnvVarValueDescriptions> _signalEnvVarValueDescriptions;
+        std::vector<DbcValueTable> _valueTables;
         std::string _version;
+    };
+
+    class DbcExtendedMultiplexing
+    {
+    public:
+        uint32_t _messageId;
+        std::string _multiplexedSignal;
+        std::string _multiplexorSwitch;
+        std::vector<DbcMultiplexorValueRange> _multiplexorValueRanges;
     };
 
     class DbcMessage
     {
     public:
-        static uint32_t const ExtendedCanIdMask = 0x7FFF'FFFF;
+        static constexpr uint32_t ExtendedCanIdMask = 0x7FFF'FFFF;
         uint32_t _id;
         std::string _name;
         std::vector<DbcSignal> _signals;
@@ -208,6 +229,13 @@ namespace OptiScan::Parser::Dbc
         void setExtendedCanId(uint32_t id);
     };
 
+    class DbcMessageTransmitters
+    {
+    public:
+        uint32_t _messageId;
+        std::vector<std::string> _transmitters;
+    };
+
     enum class DbcMultiplexorIndicator
     {
         None = 0,
@@ -215,6 +243,13 @@ namespace OptiScan::Parser::Dbc
         MultiplexedSignal = 1 << 1,
     };
     using DbcMultiplexorIndicators = Flags<DbcMultiplexorIndicator>;
+
+    class DbcMultiplexorValueRange
+    {
+    public:
+        uint32_t _minimum;
+        uint32_t _maximum;
+    };
 
     class DbcSignalBase
     {
@@ -252,6 +287,33 @@ namespace OptiScan::Parser::Dbc
         std::string _envVarName;
     };
 
+    class DbcSignalGroup
+    {
+    public:
+        uint32_t _messageId;
+        uint32_t _repetitions;
+        std::string _name;
+        std::vector<std::string> _signalNames;
+    };
+
+    class DbcSignalType : public DbcSignalBase
+    {
+    public:
+        double _defaultValue = 0.0;
+        std::string _name;
+        std::string _valueTable;
+        /** */
+        DbcSignalType() = default;
+    };
+
+    class DbcSignalTypeReference
+    {
+    public:
+        uint32_t _messageId;
+        std::string _signalName;
+        std::string _signalTypeName;
+    };
+
     class DbcSignalValueDescriptions
     {
     public:
@@ -267,6 +329,13 @@ namespace OptiScan::Parser::Dbc
         double _value = 0.0;
         /** */
         DbcValueDescription() = default;
+    };
+
+    class DbcValueTable
+    {
+    public:
+        std::vector<DbcValueDescription> _valueDescriptions;
+        std::string _name;
     };
 
 }

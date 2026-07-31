@@ -21,6 +21,7 @@ namespace OptiScan::Parser::Dbc
 		static inline const std::string SG_ = "SG_";
 		static inline const std::string SG_MUL_VAL_ = "SG_MUL_VAL_";
 		static inline const std::string SGTYPE_ = "SGTYPE_";
+		static inline const std::string SIG_GROUP_ = "SIG_GROUP_";
 		static inline const std::string VAL_ = "VAL_";
 		static inline const std::string VAL_TABLE_ = "VAL_TABLE_";
 		static inline const std::string VERSION = "VERSION";
@@ -42,6 +43,7 @@ namespace OptiScan::Parser::Dbc
 		SG_,
 		SG_MUL_VAL_,
 		SGTYPE_,
+		SIG_GROUP_,
 		VAL_,
 		VAL_TABLE_,
 		VERSION,
@@ -62,6 +64,7 @@ namespace OptiScan::Parser::Dbc
 		{DbcKeyword::SG_, DbcKeywordKind::SG_ },
 		{DbcKeyword::SG_MUL_VAL_, DbcKeywordKind::SG_MUL_VAL_ },
 		{DbcKeyword::SGTYPE_, DbcKeywordKind::SGTYPE_ },
+		{DbcKeyword::SIG_GROUP_, DbcKeywordKind::SIG_GROUP_ },
 		{DbcKeyword::VAL_, DbcKeywordKind::VAL_ },
 		{DbcKeyword::VAL_TABLE_, DbcKeywordKind::VAL_TABLE_ },
 		{DbcKeyword::VERSION, DbcKeywordKind::VERSION },
