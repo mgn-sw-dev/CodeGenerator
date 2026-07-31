@@ -58,6 +58,36 @@ namespace OptiScan::Parser::Dbc
         bool hasNonZero() const;
     };
 
+    class DbcComment
+    {
+    public:
+        std::string _text;
+    };
+
+    class DbcCommentEnvVar : public DbcComment
+    {
+    public:
+        std::string _envVarName;
+    };
+
+    class DbcCommentMessage : public DbcComment
+    {
+    public:
+        uint32_t _messageId;
+    };
+
+    class DbcCommentNode : public DbcComment
+    {
+    public:
+        std::string _nodeName;
+    };
+
+    class DbcCommentSignal : public DbcCommentMessage
+    {
+    public:
+        std::string _signalName;
+    };
+
     class DbcDatabase
     {
     public:
@@ -67,6 +97,11 @@ namespace OptiScan::Parser::Dbc
         std::vector<DbcAttributeNode> _attributeNodes;
         std::vector<DbcAttributeSignal> _attributeSignals;
         DbcBitTiming _bitTiming;
+        std::vector<DbcComment> _comments;
+        std::vector<DbcCommentEnvVar> _commentEnvVars;
+        std::vector<DbcCommentMessage> _commentMessages;
+        std::vector<DbcCommentNode> _commentNodes;
+        std::vector<DbcCommentSignal> _commentSignals;
         std::vector<DbcMessage> _messages;
         std::vector<std::string> _newSymbols;
         std::vector<std::string> _nodes;

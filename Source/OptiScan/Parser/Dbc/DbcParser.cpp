@@ -286,6 +286,7 @@ namespace OptiScan::Parser::Dbc
 				this->parseNodes(dbcDatabase._nodes);
 				break;
 			case DbcKeywordKind::CM_:
+				this->parseComment(dbcDatabase);
 				break;
 			case DbcKeywordKind::EV_:
 				break;
@@ -326,6 +327,67 @@ namespace OptiScan::Parser::Dbc
 			this->parseUInt32(bitTiming._btr2);
 		}
 		this->parseEndOfLine();
+	}
+
+	void DbcParser::parseComment(DbcDatabase & dbcDatabase)
+	{
+		DbcToken const token = this->token();
+		this->matchKeyword(DbcKeyword::CM_);
+		this->readNextToken();
+		bool hasMatch = true;
+		if (this->tryMatchToken(DbcTokenKind::LiteralString))
+		{
+			DbcComment comment;
+			this->parseString(comment._text);
+			dbcDatabase._comments.push_back(comment);
+		}
+		else if (this->tryMatchKeyword(DbcKeyword::BO_))
+		{
+			this->readNextToken();
+			DbcCommentMessage commentMessage;
+			this->parseUInt32(commentMessage._messageId);
+			this->parseString(commentMessage._text);
+			dbcDatabase._commentMessages.push_back(commentMessage);
+		}
+		else if (this->tryMatchKeyword(DbcKeyword::BU_))
+		{
+			this->readNextToken();
+			DbcCommentNode commentNode;
+			this->parseIdentifier(commentNode._nodeName);
+			this->parseString(commentNode._text);
+			dbcDatabase._commentNodes.push_back(commentNode);
+		}
+		else if (this->tryMatchKeyword(DbcKeyword::EV_))
+		{
+			this->readNextToken();
+			DbcCommentEnvVar commentEnvVar;
+			this->parseIdentifier(commentEnvVar._envVarName);
+			this->parseString(commentEnvVar._text);
+			dbcDatabase._commentEnvVars.push_back(commentEnvVar);
+		}
+		else if (this->tryMatchKeyword(DbcKeyword::SG_))
+		{
+			this->readNextToken();
+			DbcCommentSignal commentSignal;
+			this->parseUInt32(commentSignal._messageId);
+			this->parseIdentifier(commentSignal._signalName);
+			this->parseString(commentSignal._text);
+			dbcDatabase._commentSignals.push_back(commentSignal);
+		}
+		else
+		{
+			hasMatch = false;
+		}
+		if (hasMatch)
+		{
+			this->matchToken(DbcTokenKind::OperatorSemicolon);
+			this->readNextToken();
+			this->parseEndOfLine();
+		}
+		else
+		{
+			this->parseTailOfUnknownKeywordLine(token);
+		}
 	}
 
 	void DbcParser::parseEndOfLine()

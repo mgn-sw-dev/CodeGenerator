@@ -51,6 +51,8 @@ namespace OptiScan::Parser::Dbc
         /** @throws DbcFormatException. */
         void parseBitTiming(DbcBitTiming & bitTiming);
         /** @throws DbcFormatException. */
+        void parseComment(DbcDatabase & dbcDatabase);
+        /** @throws DbcFormatException. */
         void parseEndOfLine();
         /** @throws DbcFormatException. */
         void parseFloat64(double & value);
