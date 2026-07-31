@@ -1,7 +1,7 @@
 
 #include <OptiScan/Parser/Dbc/DbcScanner.h>
 #include <OptiScan/Parser/Dbc/DbcFormat.h>
-#include <OptiScan/Parser/Dbc/DbcFormatException.h>
+#include <OptiScan/Parser/Dbc/DbcException.h>
 #include <ios>
 
 using namespace std;

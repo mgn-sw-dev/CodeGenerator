@@ -1,8 +1,9 @@
 
 #include <OptiScan/Parser/Dbc/DbcParser.h>
-#include <OptiScan/Parser/Dbc/DbcFormatException.h>
+#include <OptiScan/Parser/Dbc/DbcException.h>
 #include <OptiScan/Parser/Dbc/DbcFormat.h>
 #include <OptiScan/Parser/Dbc/DbcKeyword.h>
+#include <charconv>
 
 using namespace std;
 
@@ -25,6 +26,20 @@ namespace OptiScan::Parser::Dbc
 		else
 		{
 			result = 0 < this->_tokenStackCount && this->_tokenStackCount <= this->_tokenStack.size();
+		}
+		return result;
+	}
+
+	uint32_t DbcParser::literalIntegerTokenTextToUInt32(const string & tokenText)
+	{
+		uint32_t result = 0;
+		char const * const first = tokenText.data();
+		char const * const last = tokenText.data() + tokenText.size();
+		from_chars_result const parseResult = from_chars(first, last, result);
+		bool const isValid = parseResult.ec == errc() && parseResult.ptr == last;
+		if (!isValid)
+		{
+			throw DbcFormatException("Invalid uint32");
 		}
 		return result;
 	}
@@ -112,6 +127,27 @@ namespace OptiScan::Parser::Dbc
 		{
 			this->parseNewSymbols(dbcDatabase._newSymbols);
 		}
+
+		this->parseBitTiming(dbcDatabase._bitTiming);
+	}
+
+	void DbcParser::parseBitTiming(DbcBitTiming & bitTiming)
+	{
+		this->matchKeyword(DbcKeyword::BS_);
+		this->readNextToken();
+		this->matchToken(DbcTokenKind::OperatorColon);
+		this->readNextToken();
+		if (!this->tryMatchToken(DbcTokenKind::EndOfLine))
+		{
+			this->parseUInt32(bitTiming._baudrate);
+			this->matchToken(DbcTokenKind::OperatorColon);
+			this->readNextToken();
+			this->parseUInt32(bitTiming._btr1);
+			this->matchToken(DbcTokenKind::OperatorComma);
+			this->readNextToken();
+			this->parseUInt32(bitTiming._btr2);
+		}
+		this->parseEndOfLine();
 	}
 
 	void DbcParser::parseEndOfLine()
@@ -154,6 +190,14 @@ namespace OptiScan::Parser::Dbc
 		this->readNextToken();
 	}
 
+	void DbcParser::parseUInt32(uint32_t & value)
+	{
+		exception_ptr const error = this->tryParseUInt32(value);
+		if (error)
+		{
+			rethrow_exception(error);
+		}
+	}
 	void DbcParser::parseVersion(string & version)
 	{
 		this->matchKeyword(DbcKeyword::VERSION);
@@ -206,6 +250,44 @@ namespace OptiScan::Parser::Dbc
 		return *result;
 	}
 
+	void DbcParser::tokenStackBegin()
+	{
+		if (this->_tokenStackCount != -1)
+		{
+			throw DbcInvalidOperationException("Token stack begin error: token stack already in use");
+		}
+		if (this->_tokenStack.size() < 1)
+		{
+			this->_tokenStackCount = 0;
+		}
+		else
+		{
+			this->_tokenStackCount = 1;
+		}
+	}
+
+	void DbcParser::tokenStackCommit()
+	{
+		if (this->_tokenStackCount == -1)
+		{
+			throw DbcInvalidOperationException("Token stack commit error: no token stack");
+		}
+		for (size_t i = 0; i < this->_tokenStackCount; i++)
+		{
+			this->_tokenStack.erase(this->_tokenStack.begin());
+		}
+		this->_tokenStackCount = -1;
+	}
+
+	void DbcParser::tokenStackRollback()
+	{
+		if (this->_tokenStackCount == -1)
+		{
+			throw DbcInvalidOperationException("Token stack rollback error: no token stack");
+		}
+		this->_tokenStackCount = -1;
+	}
+
 	bool DbcParser::tryMatchKeyword(const string & id)
 	{
 		bool result = false;
@@ -216,12 +298,36 @@ namespace OptiScan::Parser::Dbc
 		return result;
 	}
 
-	bool DbcParser::tryMatchToken(DbcTokenKind kind)
+	bool DbcParser::tryMatchToken(DbcTokenKind kind) const
 	{
 		bool result = false;
 		if (this->hasToken())
 		{
 			result = this->token()._kind == kind;
+		}
+		return result;
+	}
+
+	exception_ptr DbcParser::tryParseUInt32(uint32_t & value)
+	{
+		exception_ptr result;
+		this->tokenStackBegin();
+		try
+		{
+			if (this->tryMatchToken(DbcTokenKind::OperatorPlus))
+			{
+				this->readNextToken();
+			}
+			this->matchToken(DbcTokenKind::LiteralInteger);
+			value = DbcParser::literalIntegerTokenTextToUInt32(this->token()._text);
+			this->tokenStackCommit();
+			this->readNextToken();
+		}
+		catch (const DbcFormatException & ex)
+		{
+			// catch only DbcFormatException and not DbcInvalidOperationException
+			result = current_exception();
+			this->tokenStackRollback();
 		}
 		return result;
 	}
