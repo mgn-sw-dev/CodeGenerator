@@ -32,6 +32,10 @@ namespace OptiScan::Parser::Dbc
         /** @throws DbcFormatException. */
         void parseEndOfLine();
         /** @throws DbcFormatException. */
+        void parseIdentifier(std::string & value);
+        /** @throws DbcFormatException. */
+        void parseNewSymbols(std::vector<std::string> & symbols);
+        /** @throws DbcFormatException. */
         void parseString(std::string & value);
         /** @throws DbcFormatException. */
         void parseVersion(std::string & version);

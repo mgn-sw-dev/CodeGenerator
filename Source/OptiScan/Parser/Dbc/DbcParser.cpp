@@ -107,6 +107,11 @@ namespace OptiScan::Parser::Dbc
 		{
 			this->parseVersion(dbcDatabase._version);
 		}
+
+		if (this->tryMatchKeyword(DbcKeyword::NS_))
+		{
+			this->parseNewSymbols(dbcDatabase._newSymbols);
+		}
 	}
 
 	void DbcParser::parseEndOfLine()
@@ -116,6 +121,29 @@ namespace OptiScan::Parser::Dbc
 		while (this->tryMatchToken(DbcTokenKind::EndOfLine))
 		{
 			this->readNextToken();
+		}
+	}
+
+	void DbcParser::parseIdentifier(string & value)
+	{
+		this->matchToken(DbcTokenKind::Identifier);
+		value = this->token()._text;
+		this->readNextToken();
+	}
+
+	void DbcParser::parseNewSymbols(vector<string> & symbols)
+	{
+		this->matchKeyword(DbcKeyword::NS_);
+		this->readNextToken();
+		this->matchToken(DbcTokenKind::OperatorColon);
+		this->readNextToken();
+		this->parseEndOfLine();
+		while (!this->tryMatchKeyword(DbcKeyword::BS_))
+		{
+			string id;
+			this->parseIdentifier(id);
+			symbols.push_back(id);
+			this->parseEndOfLine();
 		}
 	}
 
