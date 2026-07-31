@@ -707,7 +707,7 @@ namespace OptiScan::Parser::Dbc
 				item._multiplexorIndicators.setFlag(DbcMultiplexorIndicator::Multiplexor);
 				id.erase(id.size() - 1, 1);
 			}
-			if (id.front() == 'm')
+			if (!id.empty() && id.front() == 'm')
 			{
 				item._multiplexorIndicators.setFlag(DbcMultiplexorIndicator::MultiplexedSignal);
 				id.erase(0, 1);
