@@ -57,7 +57,15 @@ namespace OptiScan::Parser::Dbc
         /** @throws DbcFormatException. */
         void parseIdentifier(std::string & value);
         /** @throws DbcFormatException. */
+        void parseMessage(std::vector<DbcMessage> & messages);
+        /** @throws DbcFormatException. */
         void parseNewSymbols(std::vector<std::string> & symbols);
+        /** @throws DbcFormatException. */
+        void parseNodes(std::vector<std::string> & nodes);
+        /** @throws DbcFormatException. */
+        void parseSignal(std::vector<DbcSignal> & signalList);
+        /** @throws DbcFormatException. */
+        void parseSignalBase(DbcSignalBase & item);
         /** @throws DbcFormatException. */
         void parseString(std::string & value);
         /** @throws DbcFormatException. */
@@ -68,8 +76,6 @@ namespace OptiScan::Parser::Dbc
         void parseVersion(std::string & version);
         /** @throws DbcFormatException */
         void readNextToken();
-        /** @throws DbcFormatException. */
-        void parseNodes(std::vector<std::string> & nodes);
         /** @throws DbcInvalidOperationException. */
         void tokenStackBegin();
         /** @throws DbcInvalidOperationException. */

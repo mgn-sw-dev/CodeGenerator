@@ -276,6 +276,7 @@ namespace OptiScan::Parser::Dbc
 			case DbcKeywordKind::BA_DEF_DEF_:
 				break;
 			case DbcKeywordKind::BO_:
+				this->parseMessage(dbcDatabase._messages);
 				break;
 			case DbcKeywordKind::BO_TX_BU_:
 				break;
@@ -373,6 +374,25 @@ namespace OptiScan::Parser::Dbc
 		this->readNextToken();
 	}
 
+	void DbcParser::parseMessage(vector<DbcMessage> & messages)
+	{
+		DbcMessage item;
+		this->matchKeyword(DbcKeyword::BO_);
+		this->readNextToken();
+		this->parseUInt32(item._id);
+		this->parseIdentifier(item._name);
+		this->matchToken(DbcTokenKind::OperatorColon);
+		this->readNextToken();
+		this->parseUInt32(item._size_byte);
+		this->parseIdentifier(item._transmitter);
+		this->parseEndOfLine();
+		while (this->tryMatchKeyword(DbcKeyword::SG_))
+		{
+			this->parseSignal(item._signals);
+		}
+		messages.push_back(item);
+	}
+
 	void DbcParser::parseNewSymbols(vector<string> & symbols)
 	{
 		this->matchKeyword(DbcKeyword::NS_);
@@ -387,6 +407,130 @@ namespace OptiScan::Parser::Dbc
 			symbols.push_back(id);
 			this->parseEndOfLine();
 		}
+	}
+
+	void DbcParser::parseNodes(vector<string> & nodes)
+	{
+		this->matchKeyword(DbcKeyword::BU_);
+		this->readNextToken();
+		this->matchToken(DbcTokenKind::OperatorColon);
+		this->readNextToken();
+		while (!this->tryMatchToken(DbcTokenKind::EndOfLine))
+		{
+			string id;
+			this->parseIdentifier(id);
+			nodes.push_back(id);
+		}
+		this->parseEndOfLine();
+	}
+
+	void DbcParser::parseSignal(vector<DbcSignal> & signalList)
+	{
+		DbcSignal item;
+		this->matchKeyword(DbcKeyword::SG_);
+		this->readNextToken();
+		this->parseIdentifier(item._name);
+		if (this->tryMatchToken(DbcTokenKind::OperatorColon))
+		{
+			item._multiplexorIndicators = DbcMultiplexorIndicator::None;
+		}
+		else
+		{
+			string id;
+			this->parseIdentifier(id);
+			if (id.back() == 'M')
+			{
+				item._multiplexorIndicators.setFlag(DbcMultiplexorIndicator::Multiplexor);
+				id.erase(id.size() - 1, 1);
+			}
+			if (id.front() == 'm')
+			{
+				item._multiplexorIndicators.setFlag(DbcMultiplexorIndicator::MultiplexedSignal);
+				id.erase(0, 1);
+				item._multiplexorSwitchValue = DbcParser::literalIntegerTokenTextToUInt32(id);
+				id.clear();
+			}
+			if (!id.empty())
+			{
+				throw DbcFormatException("Invalid multiplexer indicator");
+			}
+			this->matchToken(DbcTokenKind::OperatorColon);
+		}
+		this->readNextToken();
+		this->parseUInt32(item._startBit);
+		this->matchToken(DbcTokenKind::OperatorVerticalLine);
+		this->readNextToken();
+		this->parseSignalBase(item);
+		{
+			bool checkNext = true;
+			while (checkNext)
+			{
+				string receiver;
+				this->parseIdentifier(receiver);
+				item._receivers.push_back(receiver);
+				checkNext = this->tryMatchToken(DbcTokenKind::OperatorComma);
+				if (checkNext)
+				{
+					this->readNextToken();
+				}
+			}
+		}
+		this->parseEndOfLine();
+		signalList.push_back(item);
+	}
+
+	void DbcParser::parseSignalBase(DbcSignalBase & item)
+	{
+		this->parseUInt32(item._size_bit);
+		this->matchToken(DbcTokenKind::OperatorCommercialAt);
+		this->readNextToken();
+		this->matchToken(DbcTokenKind::LiteralInteger);
+		{
+			const string & byteOrder  = this->token()._text;
+			if (byteOrder == "0")
+			{
+				item._isBigEndian = true;
+			}
+			else if (byteOrder == "1")
+			{
+				item._isBigEndian = false;
+			}
+			else
+			{
+				throw DbcFormatException("Invalid byte order");
+			}
+		}
+		this->readNextToken();
+		if (this->tryMatchToken(DbcTokenKind::OperatorMinus))
+		{
+			item._isSigned = true;
+		}
+		else if (this->tryMatchToken(DbcTokenKind::OperatorPlus))
+		{
+			item._isSigned = false;
+		}
+		else
+		{
+			throw DbcFormatException("Missing value type");
+		}
+		this->readNextToken();
+		this->matchToken(DbcTokenKind::OperatorLeftParenthesis);
+		this->readNextToken();
+		this->parseFloat64(item._factor);
+		this->matchToken(DbcTokenKind::OperatorComma);
+		this->readNextToken();
+		this->parseFloat64(item._offset);
+		this->matchToken(DbcTokenKind::OperatorRightParenthesis);
+		this->readNextToken();
+		this->matchToken(DbcTokenKind::OperatorLeftSquareBracket);
+		this->readNextToken();
+		this->parseFloat64(item._minimum);
+		this->matchToken(DbcTokenKind::OperatorVerticalLine);
+		this->readNextToken();
+		this->parseFloat64(item._maximum);
+		this->matchToken(DbcTokenKind::OperatorRightSquareBracket);
+		this->readNextToken();
+		this->parseString(item._unit);
 	}
 
 	void DbcParser::parseString(string & value)
@@ -448,21 +592,6 @@ namespace OptiScan::Parser::Dbc
 			}
 			this->_tokenStackCount++;
 		}
-	}
-
-void DbcParser::parseNodes(vector<string> & nodes)
-	{
-		this->matchKeyword(DbcKeyword::BU_);
-		this->readNextToken();
-		this->matchToken(DbcTokenKind::OperatorColon);
-		this->readNextToken();
-		while (!this->tryMatchToken(DbcTokenKind::EndOfLine))
-		{
-			string id;
-			this->parseIdentifier(id);
-			nodes.push_back(id);
-		}
-		this->parseEndOfLine();
 	}
 
 	const DbcToken & DbcParser::token() const

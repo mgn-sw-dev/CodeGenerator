@@ -20,6 +20,8 @@ set(OptiScanParser_SOURCES
     Dbc/DbcParser.h
     Dbc/DbcScanner.cpp
     Dbc/DbcScanner.h
+    Flags.h
+    Flags.inl.h
 )
 
 target_sources(OptiScanParser PRIVATE ${OptiScanParser_SOURCES})
