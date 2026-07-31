@@ -298,6 +298,19 @@ namespace OptiScan::Parser::Dbc
 		}
 	}
 
+	void DbcParser::parseAttributeDefault(vector<DbcAttribute> & attributeDefaults)
+	{
+		DbcAttribute item;
+		this->matchKeyword(DbcKeyword::BA_DEF_DEF_);
+		this->readNextToken();
+		this->parseString(item._name);
+		this->parseAttributeValue(item._value);
+		this->matchToken(DbcTokenKind::OperatorSemicolon);
+		this->readNextToken();
+		this->parseEndOfLine();
+		attributeDefaults.push_back(item);
+	}
+
 	void DbcParser::parseAttributeValue(DbcAttributeValue & value)
 	{
 		if (this->tryMatchToken(DbcTokenKind::Identifier))
@@ -382,6 +395,7 @@ namespace OptiScan::Parser::Dbc
 				this->parseAttributeDef(dbcDatabase._attributeDefs);
 				break;
 			case DbcKeywordKind::BA_DEF_DEF_:
+				this->parseAttributeDefault(dbcDatabase._attributeDefaults);
 				break;
 			case DbcKeywordKind::BO_:
 				this->parseMessage(dbcDatabase._messages);
@@ -413,6 +427,11 @@ namespace OptiScan::Parser::Dbc
 			case DbcKeywordKind::VERSION:
 				break;
 			case DbcKeywordKind::Unknown:
+			default:
+				{
+					DbcToken const token = this->token();
+					this->parseTailOfUnknownKeywordLine(token);
+				}
 				break;
 			}
 		}

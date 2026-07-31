@@ -49,6 +49,8 @@ namespace OptiScan::Parser::Dbc
         /** @throws DbcFormatException. */
         void parseAttributeDef(std::vector<std::shared_ptr<DbcAttributeDef>> & attributeDefs);
         /** @throws DbcFormatException. */
+        void parseAttributeDefault(std::vector<DbcAttribute> & attributeDefaults);
+        /** @throws DbcFormatException. */
         void parseAttributeValue(DbcAttributeValue & value);
         /** @throws DbcFormatException. */
         void parseBitTiming(DbcBitTiming & bitTiming);
