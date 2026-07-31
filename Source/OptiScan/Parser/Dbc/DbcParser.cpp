@@ -191,6 +191,113 @@ namespace OptiScan::Parser::Dbc
 		}
 	}
 
+	void DbcParser::parseAttributeDef(vector<shared_ptr<DbcAttributeDef>> & attributeDefs)
+	{
+		DbcToken const token = this->token();
+		this->matchKeyword(DbcKeyword::BA_DEF_);
+		this->readNextToken();
+		bool hasObjectType = true;
+		DbcAttributeObjectType objectType = DbcAttributeObjectType::Unknown;
+		if (this->tryMatchToken(DbcTokenKind::LiteralString))
+		{
+			objectType = DbcAttributeObjectType::Network;
+		}
+		else if (this->tryMatchKeyword(DbcKeyword::BO_))
+		{
+			this->readNextToken();
+			objectType = DbcAttributeObjectType::Message;
+		}
+		else if (this->tryMatchKeyword(DbcKeyword::BU_))
+		{
+			this->readNextToken();
+			objectType = DbcAttributeObjectType::Node;
+		}
+		else if (this->tryMatchKeyword(DbcKeyword::EV_))
+		{
+			this->readNextToken();
+			objectType = DbcAttributeObjectType::EnvVar;
+		}
+		else if (this->tryMatchKeyword(DbcKeyword::SG_))
+		{
+			this->readNextToken();
+			objectType = DbcAttributeObjectType::Signal;
+		}
+		else
+		{
+			hasObjectType = false;
+		}
+		shared_ptr<DbcAttributeDef> item;
+		if (hasObjectType)
+		{
+			string name;
+			this->parseString(name);
+			if (this->tryMatchKeyword("ENUM"))
+			{
+				this->readNextToken();
+				shared_ptr<DbcAttributeDefEnum> tmp(new DbcAttributeDefEnum());
+				bool checkNext = this->tryMatchToken(DbcTokenKind::LiteralString);
+				while (checkNext)
+				{
+					string value;
+					this->parseString(value);
+					tmp->_values.push_back(value);
+					checkNext = this->tryMatchToken(DbcTokenKind::OperatorComma);
+					if (checkNext)
+					{
+						this->readNextToken();
+					}
+				}
+				item = tmp;
+			}
+			else if (this->tryMatchKeyword("FLOAT"))
+			{
+				this->readNextToken();
+				shared_ptr<DbcAttributeDefFloat> tmp(new DbcAttributeDefFloat());
+				this->parseFloat64(tmp->_minimum);
+				this->parseFloat64(tmp->_maximum);
+				item = tmp;
+			}
+			else if (this->tryMatchKeyword("HEX"))
+			{
+				this->readNextToken();
+				shared_ptr<DbcAttributeDefHex> tmp(new DbcAttributeDefHex());
+				this->parseUInt32(tmp->_minimum);
+				this->parseUInt32(tmp->_maximum);
+				item = tmp;
+			}
+			else if (this->tryMatchKeyword("INT"))
+			{
+				this->readNextToken();
+				shared_ptr<DbcAttributeDefInt> tmp(new DbcAttributeDefInt());
+				this->parseInt32(tmp->_minimum);
+				this->parseInt32(tmp->_maximum);
+				item = tmp;
+			}
+			else if (this->tryMatchKeyword("STRING"))
+			{
+				this->readNextToken();
+				shared_ptr<DbcAttributeDefString> tmp(new DbcAttributeDefString());
+				item = tmp;
+			}
+			if (item != nullptr)
+			{
+				item->_name = name;
+			}
+		}
+		if (item == nullptr)
+		{
+			this->parseTailOfUnknownKeywordLine(token);
+		}
+		else
+		{
+			item->_objectType = objectType;
+			this->matchToken(DbcTokenKind::OperatorSemicolon);
+			this->readNextToken();
+			this->parseEndOfLine();
+			attributeDefs.push_back(item);
+		}
+	}
+
 	void DbcParser::parseAttributeValue(DbcAttributeValue & value)
 	{
 		if (this->tryMatchToken(DbcTokenKind::Identifier))
@@ -272,6 +379,7 @@ namespace OptiScan::Parser::Dbc
 				this->parseAttribute(dbcDatabase);
 				break;
 			case DbcKeywordKind::BA_DEF_:
+				this->parseAttributeDef(dbcDatabase._attributeDefs);
 				break;
 			case DbcKeywordKind::BA_DEF_DEF_:
 				break;
@@ -434,6 +542,15 @@ namespace OptiScan::Parser::Dbc
 		this->matchToken(DbcTokenKind::Identifier);
 		value = this->token()._text;
 		this->readNextToken();
+	}
+
+	void DbcParser::parseInt32(int32_t & value)
+	{
+		exception_ptr const error = this->tryParseInt32(value);
+		if (error)
+		{
+			rethrow_exception(error);
+		}
 	}
 
 	void DbcParser::parseMessage(vector<DbcMessage> & messages)
