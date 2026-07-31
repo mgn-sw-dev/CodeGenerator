@@ -7,6 +7,17 @@
 
 namespace OptiScan::Parser::Dbc
 {
+
+    class DbcParserObserver
+    {
+    public:
+        /** @throws DbcFormatException. */
+        virtual void onUnknownKeyword(const DbcToken & token);
+    protected:
+        /** */
+        virtual ~DbcParserObserver();
+    };
+
     class DbcParser 
     {
     public:
@@ -15,6 +26,8 @@ namespace OptiScan::Parser::Dbc
         bool hasToken() const;
         /** @throws DbcFormatException. */
         static uint32_t literalIntegerTokenTextToUInt32(const std::string & tokenText);
+        /** @throws DbcFormatException. */
+        static double literalRealTokenTextToDouble(const std::string & tokenText);
         /** @throws  DbcFormatException*/
         static std::string literalStringTokenTextToString(const std::string & tokenText);
         /** */
@@ -22,7 +35,7 @@ namespace OptiScan::Parser::Dbc
         /** @throws std::runtime_error if no token. */
         const DbcToken & token() const;
     private:
-        // DbcParserObserver * _observer
+        DbcParserObserver * _observer;
         DbcScanner _scanner;
         std::vector<DbcToken> _tokenStack;
         int64_t _tokenStackCount;
@@ -32,15 +45,23 @@ namespace OptiScan::Parser::Dbc
         /** @throws DbcFormatException. */
         void matchToken(DbcTokenKind kind);
         /** @throws DbcFormatException. */
+        void parseAttribute(DbcDatabase & dbcDatabase);
+        /** @throws DbcFormatException. */
+        void parseAttributeValue(DbcAttributeValue & value);
+        /** @throws DbcFormatException. */
         void parseBitTiming(DbcBitTiming & bitTiming);
         /** @throws DbcFormatException. */
         void parseEndOfLine();
+        /** @throws DbcFormatException. */
+        void parseFloat64(double & value);
         /** @throws DbcFormatException. */
         void parseIdentifier(std::string & value);
         /** @throws DbcFormatException. */
         void parseNewSymbols(std::vector<std::string> & symbols);
         /** @throws DbcFormatException. */
         void parseString(std::string & value);
+        /** @throws DbcFormatException. */
+        void parseTailOfUnknownKeywordLine(const DbcToken & token);
         /** @throws DbcFormatException. */
         void parseUInt32(uint32_t & value);
         /** @throws DbcFormatException. */
@@ -57,6 +78,9 @@ namespace OptiScan::Parser::Dbc
         bool tryMatchKeyword(const std::string & id);
         /** */
         bool tryMatchToken(DbcTokenKind kind) const;
+        /** @returns null If no error.
+         *  @throws DbcFormatException. */
+        std::exception_ptr tryParseInt32(int32_t & value);
         /** @returns null If no error.
          *  @throws DbcFormatException. */
         std::exception_ptr tryParseUInt32(uint32_t & value);

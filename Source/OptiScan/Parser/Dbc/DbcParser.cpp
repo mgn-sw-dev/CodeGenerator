@@ -10,7 +10,8 @@ using namespace std;
 namespace OptiScan::Parser::Dbc
 {
 	DbcParser::DbcParser(istream * input)
-		: _scanner(input)
+		: _observer(nullptr)
+		, _scanner(input)
 		, _tokenStack()
 		, _tokenStackCount(-1)
 	{
@@ -40,6 +41,20 @@ namespace OptiScan::Parser::Dbc
 		if (!isValid)
 		{
 			throw DbcFormatException("Invalid uint32");
+		}
+		return result;
+	}
+
+	double DbcParser::literalRealTokenTextToDouble(const std::string & tokenText)
+	{
+		double result = 0;
+		char const * const first = tokenText.data();
+		char const * const last = tokenText.data() + tokenText.size();
+		from_chars_result const parseResult = from_chars(first, last, result);
+		bool const isValid = parseResult.ec == errc() && parseResult.ptr == last;
+		if (!isValid)
+		{
+			throw DbcFormatException("Invalid double");
 		}
 		return result;
 	}
@@ -108,6 +123,117 @@ namespace OptiScan::Parser::Dbc
 		}
 	}
 
+	void DbcParser::parseAttribute(DbcDatabase & dbcDatabase)
+	{
+		DbcToken const token = this->token();
+		this->matchKeyword(DbcKeyword::BA_);
+		this->readNextToken();
+		string name;
+		this->parseString(name);
+		bool hasValue = true;
+		if (!this->tryMatchToken(DbcTokenKind::Identifier))
+		{
+			DbcAttribute item;
+			item._name = name;
+			this->parseAttributeValue(item._value);
+			dbcDatabase._attributes.push_back(item);
+		}
+		else if (this->tryMatchKeyword(DbcKeyword::BO_))
+		{
+			this->readNextToken();
+			DbcAttributeMessage item;
+			item._name = name;
+			this->parseUInt32(item._messageId);
+			this->parseAttributeValue(item._value);
+			dbcDatabase._attributeMessages.push_back(item);
+		}
+		else if (this->tryMatchKeyword(DbcKeyword::BU_))
+		{
+			this->readNextToken();
+			DbcAttributeNode item;
+			item._name = name;
+			this->parseIdentifier(item._nodeName);
+			this->parseAttributeValue(item._value);
+			dbcDatabase._attributeNodes.push_back(item);
+		}
+		else if (this->tryMatchKeyword(DbcKeyword::EV_))
+		{
+			this->readNextToken();
+			DbcAttributeEnvVar item;
+			item._name = name;
+			this->parseIdentifier(item._envVarName);
+			this->parseAttributeValue(item._value);
+			dbcDatabase._attributeEnvVars.push_back(item);
+		}
+		else if (this->tryMatchKeyword(DbcKeyword::SG_))
+		{
+			this->readNextToken();
+			DbcAttributeSignal item;
+			item._name = name;
+			this->parseUInt32(item._messageId);
+			this->parseIdentifier(item._signalName);
+			this->parseAttributeValue(item._value);
+			dbcDatabase._attributeSignals.push_back(item);
+		}
+		else
+		{
+			hasValue = false;
+		}
+		if (hasValue)
+		{
+			this->matchToken(DbcTokenKind::OperatorSemicolon);
+			this->readNextToken();
+			this->parseEndOfLine();
+		}
+		else
+		{
+			this->parseTailOfUnknownKeywordLine(token);
+		}
+	}
+
+	void DbcParser::parseAttributeValue(DbcAttributeValue & value)
+	{
+		if (this->tryMatchToken(DbcTokenKind::Identifier))
+		{
+			string tmp;
+			this->parseIdentifier(tmp);
+			value = tmp;
+		}
+		else if(this->tryMatchToken(DbcTokenKind::LiteralString))
+		{
+			string tmp;
+			this->parseString(tmp);
+			value = tmp;
+		}
+		else
+		{
+			exception_ptr error;
+			{
+				uint32_t tmp;
+				error = this->tryParseUInt32(tmp);
+				if (!error)
+				{
+					value = tmp;
+				}
+			}
+			if (error)
+			{
+				int32_t tmp;
+				error = this->tryParseInt32(tmp);
+				if (!error)
+				{
+					value = tmp;
+				}
+			}
+			if (error)
+			{
+				double tmp;
+				this->parseFloat64(tmp);
+				value = tmp;
+			}
+		}
+	}
+
 	void DbcParser::parse(DbcDatabase & dbcDatabase)
 	{
 		dbcDatabase = DbcDatabase();
@@ -129,6 +255,56 @@ namespace OptiScan::Parser::Dbc
 		}
 
 		this->parseBitTiming(dbcDatabase._bitTiming);
+
+		while (!this->tryMatchToken(DbcTokenKind::None))
+		{
+			this->matchToken(DbcTokenKind::Identifier);
+			const string & keyword = this->token()._text;
+			auto it = KeywordMap.find(keyword);
+			DbcKeywordKind kind = DbcKeywordKind::Unknown;
+			if (it != KeywordMap.end())
+			{
+				kind = it->second;
+			}
+			switch (kind)
+			{
+			case DbcKeywordKind::BA_:
+				this->parseAttribute(dbcDatabase);
+				break;
+			case DbcKeywordKind::BA_DEF_:
+				break;
+			case DbcKeywordKind::BA_DEF_DEF_:
+				break;
+			case DbcKeywordKind::BO_:
+				break;
+			case DbcKeywordKind::BO_TX_BU_:
+				break;
+			case DbcKeywordKind::BS_:
+				break;
+			case DbcKeywordKind::BU_:
+				break;
+			case DbcKeywordKind::CM_:
+				break;
+			case DbcKeywordKind::EV_:
+				break;
+			case DbcKeywordKind::NS_:
+				break;
+			case DbcKeywordKind::SG_:
+				break;
+			case DbcKeywordKind::SG_MUL_VAL_:
+				break;
+			case DbcKeywordKind::SGTYPE_:
+				break;
+			case DbcKeywordKind::VAL_:
+				break;
+			case DbcKeywordKind::VAL_TABLE_:
+				break;
+			case DbcKeywordKind::VERSION:
+				break;
+			case DbcKeywordKind::Unknown:
+				break;
+			}
+		}
 	}
 
 	void DbcParser::parseBitTiming(DbcBitTiming & bitTiming)
@@ -160,6 +336,35 @@ namespace OptiScan::Parser::Dbc
 		}
 	}
 
+	void DbcParser::parseFloat64(double & value)
+	{
+		bool isSigned = false;
+		if (this->tryMatchToken(DbcTokenKind::OperatorMinus))
+		{
+			isSigned = true;
+			this->readNextToken();
+		}
+		else if (this->tryMatchToken(DbcTokenKind::OperatorPlus))
+		{
+			this->readNextToken();
+		}
+		double tmp;
+		if (this->tryMatchToken(DbcTokenKind::LiteralInteger) || this->tryMatchToken(DbcTokenKind::LiteralReal))
+		{
+			tmp = DbcParser::literalRealTokenTextToDouble(this->token()._text);
+		}
+		else
+		{
+			throw DbcFormatException("literal integer or literal real expected");
+		}
+		if (isSigned)
+		{
+			tmp = -tmp;
+		}
+		value = tmp;
+		this->readNextToken();
+	}
+
 	void DbcParser::parseIdentifier(string & value)
 	{
 		this->matchToken(DbcTokenKind::Identifier);
@@ -188,6 +393,19 @@ namespace OptiScan::Parser::Dbc
 		this->matchToken(DbcTokenKind::LiteralString);
 		value = DbcParser::literalStringTokenTextToString(this->token()._text);
 		this->readNextToken();
+	}
+
+	void DbcParser::parseTailOfUnknownKeywordLine(const DbcToken & token)
+	{
+		if (this->_observer != nullptr)
+		{
+			this->_observer->onUnknownKeyword(token);
+		}
+		while (!this->tryMatchToken(DbcTokenKind::EndOfLine))
+		{
+			this->readNextToken();
+		}
+		this->parseEndOfLine();
 	}
 
 	void DbcParser::parseUInt32(uint32_t & value)
@@ -308,6 +526,45 @@ namespace OptiScan::Parser::Dbc
 		return result;
 	}
 
+	exception_ptr DbcParser::tryParseInt32(int32_t & value)
+	{
+		exception_ptr result;
+		this->tokenStackBegin();
+		try
+		{
+			bool isSigned = false;
+			if (this->tryMatchToken(DbcTokenKind::OperatorMinus))
+			{
+				isSigned = true;
+				this->readNextToken();
+			}
+			else if (this->tryMatchToken(DbcTokenKind::OperatorPlus))
+			{
+				this->readNextToken();
+			}
+			this->matchToken(DbcTokenKind::LiteralInteger);
+			uint32_t const raw = DbcParser::literalIntegerTokenTextToUInt32(this->token()._text);
+			int64_t signedValue = static_cast<int64_t>(raw);
+			if (isSigned)
+			{
+				signedValue = -signedValue;
+			}
+			if (signedValue < INT32_MIN || INT32_MAX < signedValue)
+			{
+				throw DbcFormatException("Int32 out of range");
+			}
+			value = static_cast<int32_t>(signedValue);
+			this->tokenStackCommit();
+			this->readNextToken();
+		}
+		catch (const DbcFormatException & ex)
+		{
+			result = current_exception();
+			this->tokenStackRollback();
+		}
+		return result;
+	}
+
 	exception_ptr DbcParser::tryParseUInt32(uint32_t & value)
 	{
 		exception_ptr result;
@@ -331,4 +588,13 @@ namespace OptiScan::Parser::Dbc
 		}
 		return result;
 	}
+
+	DbcParserObserver::~DbcParserObserver()
+	{
+	}
+
+	void DbcParserObserver::onUnknownKeyword(const DbcToken & /*token*/)
+	{
+	}
+
 }
