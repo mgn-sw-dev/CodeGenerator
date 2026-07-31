@@ -107,7 +107,7 @@ namespace OptiScan::Parser::Dbc
 		return result;
 	}
 
-	void DbcParser::matchKeyword(const string & id)
+	void DbcParser::matchKeyword(const string & id) const
 	{
 		if (!this->tryMatchKeyword(id))
 		{
@@ -1055,7 +1055,7 @@ namespace OptiScan::Parser::Dbc
 		this->_tokenStackCount = -1;
 	}
 
-	bool DbcParser::tryMatchKeyword(const string & id)
+	bool DbcParser::tryMatchKeyword(const string & id) const
 	{
 		bool result = false;
 		if (this->tryMatchToken(DbcTokenKind::Identifier))

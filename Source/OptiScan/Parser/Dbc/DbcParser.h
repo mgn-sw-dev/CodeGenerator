@@ -51,7 +51,7 @@ namespace OptiScan::Parser::Dbc
         int64_t _tokenStackCount;
 
         /** @throws DbcFormatException. */
-        void matchKeyword(const std::string & id);
+        void matchKeyword(const std::string & id) const;
         /** @throws DbcFormatException. */
         void matchToken(DbcTokenKind kind) const;
         /** @throws DbcFormatException. */
@@ -115,7 +115,7 @@ namespace OptiScan::Parser::Dbc
         /** @throws DbcInvalidOperationException. */
         void tokenStackRollback();
         /** */
-        bool tryMatchKeyword(const std::string & id);
+        bool tryMatchKeyword(const std::string & id) const;
         /** */
         bool tryMatchToken(DbcTokenKind kind) const;
         /** @returns null If no error.
