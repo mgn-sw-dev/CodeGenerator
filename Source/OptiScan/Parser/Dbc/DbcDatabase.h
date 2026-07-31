@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OptiScan/Parser/Dbc/DbcAttribute.h>
+#include <OptiScan/Parser/Dbc/DbcComment.h>
 #include <OptiScan/Parser/Flags.h>
 #include <memory>
 #include <string>
@@ -33,36 +34,6 @@ namespace OptiScan::Parser::Dbc
         DbcBitTiming() = default;
         /** */
         bool hasNonZero() const;
-    };
-
-    class DbcComment
-    {
-    public:
-        std::string _text;
-    };
-
-    class DbcCommentEnvVar : public DbcComment
-    {
-    public:
-        std::string _envVarName;
-    };
-
-    class DbcCommentMessage : public DbcComment
-    {
-    public:
-        uint32_t _messageId;
-    };
-
-    class DbcCommentNode : public DbcComment
-    {
-    public:
-        std::string _nodeName;
-    };
-
-    class DbcCommentSignal : public DbcCommentMessage
-    {
-    public:
-        std::string _signalName;
     };
 
     class DbcDatabase
