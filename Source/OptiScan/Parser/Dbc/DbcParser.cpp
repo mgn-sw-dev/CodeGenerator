@@ -239,7 +239,7 @@ namespace OptiScan::Parser::Dbc
 			if (this->tryMatchKeyword("ENUM"))
 			{
 				this->readNextToken();
-				shared_ptr<DbcAttributeDefEnum> tmp(new DbcAttributeDefEnum());
+				shared_ptr<DbcAttributeDefEnum> tmp = make_shared<DbcAttributeDefEnum>();
 				bool checkNext = this->tryMatchToken(DbcTokenKind::LiteralString);
 				while (checkNext)
 				{
@@ -1034,7 +1034,7 @@ namespace OptiScan::Parser::Dbc
 		{
 			throw DbcInvalidOperationException("Token stack commit error: no token stack");
 		}
-		for (size_t i = 0; i < this->_tokenStackCount; i++)
+		for (int64_t i = 0; i < this->_tokenStackCount; i++)
 		{
 			this->_tokenStack.erase(this->_tokenStack.begin());
 		}
