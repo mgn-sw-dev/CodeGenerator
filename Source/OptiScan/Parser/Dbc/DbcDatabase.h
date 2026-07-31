@@ -1,9 +1,9 @@
 #pragma once
 
+#include <OptiScan/Parser/Dbc/DbcAttribute.h>
 #include <OptiScan/Parser/Flags.h>
 #include <memory>
 #include <string>
-#include <variant>
 #include <vector>
 
 namespace OptiScan::Parser::Dbc
@@ -22,112 +22,6 @@ namespace OptiScan::Parser::Dbc
     class DbcSignalValueDescriptions;
     class DbcValueDescription;
     class DbcValueTable;
-
-    using DbcAttributeValue = std::variant<std::monostate, std::string, uint32_t, int32_t, double>;
-
-    enum class DbcAttributeObjectType
-    {
-        Unknown,
-        EnvVar,
-        Network,
-        Node,
-        Message,
-        Signal,
-    };
-
-    enum class DbcAttributeValueType
-    {
-        Unknown,
-        Enum,
-        Float,
-        Hex,
-        Int,
-        String,
-    };
-
-    class DbcAttribute
-    {
-    public:
-        std::string _name;
-        DbcAttributeValue _value;
-    };
-
-    class DbcAttributeDef
-    {
-    public:
-        std::string _name;
-        DbcAttributeObjectType _objectType;
-        /** */
-        virtual ~DbcAttributeDef() = default;
-        /** */
-        virtual DbcAttributeValueType valueType() const = 0;
-    };
-
-    class DbcAttributeDefEnum : public DbcAttributeDef
-    {
-    public:
-        std::vector<std::string> _values;
-        /** */
-        virtual DbcAttributeValueType valueType() const override;
-    };
-
-    class DbcAttributeDefFloat : public DbcAttributeDef
-    {
-    public:
-        double _maximum;
-        double _minimum;
-        /** */
-        virtual DbcAttributeValueType valueType() const override;
-    };
-
-    class DbcAttributeDefHex : public DbcAttributeDef
-    {
-    public:
-        uint32_t _maximum;
-        uint32_t _minimum;
-        /** */
-        virtual DbcAttributeValueType valueType() const override;
-    };
-
-    class DbcAttributeDefInt : public DbcAttributeDef
-    {
-    public:
-        int32_t _maximum;
-        int32_t _minimum;
-        /** */
-        virtual DbcAttributeValueType valueType() const override;
-    };
-
-    class DbcAttributeDefString : public DbcAttributeDef
-    {
-    public:
-        /** */
-        virtual DbcAttributeValueType valueType() const override;
-    };
-
-    class DbcAttributeEnvVar : public DbcAttribute
-    {
-    public:
-        std::string _envVarName;
-    };
-
-    class DbcAttributeMessage : public DbcAttribute
-    {
-    public:
-        uint32_t _messageId;
-    };
-
-    class DbcAttributeNode : public DbcAttribute
-    {
-    public:
-        std::string _nodeName;
-    };
-
-    class DbcAttributeSignal : public DbcAttributeMessage
-    {
-    public:
-        std::string _signalName;
-    };
 
     class DbcBitTiming
     {

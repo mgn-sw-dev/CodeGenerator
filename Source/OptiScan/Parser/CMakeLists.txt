@@ -9,6 +9,7 @@ target_link_libraries(OptiScanParser PUBLIC
 target_include_directories(OptiScanParser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../..)
 
 set(OptiScanParser_SOURCES
+    Dbc/DbcAttribute.h
     Dbc/DbcDatabase.cpp
     Dbc/DbcDatabase.h
     Dbc/DbcException.cpp
