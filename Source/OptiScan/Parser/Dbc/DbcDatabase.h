@@ -1,35 +1,15 @@
 #pragma once
 
 #include <OptiScan/Parser/Dbc/DbcAttribute.h>
+#include <OptiScan/Parser/Dbc/DbcBitTiming.h>
 #include <OptiScan/Parser/Dbc/DbcComment.h>
-#include <OptiScan/Parser/Dbc/DbcSignal.h>
+#include <OptiScan/Parser/Dbc/DbcMessage.h>
 #include <memory>
 #include <string>
 #include <vector>
 
 namespace OptiScan::Parser::Dbc
 {
-    class DbcMessage;
-    class DbcMessageTransmitters;
-    class DbcSignal;
-    class DbcSignalAttribute;
-    class DbcSignalBase;
-    class DbcSignalType;
-    class DbcValueDescription;
-    class DbcValueTable;
-
-    class DbcBitTiming
-    {
-    public:
-        uint32_t _baudrate = 0;
-        uint32_t _btr1 = 0;
-        uint32_t _btr2 = 0;
-        /** */
-        DbcBitTiming() = default;
-        /** */
-        bool hasNonZero() const;
-    };
-
     class DbcDatabase
     {
     public:
@@ -58,48 +38,6 @@ namespace OptiScan::Parser::Dbc
         std::vector<DbcSignalEnvVarValueDescriptions> _signalEnvVarValueDescriptions;
         std::vector<DbcValueTable> _valueTables;
         std::string _version;
-    };
-
-    class DbcMessage
-    {
-    public:
-        static constexpr uint32_t ExtendedCanIdMask = 0x7FFF'FFFF;
-        uint32_t _id;
-        std::string _name;
-        std::vector<DbcSignal> _signals;
-        uint32_t _size_byte;
-        std::string _transmitter;
-        /** */
-        DbcMessage();
-        /** */
-        uint32_t extendedCanId() const;
-        /** */
-        bool isExtendedCanId() const;
-        /** */
-        void setExtendedCanId(uint32_t id);
-    };
-
-    class DbcMessageTransmitters
-    {
-    public:
-        uint32_t _messageId;
-        std::vector<std::string> _transmitters;
-    };
-
-    class DbcValueDescription
-    {
-    public:
-        std::string _description;
-        double _value = 0.0;
-        /** */
-        DbcValueDescription() = default;
-    };
-
-    class DbcValueTable
-    {
-    public:
-        std::vector<DbcValueDescription> _valueDescriptions;
-        std::string _name;
     };
 
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OptiScan/Parser/Dbc/DbcValue.h>
 #include <OptiScan/Parser/Flags.h>
 #include <string>
 #include <vector>
@@ -91,7 +92,6 @@ namespace OptiScan::Parser::Dbc
 		/** */
 		DbcSignal() = default;
 	};
-
 
 	class DbcSignalType : public DbcSignalBase
 	{

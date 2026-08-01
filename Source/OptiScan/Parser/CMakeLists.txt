@@ -10,6 +10,8 @@ target_include_directories(OptiScanParser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../..
 
 set(OptiScanParser_SOURCES
     Dbc/DbcAttribute.h
+    Dbc/DbcBitTiming.cpp
+    Dbc/DbcBitTiming.h
     Dbc/DbcComment.h
     Dbc/DbcDatabase.cpp
     Dbc/DbcDatabase.h
@@ -18,10 +20,14 @@ set(OptiScanParser_SOURCES
     Dbc/DbcFormat.cpp
     Dbc/DbcFormat.h
     Dbc/DbcKeyword.h
+    Dbc/DbcMessage.cpp
+    Dbc/DbcMessage.h
     Dbc/DbcParser.cpp
     Dbc/DbcParser.h
     Dbc/DbcScanner.cpp
     Dbc/DbcScanner.h
+    Dbc/DbcSignal.h
+    Dbc/DbcValue.h
     Flags.h
     Flags.inl.h
 )
