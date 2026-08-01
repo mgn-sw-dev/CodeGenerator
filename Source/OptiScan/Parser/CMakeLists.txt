@@ -26,6 +26,8 @@ set(OptiScanParser_SOURCES
     Dbc/DbcScanner.cpp
     Dbc/DbcScanner.h
     Dbc/DbcSignal.h
+    Dbc/DbcTokenReader.cpp
+    Dbc/DbcTokenReader.h
     Dbc/DbcValue.h
     Flags.h
     Flags.inl.h
