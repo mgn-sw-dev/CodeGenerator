@@ -33,6 +33,6 @@
 *.app
 
 # Project files
-.dbc
-.ldf
-.a2l
+*.dbc
+*.ldf
+*.a2l
