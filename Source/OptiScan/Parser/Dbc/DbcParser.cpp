@@ -28,47 +28,27 @@ namespace OptiScan::Parser::Dbc
 		bool hasValue = true;
 		if (!this->_reader.tryMatchToken(DbcTokenKind::Identifier))
 		{
-			DbcAttribute item;
-			item._name = name;
-			this->parseAttributeValue(item._value);
-			dbcDatabase._attributes.push_back(item);
+			this->parseAttributeGlobal(name, dbcDatabase._attributes);
 		}
 		else if (this->_reader.tryMatchKeyword(DbcKeyword::BO_))
 		{
 			this->_reader.readNextToken();
-			DbcAttributeMessage item;
-			item._name = name;
-			this->_reader.parseUInt32(item._messageId);
-			this->parseAttributeValue(item._value);
-			dbcDatabase._attributeMessages.push_back(item);
+			this->parseAttributeMessage(name, dbcDatabase._attributeMessages);
 		}
 		else if (this->_reader.tryMatchKeyword(DbcKeyword::BU_))
 		{
 			this->_reader.readNextToken();
-			DbcAttributeNode item;
-			item._name = name;
-			this->_reader.parseIdentifier(item._nodeName);
-			this->parseAttributeValue(item._value);
-			dbcDatabase._attributeNodes.push_back(item);
+			this->parseAttributeNode(name, dbcDatabase._attributeNodes);
 		}
 		else if (this->_reader.tryMatchKeyword(DbcKeyword::EV_))
 		{
 			this->_reader.readNextToken();
-			DbcAttributeEnvVar item;
-			item._name = name;
-			this->_reader.parseIdentifier(item._envVarName);
-			this->parseAttributeValue(item._value);
-			dbcDatabase._attributeEnvVars.push_back(item);
+			this->parseAttributeEnvVar(name, dbcDatabase._attributeEnvVars);
 		}
 		else if (this->_reader.tryMatchKeyword(DbcKeyword::SG_))
 		{
 			this->_reader.readNextToken();
-			DbcAttributeSignal item;
-			item._name = name;
-			this->_reader.parseUInt32(item._messageId);
-			this->_reader.parseIdentifier(item._signalName);
-			this->parseAttributeValue(item._value);
-			dbcDatabase._attributeSignals.push_back(item);
+			this->parseAttributeSignal(name, dbcDatabase._attributeSignals);
 		}
 		else
 		{
@@ -206,6 +186,51 @@ namespace OptiScan::Parser::Dbc
 		this->_reader.readNextToken();
 		this->parseEndOfLine();
 		attributeDefaults.push_back(item);
+	}
+
+	void DbcParser::parseAttributeEnvVar(const string & name, vector<DbcAttributeEnvVar> & attributeEnvVars)
+	{
+		DbcAttributeEnvVar item;
+		item._name = name;
+		this->_reader.parseIdentifier(item._envVarName);
+		this->parseAttributeValue(item._value);
+		attributeEnvVars.push_back(item);
+	}
+
+	void DbcParser::parseAttributeGlobal(const string & name, vector<DbcAttribute> & attributes)
+	{
+		DbcAttribute item;
+		item._name = name;
+		this->parseAttributeValue(item._value);
+		attributes.push_back(item);
+	}
+
+	void DbcParser::parseAttributeMessage(const string & name, vector<DbcAttributeMessage> & attributeMessages)
+	{
+		DbcAttributeMessage item;
+		item._name = name;
+		this->_reader.parseUInt32(item._messageId);
+		this->parseAttributeValue(item._value);
+		attributeMessages.push_back(item);
+	}
+
+	void DbcParser::parseAttributeNode(const string & name, vector<DbcAttributeNode> & attributeNodes)
+	{
+		DbcAttributeNode item;
+		item._name = name;
+		this->_reader.parseIdentifier(item._nodeName);
+		this->parseAttributeValue(item._value);
+		attributeNodes.push_back(item);
+	}
+
+	void DbcParser::parseAttributeSignal(const string & name, vector<DbcAttributeSignal> & attributeSignals)
+	{
+		DbcAttributeSignal item;
+		item._name = name;
+		this->_reader.parseUInt32(item._messageId);
+		this->_reader.parseIdentifier(item._signalName);
+		this->parseAttributeValue(item._value);
+		attributeSignals.push_back(item);
 	}
 
 	void DbcParser::parseAttributeValue(DbcAttributeValue & value)
@@ -364,42 +389,27 @@ namespace OptiScan::Parser::Dbc
 		bool hasMatch = true;
 		if (this->_reader.tryMatchToken(DbcTokenKind::LiteralString))
 		{
-			DbcComment comment;
-			this->_reader.parseString(comment._text);
-			dbcDatabase._comments.push_back(comment);
+			this->parseCommentGlobal(dbcDatabase._comments);
 		}
 		else if (this->_reader.tryMatchKeyword(DbcKeyword::BO_))
 		{
 			this->_reader.readNextToken();
-			DbcCommentMessage commentMessage;
-			this->_reader.parseUInt32(commentMessage._messageId);
-			this->_reader.parseString(commentMessage._text);
-			dbcDatabase._commentMessages.push_back(commentMessage);
+			this->parseCommentMessage(dbcDatabase._commentMessages);
 		}
 		else if (this->_reader.tryMatchKeyword(DbcKeyword::BU_))
 		{
 			this->_reader.readNextToken();
-			DbcCommentNode commentNode;
-			this->_reader.parseIdentifier(commentNode._nodeName);
-			this->_reader.parseString(commentNode._text);
-			dbcDatabase._commentNodes.push_back(commentNode);
+			this->parseCommentNode(dbcDatabase._commentNodes);
 		}
 		else if (this->_reader.tryMatchKeyword(DbcKeyword::EV_))
 		{
 			this->_reader.readNextToken();
-			DbcCommentEnvVar commentEnvVar;
-			this->_reader.parseIdentifier(commentEnvVar._envVarName);
-			this->_reader.parseString(commentEnvVar._text);
-			dbcDatabase._commentEnvVars.push_back(commentEnvVar);
+			this->parseCommentEnvVar(dbcDatabase._commentEnvVars);
 		}
 		else if (this->_reader.tryMatchKeyword(DbcKeyword::SG_))
 		{
 			this->_reader.readNextToken();
-			DbcCommentSignal commentSignal;
-			this->_reader.parseUInt32(commentSignal._messageId);
-			this->_reader.parseIdentifier(commentSignal._signalName);
-			this->_reader.parseString(commentSignal._text);
-			dbcDatabase._commentSignals.push_back(commentSignal);
+			this->parseCommentSignal(dbcDatabase._commentSignals);
 		}
 		else
 		{
@@ -415,6 +425,46 @@ namespace OptiScan::Parser::Dbc
 		{
 			this->parseTailOfUnknownKeywordLine(token);
 		}
+	}
+
+	void DbcParser::parseCommentEnvVar(vector<DbcCommentEnvVar> & commentEnvVars)
+	{
+		DbcCommentEnvVar commentEnvVar;
+		this->_reader.parseIdentifier(commentEnvVar._envVarName);
+		this->_reader.parseString(commentEnvVar._text);
+		commentEnvVars.push_back(commentEnvVar);
+	}
+
+	void DbcParser::parseCommentGlobal(vector<DbcComment> & comments)
+	{
+		DbcComment comment;
+		this->_reader.parseString(comment._text);
+		comments.push_back(comment);
+	}
+
+	void DbcParser::parseCommentMessage(vector<DbcCommentMessage> & commentMessages)
+	{
+		DbcCommentMessage commentMessage;
+		this->_reader.parseUInt32(commentMessage._messageId);
+		this->_reader.parseString(commentMessage._text);
+		commentMessages.push_back(commentMessage);
+	}
+
+	void DbcParser::parseCommentNode(vector<DbcCommentNode> & commentNodes)
+	{
+		DbcCommentNode commentNode;
+		this->_reader.parseIdentifier(commentNode._nodeName);
+		this->_reader.parseString(commentNode._text);
+		commentNodes.push_back(commentNode);
+	}
+
+	void DbcParser::parseCommentSignal(vector<DbcCommentSignal> & commentSignals)
+	{
+		DbcCommentSignal commentSignal;
+		this->_reader.parseUInt32(commentSignal._messageId);
+		this->_reader.parseIdentifier(commentSignal._signalName);
+		this->_reader.parseString(commentSignal._text);
+		commentSignals.push_back(commentSignal);
 	}
 
 	void DbcParser::parseEndOfLine()

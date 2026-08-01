@@ -39,11 +39,31 @@ namespace OptiScan::Parser::Dbc
         /** @throws DbcFormatException. */
         void parseAttributeDefault(std::vector<DbcAttribute> & attributeDefaults);
         /** @throws DbcFormatException. */
+        void parseAttributeEnvVar(const std::string & name, std::vector<DbcAttributeEnvVar> & attributeEnvVars);
+        /** @throws DbcFormatException. */
+        void parseAttributeGlobal(const std::string & name, std::vector<DbcAttribute> & attributes);
+        /** @throws DbcFormatException. */
+        void parseAttributeMessage(const std::string & name, std::vector<DbcAttributeMessage> & attributeMessages);
+        /** @throws DbcFormatException. */
+        void parseAttributeNode(const std::string & name, std::vector<DbcAttributeNode> & attributeNodes);
+        /** @throws DbcFormatException. */
+        void parseAttributeSignal(const std::string & name, std::vector<DbcAttributeSignal> & attributeSignals);
+        /** @throws DbcFormatException. */
         void parseAttributeValue(DbcAttributeValue & value);
         /** @throws DbcFormatException. */
         void parseBitTiming(DbcBitTiming & bitTiming);
         /** @throws DbcFormatException. */
         void parseComment(DbcDatabase & dbcDatabase);
+        /** @throws DbcFormatException. */
+        void parseCommentEnvVar(std::vector<DbcCommentEnvVar> & commentEnvVars);
+        /** @throws DbcFormatException. */
+        void parseCommentGlobal(std::vector<DbcComment> & comments);
+        /** @throws DbcFormatException. */
+        void parseCommentMessage(std::vector<DbcCommentMessage> & commentMessages);
+        /** @throws DbcFormatException. */
+        void parseCommentNode(std::vector<DbcCommentNode> & commentNodes);
+        /** @throws DbcFormatException. */
+        void parseCommentSignal(std::vector<DbcCommentSignal> & commentSignals);
         /** @throws DbcFormatException. */
         void parseEndOfLine();
         /** @throws DbcFormatException. */
