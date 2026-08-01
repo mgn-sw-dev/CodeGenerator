@@ -13,7 +13,6 @@ set(OptiScanParser_SOURCES
     Dbc/DbcBitTiming.cpp
     Dbc/DbcBitTiming.h
     Dbc/DbcComment.h
-    Dbc/DbcDatabase.cpp
     Dbc/DbcDatabase.h
     Dbc/DbcException.cpp
     Dbc/DbcException.h

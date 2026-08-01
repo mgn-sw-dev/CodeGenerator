@@ -34,58 +34,46 @@ namespace OptiScan::Parser::Dbc
 		DbcAttributeValue _value;
 	};
 
-	class DbcAttributeDef
+	struct DbcAttributeDefEnum
 	{
-	public:
+		std::vector<std::string> _values;
+	};
+
+	struct DbcAttributeDefFloat
+	{
+		double _maximum = 0.0;
+		double _minimum = 0.0;
+	};
+
+	struct DbcAttributeDefHex
+	{
+		uint32_t _maximum = 0;
+		uint32_t _minimum = 0;
+	};
+
+	struct DbcAttributeDefInt
+	{
+		int32_t _maximum = 0;
+		int32_t _minimum = 0;
+	};
+
+	struct DbcAttributeDefString
+	{
+	};
+
+	using DbcAttributeDefVariant = std::variant<
+		DbcAttributeDefEnum,
+		DbcAttributeDefFloat,
+		DbcAttributeDefHex,
+		DbcAttributeDefInt,
+		DbcAttributeDefString
+	>;
+
+	struct DbcAttributeDef
+	{
 		std::string _name;
 		DbcAttributeObjectType _objectType = DbcAttributeObjectType::Unknown;
-		// ToDo: Use variant
-		/** */
-		virtual ~DbcAttributeDef() = default;
-		/** */
-		virtual DbcAttributeValueType valueType() const = 0;
-	};
-
-	class DbcAttributeDefEnum : public DbcAttributeDef
-	{
-	public:
-		std::vector<std::string> _values;
-
-		virtual DbcAttributeValueType valueType() const override;
-	};
-
-	class DbcAttributeDefFloat : public DbcAttributeDef
-	{
-	public:
-		double _maximum;
-		double _minimum;
-		/** */
-		virtual DbcAttributeValueType valueType() const override;
-	};
-
-	class DbcAttributeDefHex : public DbcAttributeDef
-	{
-	public:
-		uint32_t _maximum;
-		uint32_t _minimum;
-		/** */
-		virtual DbcAttributeValueType valueType() const override;
-	};
-
-	class DbcAttributeDefInt : public DbcAttributeDef
-	{
-	public:
-		int32_t _maximum;
-		int32_t _minimum;
-		/** */
-		virtual DbcAttributeValueType valueType() const override;
-	};
-
-	class DbcAttributeDefString : public DbcAttributeDef
-	{
-	public:
-		/** */
-		virtual DbcAttributeValueType valueType() const override;
+		DbcAttributeDefVariant _def;
 	};
 
 	struct DbcAttributeEnvVar

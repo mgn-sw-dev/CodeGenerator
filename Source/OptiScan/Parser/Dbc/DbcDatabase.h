@@ -15,7 +15,7 @@ namespace OptiScan::Parser::Dbc
     public:
         std::vector<DbcAttribute> _attributes;
         std::vector<DbcAttribute> _attributeDefaults;
-        std::vector<std::shared_ptr<DbcAttributeDef>> _attributeDefs;
+        std::vector<DbcAttributeDef> _attributeDefs;
         std::vector<DbcAttributeEnvVar> _attributeEnvVars;
         std::vector<DbcAttributeMessage> _attributeMessages;
         std::vector<DbcAttributeNode> _attributeNodes;

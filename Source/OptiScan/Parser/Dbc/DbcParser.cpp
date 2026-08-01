@@ -196,7 +196,7 @@ namespace OptiScan::Parser::Dbc
 		}
 	}
 
-	void DbcParser::parseAttributeDef(vector<shared_ptr<DbcAttributeDef>> & attributeDefs)
+	void DbcParser::parseAttributeDef(vector<DbcAttributeDef> & attributeDefs)
 	{
 		DbcToken const token = this->token();
 		this->matchKeyword(DbcKeyword::BA_DEF_);
@@ -231,71 +231,73 @@ namespace OptiScan::Parser::Dbc
 		{
 			hasObjectType = false;
 		}
-		shared_ptr<DbcAttributeDef> item;
+		DbcAttributeDef item;
+		bool hasDef = true;
 		if (hasObjectType)
 		{
 			string name;
 			this->parseString(name);
+			item._name = name;
 			if (this->tryMatchKeyword("ENUM"))
 			{
 				this->readNextToken();
-				shared_ptr<DbcAttributeDefEnum> tmp = make_shared<DbcAttributeDefEnum>();
+				DbcAttributeDefEnum defEnum;
 				bool checkNext = this->tryMatchToken(DbcTokenKind::LiteralString);
 				while (checkNext)
 				{
 					string value;
 					this->parseString(value);
-					tmp->_values.push_back(value);
+					defEnum._values.push_back(value);
 					checkNext = this->tryMatchToken(DbcTokenKind::OperatorComma);
 					if (checkNext)
 					{
 						this->readNextToken();
 					}
 				}
-				item = tmp;
+				item._def = defEnum;
 			}
 			else if (this->tryMatchKeyword("FLOAT"))
 			{
 				this->readNextToken();
-				shared_ptr<DbcAttributeDefFloat> tmp(new DbcAttributeDefFloat());
-				this->parseFloat64(tmp->_minimum);
-				this->parseFloat64(tmp->_maximum);
-				item = tmp;
+				DbcAttributeDefFloat defFloat;
+				this->parseFloat64(defFloat._minimum);
+				this->parseFloat64(defFloat._maximum);
+				item._def = defFloat;
 			}
 			else if (this->tryMatchKeyword("HEX"))
 			{
 				this->readNextToken();
-				shared_ptr<DbcAttributeDefHex> tmp(new DbcAttributeDefHex());
-				this->parseUInt32(tmp->_minimum);
-				this->parseUInt32(tmp->_maximum);
-				item = tmp;
+				DbcAttributeDefHex defHex;
+				this->parseUInt32(defHex._minimum);
+				this->parseUInt32(defHex._maximum);
+				item._def = defHex;
 			}
 			else if (this->tryMatchKeyword("INT"))
 			{
 				this->readNextToken();
-				shared_ptr<DbcAttributeDefInt> tmp(new DbcAttributeDefInt());
-				this->parseInt32(tmp->_minimum);
-				this->parseInt32(tmp->_maximum);
-				item = tmp;
+				DbcAttributeDefInt defInt;
+				this->parseInt32(defInt._minimum);
+				this->parseInt32(defInt._maximum);
+				item._def = defInt;
 			}
 			else if (this->tryMatchKeyword("STRING"))
 			{
 				this->readNextToken();
-				shared_ptr<DbcAttributeDefString> tmp(new DbcAttributeDefString());
-				item = tmp;
+				DbcAttributeDefString defString;
+				item._def = defString;
 			}
-			if (item != nullptr)
+			else
 			{
-				item->_name = name;
+				hasDef = false;
 			}
 		}
-		if (item == nullptr)
+		if (!hasDef)
 		{
 			this->parseTailOfUnknownKeywordLine(token);
 		}
 		else
 		{
-			item->_objectType = objectType;
+			item._objectType = objectType;
 			this->matchToken(DbcTokenKind::OperatorSemicolon);
 			this->readNextToken();
 			this->parseEndOfLine();
