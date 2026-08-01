@@ -13,6 +13,7 @@ namespace OptiScan::Core::Database
 		: _canDatabases()
 		, _canSelectionTable()
 		, _configDatabase()
+		, _linDatabases()
 		, _linSelectionTable()
 		, _logHandler(nullptr)
 		, _mapping()
@@ -20,6 +21,53 @@ namespace OptiScan::Core::Database
 		, _systemPath()
 		, _xcpSelectionTable()
 	{
+	}
+
+	void SystemDatabase::loadA2lDatabase(const CanBusObject & canBus)
+	{
+		this->logInfo("Load XCPBus " + to_string(canBus._hardwareId));
+		this->logInfo("Not supported at the moment");
+	}
+
+	void SystemDatabase::loadDbcDatabase(const CanBusObject & canBus)
+	{
+		this->logInfo("Load CanBus " + to_string(canBus._hardwareId));
+		for (const string & dbcName : canBus._dbcNames)
+		{
+			this->log("\t- DBC: " + dbcName);
+			CanDatabase canDatabase = CanDatabase();
+			canDatabase._name = dbcName;
+			filesystem::path dbcPath = this->_systemPath / dbcName += ".dbc";
+			try
+			{
+				canDatabase.loadDbcDatabase(dbcPath);
+			}
+			catch (const exception & error)
+			{
+				this->logError(string(error.what()));
+				throw;
+			}
+			this->_canDatabases.push_back(canDatabase);
+		}
+	}
+
+	void SystemDatabase::loadLdfDatabase(const LinBusObject & linBus)
+	{
+		this->logInfo("Load LinBus " + to_string(linBus._hardwareId));
+		this->log("\t- LDF: " + linBus._ldfName);
+		LinDatabase linDatabase = LinDatabase();
+		linDatabase._name = linBus._ldfName;
+		filesystem::path ldfPath = this->_systemPath / linBus._ldfName += ".ldf";
+		try
+		{
+			linDatabase.loadLdfDatabase(ldfPath);
+		}
+		catch (const exception & error)
+		{
+			this->logError(string(error.what()));
+			throw;
+		}
+		this->_linDatabases.push_back(linDatabase);
 	}
 
 	void SystemDatabase::loadMapping()
@@ -131,27 +179,27 @@ namespace OptiScan::Core::Database
 			{
 				for (const CanBusObject & canBus : this->_configDatabase._canObject.value()._busses)
 				{
-					if (canBus._type == CanBusType::Standard || canBus._type == CanBusType::Fd)
+					switch (canBus._type)
 					{
-						this->logInfo("Load CanBus " + to_string(canBus._hardwareId));
-						for (const string & dbcName : canBus._dbcNames)
-						{
-							this->log("\t- DBC: " + dbcName);
-							CanDatabase canDatabase = CanDatabase();
-							canDatabase._name = dbcName;
-							filesystem::path dbcPath = this->_systemPath / dbcName += ".dbc";
-							try
-							{
-								canDatabase.loadDbcDatabase(dbcPath);
-							}
-							catch (const exception & error)
-							{
-								this->logError(string(error.what()));
-								throw;
-							}
-							this->_canDatabases.push_back(canDatabase);
-						}
+					case CanBusType::Standard:
+					case CanBusType::Fd:
+						this->loadDbcDatabase(canBus);
+						break;
+					case CanBusType::Xcp:
+					case CanBusType::XcpPlus:
+						this->loadA2lDatabase(canBus);
+						break;
+					case CanBusType::VoiceToCan:
+					case CanBusType::Unknown:
+						break;
 					}
+				}
+			}
+			if (this->_configDatabase._linObject.has_value())
+			{
+				for (const LinBusObject & linBus : this->_configDatabase._linObject.value()._busses)
+				{
+					this->loadLdfDatabase(linBus);
 				}
 			}
 		}

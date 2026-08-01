@@ -2,6 +2,7 @@
 
 #include <OptiScan/Core/Config/SystemConfig.h>
 #include <OptiScan/Core/Database/CanDatabase.h>
+#include <OptiScan/Core/Database/LinDatabase.h>
 #include <OptiScan/Core/Database/SelectionTable.h>
 #include <OptiScan/Core/Database/SystemMapping.h>
 #include <filesystem>
@@ -14,6 +15,7 @@ namespace OptiScan::Core::Database
     public:
         std::vector<CanDatabase> _canDatabases;
         CanSelectionTable _canSelectionTable;
+        std::vector<LinDatabase> _linDatabases;
         LinSelectionTable _linSelectionTable;
         SystemMapping _mapping;
         XcpSelectionTable _xcpSelectionTable;
@@ -38,6 +40,11 @@ namespace OptiScan::Core::Database
         Config::SystemConfig _systemConfig;
         std::filesystem::path _systemPath;
 
+        void loadA2lDatabase(const Config::CanBusObject & canBus);
+        /** */
+        void loadDbcDatabase(const Config::CanBusObject & canBus);
+        /** */
+        void loadLdfDatabase(const Config::LinBusObject & linBus);
         /** */
         void log(const std::string & message) const;
         /** */

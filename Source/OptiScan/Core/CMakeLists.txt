@@ -25,6 +25,8 @@ set(OptiScanCore_SOURCES
     Config/ConfigDatabaseTrigger.h
     Database/CanDatabase.cpp
     Database/CanDatabase.h
+    Database/LinDatabase.cpp
+    Database/LinDatabase.h
     Database/SelectedSignal.cpp
     Database/SelectedSignal.h
     Database/SelectionTable.cpp

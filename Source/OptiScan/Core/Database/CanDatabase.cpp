@@ -17,7 +17,7 @@ namespace OptiScan::Core::Database
 
 	void CanDatabase::clear()
 	{
-		// this->_dbcDatabase.clear();
+		this->_dbcDatabase = DbcDatabase();
 		this->_name.clear();
 	}
 
