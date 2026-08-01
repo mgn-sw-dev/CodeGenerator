@@ -4,7 +4,6 @@
 #include <OptiScan/Parser/Dbc/DbcBitTiming.h>
 #include <OptiScan/Parser/Dbc/DbcComment.h>
 #include <OptiScan/Parser/Dbc/DbcMessage.h>
-#include <memory>
 #include <string>
 #include <vector>
 
