@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OptiScan/Parser/ScanPosition.h>
+#include <OptiScan/Parser/Token.h>
 #include <istream>
 #include <vector>
 
@@ -30,6 +31,8 @@ namespace OptiScan::Parser
         ScanChar popBufferFront();
         /** @return ScanPosition. */
         const ScanPosition & streamPosition() const;
+        /** */
+        bool readIdentifier(ScanPosition & position, std::string & text);
 
     private:
         std::vector<ScanChar> _scanBuffer;

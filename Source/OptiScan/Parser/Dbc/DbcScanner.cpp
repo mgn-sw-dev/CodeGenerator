@@ -33,12 +33,6 @@ namespace OptiScan::Parser::Dbc
 		;
 	}
 
-	void DbcScanner::popScanBufferFrontToToken()
-	{
-		ScanChar const c = this->_reader.popBufferFront();
-		this->_token._text.push_back(c._value);
-	}
-
 	bool DbcScanner::readEndOfLine()
 	{
 		bool result = false;
@@ -50,38 +44,7 @@ namespace OptiScan::Parser::Dbc
 				result = true;
 				this->_token._kind = DbcTokenKind::EndOfLine;
 				this->_token._position = c._position;
-				this->popScanBufferFrontToToken();
-			}
-		}
-		return result;
-	}
-
-	bool DbcScanner::readIdentifier()
-	{
-		bool result = false;
-		if (this->_reader.fillScanBuffer())
-		{
-			const ScanChar & c = this->_reader.front();
-			if (CharReader::isCharIdentifierStart(c._value))
-			{
-				result = true;
-				this->_token._kind = DbcTokenKind::Identifier;
-				this->_token._position = c._position;
-				this->popScanBufferFrontToToken();
-				bool checkNext = true;
-				while (checkNext)
-				{
-					checkNext = this->_reader.fillScanBuffer();
-					if (checkNext)
-					{
-						const ScanChar & c = this->_reader.front();
-						checkNext = CharReader::isCharIdentifier(c._value);
-						if (checkNext)
-						{
-							this->popScanBufferFrontToToken();
-						}
-					}
-				}
+				this->_token._text.push_back(this->_reader.popBufferFront()._value);
 			}
 		}
 		return result;
@@ -136,7 +99,7 @@ namespace OptiScan::Parser::Dbc
 								else
 								{
 									hasDecimalSeparator = true;
-									this->popScanBufferFrontToToken();
+									this->_token._text.push_back(this->_reader.popBufferFront()._value);
 								}
 							}
 							else if (CharReader::isCharDigit(c._value))
@@ -149,7 +112,7 @@ namespace OptiScan::Parser::Dbc
 								{
 									hasDecimalDigit = true;
 								}
-								this->popScanBufferFrontToToken();
+								this->_token._text.push_back(this->_reader.popBufferFront()._value);
 							}
 							else if (DbcScanner::isCharExponentStart(c._value))
 							{
@@ -160,7 +123,7 @@ namespace OptiScan::Parser::Dbc
 								else
 								{
 									hasExponent = true;
-									this->popScanBufferFrontToToken();
+									this->_token._text.push_back(this->_reader.popBufferFront()._value);
 								}
 							}
 							else if (c._value == '+' || c._value == '-')
@@ -172,7 +135,7 @@ namespace OptiScan::Parser::Dbc
 								else
 								{
 									hasExponentSign = true;
-									this->popScanBufferFrontToToken();
+									this->_token._text.push_back(this->_reader.popBufferFront()._value);
 								}
 							}
 							else
@@ -216,7 +179,7 @@ namespace OptiScan::Parser::Dbc
 				result = true;
 				this->_token._kind = DbcTokenKind::LiteralString;
 				this->_token._position = c._position;
-				this->popScanBufferFrontToToken();
+				this->_token._text.push_back(this->_reader.popBufferFront()._value);
 				bool checkNext = true;
 				while (checkNext)
 				{
@@ -227,7 +190,7 @@ namespace OptiScan::Parser::Dbc
 					const ScanChar & c = this->_reader.front();
 					if (c._value == DbcFormat::StringEscapeStart)
 					{
-						this->popScanBufferFrontToToken();
+						this->_token._text.push_back(this->_reader.popBufferFront()._value);
 						if (!this->_reader.fillScanBuffer())
 						{
 							throw DbcFormatException("Missing escape marker");
@@ -247,7 +210,7 @@ namespace OptiScan::Parser::Dbc
 					{
 						checkNext = c._value != '"';
 					}
-					this->popScanBufferFrontToToken();
+					this->_token._text.push_back(this->_reader.popBufferFront()._value);
 				}
 			}
 		}
@@ -312,7 +275,7 @@ namespace OptiScan::Parser::Dbc
 			if (result)
 			{
 				this->_token._position = c._position;
-				this->popScanBufferFrontToToken();
+				this->_token._text.push_back(this->_reader.popBufferFront()._value);
 			}
 		}
 		return result;
@@ -341,8 +304,9 @@ namespace OptiScan::Parser::Dbc
 		else if (this->readEndOfLine())
 		{
 		}
-		else if (this->readIdentifier())
+		else if (this->_reader.readIdentifier(this->_token._position, this->_token._text))
 		{
+			this->_token._kind = DbcTokenKind::Identifier;
 		}
 		else if (this->readLiteralIntegerOrReal())
 		{

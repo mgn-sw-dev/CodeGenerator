@@ -33,34 +33,7 @@ namespace OptiScan::Parser::Dbc
         OperatorSemicolon,
         OperatorVerticalLine,
     };
-#if  0
-    class DbcScanPosition
-    {
-    public:
-        int64_t _char;
-        int64_t _charInLine;
-        int64_t _line;
-        /** */
-        DbcScanPosition();
-    };
 
-    class DbcScanChar
-    {
-    public:
-        DbcScanPosition _position;
-        char _value;
-    };
-
-    class DbcToken
-    {
-    public:
-        DbcTokenKind _kind;
-        DbcScanPosition _position;
-        std::string _text;
-        /** */
-        DbcToken();
-    };
-#endif
     using DbcToken = Token<DbcTokenKind>;
 
     class DbcScanner 
@@ -82,15 +55,9 @@ namespace OptiScan::Parser::Dbc
         CharReader _reader;
         DbcToken _token;
 
-        /** Get @c _scanBuffer.front() value and push to @c _token._text.
-         *  Erase @c _scanBuffer.front() element. */
-        void popScanBufferFrontToToken();
         /** @return false If not end of line.
          *  @throws DbcFormatException. */
         bool readEndOfLine();
-        /** @return false If not identifier.
-         *  @throws DbcFormatException. */
-        bool readIdentifier();
         /** @return false If not literal integer or literal real.
          *  @throws DbcFormatException. */
         bool readLiteralIntegerOrReal();

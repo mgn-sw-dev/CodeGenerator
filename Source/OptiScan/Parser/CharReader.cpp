@@ -108,6 +108,36 @@ namespace OptiScan::Parser
 		return result;
 	}
 
+	bool CharReader::readIdentifier(ScanPosition & position, std::string & text)
+	{
+		bool result = false;
+		if (this->fillScanBuffer())
+		{
+			const ScanChar & c = this->front();
+			if (CharReader::isCharIdentifierStart(c._value))
+			{
+				result = true;
+				position = c._position;
+				text.push_back(this->popBufferFront()._value);
+				bool checkNext = true;
+				while (checkNext)
+				{
+					checkNext = this->fillScanBuffer();
+					if (checkNext)
+					{
+						const ScanChar & c = this->front();
+						checkNext = CharReader::isCharIdentifier(c._value);
+						if (checkNext)
+						{
+							text.push_back(this->popBufferFront()._value);
+						}
+					}
+				}
+			}
+		}
+		return result;
+	}
+
 	const ScanPosition & CharReader::streamPosition() const
 	{
 		return this->_streamPosition;
