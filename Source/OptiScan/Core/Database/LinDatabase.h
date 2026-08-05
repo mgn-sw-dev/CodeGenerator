@@ -20,6 +20,5 @@ namespace OptiScan::Core::Database
          *  @throw runtime_error if dbcPath could not be opened. */
         void loadLdfDatabase(const std::filesystem::path & ldfPath);
     };
-    };
-
+    
 }

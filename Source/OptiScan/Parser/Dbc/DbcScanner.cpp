@@ -8,29 +8,10 @@ using namespace std;
 
 namespace OptiScan::Parser::Dbc
 {
-	DbcScanPosition::DbcScanPosition()
-		: _char(0)
-		, _charInLine(0)
-		, _line(0)
-	{
-	}
-
 	DbcScanner::DbcScanner(std::istream * input)
-		: _scanBuffer()
-		, _stream(input)
-		, _streamPosition()
+		: _reader(input)
 		, _token()
 	{
-	}
-
-	bool DbcScanner::fillScanBuffer(size_t count)
-	{
-		bool result = true;
-		for (size_t i = this->_scanBuffer.size(); result && i < count; i++)
-		{
-			result = this->readCharFromStreamToScanBuffer();
-		}
-		return result;
 	}
 
 	bool DbcScanner::isCharDecimalSeparator(const char & c)
@@ -38,28 +19,9 @@ namespace OptiScan::Parser::Dbc
 		return c == '.';
 	}
 
-	bool DbcScanner::isCharDigit(const char & c)
-	{
-		return '0' <= c && c <= '9';
-	}
-
 	bool DbcScanner::isCharExponentStart(const char & c)
 	{
 		return c == 'e' || c == 'E';
-	}
-
-	bool DbcScanner::isCharIdentifier(const char & c)
-	{
-		return DbcScanner::isCharIdentifierStart(c) || DbcScanner::isCharDigit(c);
-	}
-
-	bool DbcScanner::isCharIdentifierStart(const char & c)
-	{
-		return false
-			|| ('a' <= c && c <= 'z')
-			|| ('A' <= c && c <= 'Z')
-			|| c == '_'
-		;
 	}
 
 	bool DbcScanner::isCharWhiteSpace(const char & c)
@@ -71,70 +33,18 @@ namespace OptiScan::Parser::Dbc
 		;
 	}
 
-	DbcScanChar DbcScanner::popScanBufferFront()
-	{
-		const DbcScanChar c = this->_scanBuffer.front();
-		this->_scanBuffer.erase(this->_scanBuffer.begin());
-		return c;
-	}
-
 	void DbcScanner::popScanBufferFrontToToken()
 	{
-		this->_token._text.push_back(this->_scanBuffer.front()._value);
-		this->_scanBuffer.erase(this->_scanBuffer.begin());
-	}
-
-	bool DbcScanner::readCharFromStream(char & c)
-	{
-		bool result = false;
-		int const value = this->_stream->get();
-		if (value == std::char_traits<char>::eof())
-		{
-			if (this->_stream->bad())
-			{
-				throw ios_base::failure("Stream read error");
-			}
-			else
-			{
-				// normal stream end (eofbit/ failbit set but no I/O error)
-			}
-		}
-		else
-		{
-			result = true;
-			c = static_cast<char>(value);
-			if (c == '\n')
-			{
-				this->_streamPosition._charInLine = 0;
-				this->_streamPosition._line++;
-			}
-			else
-			{
-				this->_streamPosition._charInLine++;
-			}
-			this->_streamPosition._char++;
-		}
-		return result;
-	}
-
-	bool DbcScanner::readCharFromStreamToScanBuffer()
-	{
-		DbcScanChar c;
-		c._position = this->_streamPosition;
-		bool result = this->readCharFromStream(c._value);
-		if (result)
-		{
-			this->_scanBuffer.push_back(c);
-		}
-		return result;
+		ScanChar const c = this->_reader.popBufferFront();
+		this->_token._text.push_back(c._value);
 	}
 
 	bool DbcScanner::readEndOfLine()
 	{
 		bool result = false;
-		if (this->fillScanBuffer())
+		if (this->_reader.fillScanBuffer())
 		{
-			const DbcScanChar & c = this->_scanBuffer.front();
+			const ScanChar & c = this->_reader.front();
 			if (c._value == '\n')
 			{
 				result = true;
@@ -149,10 +59,10 @@ namespace OptiScan::Parser::Dbc
 	bool DbcScanner::readIdentifier()
 	{
 		bool result = false;
-		if (this->fillScanBuffer())
+		if (this->_reader.fillScanBuffer())
 		{
-			const DbcScanChar & c = this->_scanBuffer.front();
-			if (DbcScanner::isCharIdentifierStart(c._value))
+			const ScanChar & c = this->_reader.front();
+			if (CharReader::isCharIdentifierStart(c._value))
 			{
 				result = true;
 				this->_token._kind = DbcTokenKind::Identifier;
@@ -161,11 +71,11 @@ namespace OptiScan::Parser::Dbc
 				bool checkNext = true;
 				while (checkNext)
 				{
-					checkNext = this->fillScanBuffer();
+					checkNext = this->_reader.fillScanBuffer();
 					if (checkNext)
 					{
-						const DbcScanChar & c = this->_scanBuffer.front();
-						checkNext = DbcScanner::isCharIdentifier(c._value);
+						const ScanChar & c = this->_reader.front();
+						checkNext = CharReader::isCharIdentifier(c._value);
 						if (checkNext)
 						{
 							this->popScanBufferFrontToToken();
@@ -183,23 +93,23 @@ namespace OptiScan::Parser::Dbc
 		// On decimal separator or exponent start, literal real.
 		// Otherwise, literal integer.
 		bool result = false;
-		if (this->fillScanBuffer())
+		if (this->_reader.fillScanBuffer())
 		{
 			size_t scanBufferIndex = 0;
-			bool hasDecimalSeparator = DbcScanner::isCharDecimalSeparator(this->_scanBuffer.at(scanBufferIndex)._value);
+			bool hasDecimalSeparator = DbcScanner::isCharDecimalSeparator(this->_reader.at(scanBufferIndex)._value);
 			if (hasDecimalSeparator)
 			{
 				scanBufferIndex++;
 			}
-			if (this->fillScanBuffer(scanBufferIndex + 1))
+			if (this->_reader.fillScanBuffer(scanBufferIndex + 1))
 			{
-				if (DbcScanner::isCharDigit(this->_scanBuffer.at(scanBufferIndex)._value))
+				if (CharReader::isCharDigit(this->_reader.at(scanBufferIndex)._value))
 				{
 					result = true;
 					scanBufferIndex++;
 					for (size_t i = 0; i < scanBufferIndex; i++)
 					{
-						const DbcScanChar c = this->popScanBufferFront();
+						ScanChar const c = this->_reader.popBufferFront();
 						if (i == 0)
 						{
 							this->_token._position = c._position;
@@ -213,10 +123,10 @@ namespace OptiScan::Parser::Dbc
 					bool checkNext = true;
 					while (checkNext)
 					{
-						checkNext = this->fillScanBuffer();
+						checkNext = this->_reader.fillScanBuffer();
 						if (checkNext)
 						{
-							const DbcScanChar & c = this->_scanBuffer.front();
+							const ScanChar & c = this->_reader.front();
 							if (DbcScanner::isCharDecimalSeparator(c._value))
 							{
 								if (hasDecimalSeparator || hasExponent)
@@ -229,7 +139,7 @@ namespace OptiScan::Parser::Dbc
 									this->popScanBufferFrontToToken();
 								}
 							}
-							else if (DbcScanner::isCharDigit(c._value))
+							else if (CharReader::isCharDigit(c._value))
 							{
 								if (hasExponent)
 								{
@@ -298,9 +208,9 @@ namespace OptiScan::Parser::Dbc
 	bool DbcScanner::readLiteralString()
 	{
 		bool result = false;
-		if (this->fillScanBuffer())
+		if (this->_reader.fillScanBuffer())
 		{
-			const DbcScanChar & c = this->_scanBuffer.front();
+			const ScanChar & c = this->_reader.front();
 			if (c._value == '"')
 			{
 				result = true;
@@ -310,23 +220,23 @@ namespace OptiScan::Parser::Dbc
 				bool checkNext = true;
 				while (checkNext)
 				{
-					if (!this->fillScanBuffer())
+					if (!this->_reader.fillScanBuffer())
 					{
 						throw DbcFormatException("Missing quotation mark");
 					}
-					DbcScanChar & c = this->_scanBuffer.front();
+					const ScanChar & c = this->_reader.front();
 					if (c._value == DbcFormat::StringEscapeStart)
 					{
 						this->popScanBufferFrontToToken();
-						if (!this->fillScanBuffer())
+						if (!this->_reader.fillScanBuffer())
 						{
 							throw DbcFormatException("Missing escape marker");
 						}
-						c = this->_scanBuffer.front();
+						const ScanChar & escaped = this->_reader.front();
 						bool findMarker = true;
 						for (size_t i = 0; findMarker && i < DbcFormat::StringEscapeItems.size(); i++)
 						{
-							findMarker = DbcFormat::StringEscapeItems[i]._escapeMarker != c._value;
+							findMarker = DbcFormat::StringEscapeItems[i]._escapeMarker != escaped._value;
 						}
 						if (findMarker)
 						{
@@ -347,10 +257,10 @@ namespace OptiScan::Parser::Dbc
 	bool DbcScanner::readOperator()
 	{
 		bool result = false;
-		if (this->fillScanBuffer())
+		if (this->_reader.fillScanBuffer())
 		{
 			result = true;
-			const DbcScanChar & c = this->_scanBuffer.front();
+			const ScanChar & c = this->_reader.front();
 			if (c._value == ':')
 			{
 				this->_token._kind = DbcTokenKind::OperatorColon;
@@ -414,19 +324,19 @@ namespace OptiScan::Parser::Dbc
 		bool checkNext = true;
 		while (checkNext)
 		{
-			checkNext = this->fillScanBuffer();
+			checkNext = this->_reader.fillScanBuffer();
 			if (checkNext)
 			{
-				checkNext = DbcScanner::isCharWhiteSpace(this->_scanBuffer.front()._value);
+				checkNext = DbcScanner::isCharWhiteSpace(this->_reader.front()._value);
 				if (checkNext)
 				{
-					this->_scanBuffer.erase(this->_scanBuffer.begin());
+					this->_reader.popBufferFront();
 				}
 			}
 		}
-		if (this->_scanBuffer.empty())
+		if (this->_reader.empty())
 		{
-			this->_token._position = this->_streamPosition;
+			this->_token._position = this->_reader.streamPosition();
 		}
 		else if (this->readEndOfLine())
 		{
@@ -445,28 +355,16 @@ namespace OptiScan::Parser::Dbc
 		}
 		else
 		{
-			const DbcScanChar & c = this->_scanBuffer.front();
+			const ScanChar & c = this->_reader.front();
 			this->_token._position = c._position;
 			this->_token._text.push_back(c._value);
 			throw DbcFormatException("Unknown token");
 		}
 	}
 
-	const DbcScanPosition & DbcScanner::streamPosition() const
-	{
-		return this->_streamPosition;
-	}
-
 	const DbcToken & DbcScanner::token() const
 	{
 		return this->_token;
-	}
-
-	DbcToken::DbcToken()
-		: _kind(DbcTokenKind::None)
-		, _position()
-		, _text()
-	{
 	}
 
 }

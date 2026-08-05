@@ -20,16 +20,6 @@ namespace OptiScan::Parser::Ldf
 	{
 	}
 
-	bool LdfScanner::fillScanBuffer(size_t count)
-	{
-		bool result = true;
-		for (size_t i = this->_scanBuffer.size(); result && i < count; i++)
-		{
-			result = this->readCharFromStreamToScanBuffer();
-		}
-		return result;
-	}
-
 	LdfScanChar LdfScanner::popScanBufferFront()
 	{
 		const LdfScanChar c = this->_scanBuffer.front();
@@ -43,28 +33,9 @@ namespace OptiScan::Parser::Ldf
 		this->_scanBuffer.erase(this->_scanBuffer.begin());
 	}
 
-	bool LdfScanner::isCharDigit(const char & c)
-	{
-		return '0' <= c && c <= '9';
-	}
-
 	bool LdfScanner::isCharHexDigit(const char & c)
 	{
 		return LdfScanner::isCharDigit(c) || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F');
-	}
-
-	bool LdfScanner::isCharIdentifier(const char & c)
-	{
-		return LdfScanner::isCharIdentifierStart(c) || LdfScanner::isCharDigit(c);
-	}
-
-	bool LdfScanner::isCharIdentifierStart(const char & c)
-	{
-		return false
-			|| ('a' <= c && c <= 'z')
-			|| ('A' <= c && c <= 'Z')
-			|| c == '_'
-		;
 	}
 
 	bool LdfScanner::isCharLineEnd(const char & c)
@@ -80,51 +51,6 @@ namespace OptiScan::Parser::Ldf
 			|| c == static_cast<char>(0x20)
 			|| LdfScanner::isCharLineEnd(c)
 		;
-	}
-
-	bool LdfScanner::readCharFromStream(char & c)
-	{
-		bool result = false;
-		int const value = this->_stream->get();
-		if (value == std::char_traits<char>::eof())
-		{
-			if (this->_stream->bad())
-			{
-				throw ios_base::failure("Stream read error");
-			}
-			else
-			{
-				// normal stream end (eofbit/ failbit set but no I/O error)
-			}
-		}
-		else
-		{
-			result = true;
-			c = static_cast<char>(value);
-			if (c == '\n')
-			{
-				this->_streamPosition._charInLine = 0;
-				this->_streamPosition._line++;
-			}
-			else
-			{
-				this->_streamPosition._charInLine++;
-			}
-			this->_streamPosition._char++;
-		}
-		return result;
-	}
-
-	bool LdfScanner::readCharFromStreamToScanBuffer()
-	{
-		LdfScanChar c;
-		c._position = this->_streamPosition;
-		bool result = this->readCharFromStream(c._value);
-		if (result)
-		{
-			this->_scanBuffer.push_back(c);
-		}
-		return result;
 	}
 
 	void LdfScanner::readComment()
@@ -283,11 +209,6 @@ namespace OptiScan::Parser::Ldf
 			this->_token._text.push_back(c._value);
 			throw FormatException("Unknown token");
 		}
-	}
-
-	const LdfScanPosition & LdfScanner::streamPosition() const
-	{
-		return this->_streamPosition;
 	}
 
 	const LdfToken & LdfScanner::token() const

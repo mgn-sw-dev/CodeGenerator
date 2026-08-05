@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OptiScan/Parser/CharReader.h>
+#include <OptiScan/Parser/Token.h>
 #include <cstdint>
 #include <istream>
 #include <string>
@@ -31,7 +33,7 @@ namespace OptiScan::Parser::Dbc
         OperatorSemicolon,
         OperatorVerticalLine,
     };
-
+#if  0
     class DbcScanPosition
     {
     public:
@@ -58,6 +60,8 @@ namespace OptiScan::Parser::Dbc
         /** */
         DbcToken();
     };
+#endif
+    using DbcToken = Token<DbcTokenKind>;
 
     class DbcScanner 
     {
@@ -66,41 +70,21 @@ namespace OptiScan::Parser::Dbc
         /** */
         static bool isCharDecimalSeparator(const char & c);
         /** */
-        static bool isCharDigit(const char & c);
-        /** */
         static bool isCharExponentStart(const char & c);
-        /** */
-        static bool isCharIdentifier(const char & c);
-        /** */
-        static bool isCharIdentifierStart(const char & c);
         /** */
         static bool isCharWhiteSpace(const char & c);
         /** @throw DbcFormatException if unknown token. */
         void scanNext();
-        /** @return DbcScanPosition. */
-        const DbcScanPosition & streamPosition() const;
         /** @return DbcToken. */
         const DbcToken & token() const;
 
     private:
-        std::vector<DbcScanChar> _scanBuffer;
-        std::istream * _stream;
-        DbcScanPosition _streamPosition;
+        CharReader _reader;
         DbcToken _token;
-        /** @return false If end of stream detected.
-         *  @throws DbcFormatException. */
-        bool fillScanBuffer(size_t count = 1);
-        /** */
-        DbcScanChar popScanBufferFront();
+
         /** Get @c _scanBuffer.front() value and push to @c _token._text.
          *  Erase @c _scanBuffer.front() element. */
         void popScanBufferFrontToToken();
-        /** @return false If end of stream detected.
-         *  @throws DbcFormatException. */
-        bool readCharFromStream(char & c);
-        /** @return false If end of stream detected.
-         *  @throws DbcFormatException. */
-        bool readCharFromStreamToScanBuffer();
         /** @return false If not end of line.
          *  @throws DbcFormatException. */
         bool readEndOfLine();

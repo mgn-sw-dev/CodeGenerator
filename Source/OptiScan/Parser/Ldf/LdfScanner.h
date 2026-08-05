@@ -61,13 +61,7 @@ namespace OptiScan::Parser::Ldf
 
         LdfScanner(std::istream * input);
         /** */
-        static bool isCharDigit(const char & c);
-        /** */
         static bool isCharHexDigit(const char & c);
-        /** */
-        static bool isCharIdentifier(const char & c);
-        /** */
-        static bool isCharIdentifierStart(const char & c);
         /** */
         static bool isCharLineEnd(const char & c);
         /** */
@@ -75,28 +69,18 @@ namespace OptiScan::Parser::Ldf
         /** @throws FormatException. */
         void scanNext();
         /** */
-        const LdfScanPosition & streamPosition() const;
-        /** */
         const LdfToken & token() const;
     private:
         std::vector<LdfScanChar> _scanBuffer;
         std::istream * _stream;
         LdfScanPosition _streamPosition;
         LdfToken _token;
-        /** @return false If end of stream detected.
-         *  @throws ios_base::failure. */
-        bool fillScanBuffer(size_t count = 1);
+
         /** */
         LdfScanChar popScanBufferFront();
         /** Get @c _scanBuffer.front() value and push to @c _token._text.
          *  Erase @c _scanBuffer.front() element. */
         void popScanBufferFrontToToken();
-        /** @return false If end of stream detected.
-         *  @throws ios_base::failure. */
-        bool readCharFromStream(char & c);
-        /** @return false If end of stream detected.
-         *  @throws ios_base::failure. */
-        bool readCharFromStreamToScanBuffer();
         /** @throws FormatException. */
         void readComment();
         /** @throws FormatException. */

@@ -9,7 +9,7 @@ namespace OptiScan::Parser
 	template<typename TokenKind>
 	struct Token
 	{
-		TokenKind _kind;
+		TokenKind _kind = TokenKind{};
 		ScanPosition _position;
 		std::string _text;
 	};

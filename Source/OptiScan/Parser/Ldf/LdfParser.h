@@ -10,6 +10,7 @@ namespace OptiScan::Parser::Ldf
 
     class LdfParser 
     {
+#if 0
     public:
         enum class Mode : int
         {
@@ -30,7 +31,7 @@ namespace OptiScan::Parser::Ldf
     private:
         LdfParser::Modes _modes;
         LdfScanner _scanner;
-
+#endif
     };
 
 }

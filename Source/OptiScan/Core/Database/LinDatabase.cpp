@@ -32,8 +32,8 @@ namespace OptiScan::Core::Database
 		{
 			throw runtime_error("LinDatabase::loadLdfDatabase: Ldf file '" + ldfPath.string() + "' could not be opened.");
 		}
-		LdfParser parser(&file);
-		parser.parse(this->_ldfDatabase);
+		// LdfParser parser(&file);
+		// parser.parse(this->_ldfDatabase);
 	}
 
 }
