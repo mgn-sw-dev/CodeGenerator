@@ -37,6 +37,8 @@ set(OptiScanParser_SOURCES
     FileException.h
     Flags.h
     Flags.inl.h
+    ScanPosition.h
+    Token.h
 )
 
 target_sources(OptiScanParser PRIVATE ${OptiScanParser_SOURCES})
