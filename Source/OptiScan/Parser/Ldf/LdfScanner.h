@@ -1,8 +1,8 @@
 #pragma once
 
+#include <OptiScan/Parser/CharReader.h>
+#include <OptiScan/Parser/Token.h>
 #include <istream>
-#include <string>
-#include <vector>
 
 namespace OptiScan::Parser::Ldf
 {
@@ -25,32 +25,7 @@ namespace OptiScan::Parser::Ldf
         OperatorSemicolon,
     };
 
-    class LdfScanPosition
-    {
-    public:
-        uint64_t _char = 0;
-        uint64_t _charInLine = 0;
-        uint64_t _line = 0;
-        /** */
-        LdfScanPosition() = default;
-    };
-
-    class LdfScanChar
-    {
-    public:
-        LdfScanPosition _position;
-        char _value;
-    };
-
-    class LdfToken
-    {
-    public:
-        LdfTokenKind _kind;
-        LdfScanPosition _position;
-        std::string _text;
-        /** */
-        LdfToken();
-    };
+    using LdfToken = Token<LdfTokenKind>;
 
     class LdfScanner 
     {
@@ -71,25 +46,13 @@ namespace OptiScan::Parser::Ldf
         /** */
         const LdfToken & token() const;
     private:
-        std::vector<LdfScanChar> _scanBuffer;
-        std::istream * _stream;
-        LdfScanPosition _streamPosition;
+        CharReader _reader;
         LdfToken _token;
 
-        /** */
-        LdfScanChar popScanBufferFront();
-        /** Get @c _scanBuffer.front() value and push to @c _token._text.
-         *  Erase @c _scanBuffer.front() element. */
-        void popScanBufferFrontToToken();
         /** @throws FormatException. */
         void readComment();
         /** @throws FormatException. */
         void readLineComment();
-        /** */
-        bool scanBufferStartsWith(const std::string & pattern) const;
-        /** @return false If not identifier.
-         *  @throws FormatException. */
-        bool tryReadIdentifier();
         /** @return false If not literal hex integer.
          *  @throws FormatException. */
         bool tryReadLiteralHexInteger();

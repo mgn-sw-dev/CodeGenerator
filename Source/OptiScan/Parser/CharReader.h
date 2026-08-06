@@ -1,7 +1,6 @@
 #pragma once
 
 #include <OptiScan/Parser/ScanPosition.h>
-#include <OptiScan/Parser/Token.h>
 #include <istream>
 #include <vector>
 
@@ -14,6 +13,8 @@ namespace OptiScan::Parser
         explicit CharReader(std::istream * input);
         /** */
         const ScanChar & at(size_t index) const;
+        /** Check if @c _scanBuffer starts with a specific string pattern. */
+        bool bufferStartsWith(const std::string & pattern) const;
         /** */
         bool empty() const;
         /** @return false If end of stream detected.

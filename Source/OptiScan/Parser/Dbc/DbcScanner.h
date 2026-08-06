@@ -2,10 +2,7 @@
 
 #include <OptiScan/Parser/CharReader.h>
 #include <OptiScan/Parser/Token.h>
-#include <cstdint>
 #include <istream>
-#include <string>
-#include <vector>
 
 namespace OptiScan::Parser::Dbc
 {

@@ -13,29 +13,14 @@ namespace OptiScan::Parser::Ldf
 
 
 	LdfScanner::LdfScanner(std::istream * input)
-		: _scanBuffer()
-		, _stream(input)
-		, _streamPosition()
+		: _reader(input)
 		, _token()
 	{
 	}
-
-	LdfScanChar LdfScanner::popScanBufferFront()
-	{
-		const LdfScanChar c = this->_scanBuffer.front();
-		this->_scanBuffer.erase(this->_scanBuffer.begin());
-		return c;
-	}
-
-	void LdfScanner::popScanBufferFrontToToken()
-	{
-		this->_token._text.push_back(this->_scanBuffer.front()._value);
-		this->_scanBuffer.erase(this->_scanBuffer.begin());
-	}
-
+	
 	bool LdfScanner::isCharHexDigit(const char & c)
 	{
-		return LdfScanner::isCharDigit(c) || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F');
+		return CharReader::isCharDigit(c) || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F');
 	}
 
 	bool LdfScanner::isCharLineEnd(const char & c)
@@ -56,10 +41,10 @@ namespace OptiScan::Parser::Ldf
 	void LdfScanner::readComment()
 	{
 		size_t const startCount = LdfScanner::StringCommentStart.size();
-		bool isValid = this->fillScanBuffer(startCount);
+		bool isValid = this->_reader.fillScanBuffer(startCount);
 		if (isValid)
 		{
-			isValid = this->scanBufferStartsWith(LdfScanner::StringCommentStart);
+			isValid = this->_reader.bufferStartsWith(LdfScanner::StringCommentStart);
 		}
 		if (!isValid)
 		{
@@ -67,33 +52,33 @@ namespace OptiScan::Parser::Ldf
 		}
 		for (size_t i = 0; i < startCount; i++)
 		{
-			this->_scanBuffer.erase(this->_scanBuffer.begin());
+			this->_reader.popBufferFront();
 		}
 		size_t const endCount = LdfScanner::StringCommentEnd.size();
 		bool checkNext = true;
 		while (checkNext)
 		{
-			if (this->fillScanBuffer(startCount))
+			if (this->_reader.fillScanBuffer(startCount))
 			{
-				if (this->scanBufferStartsWith(LdfScanner::StringCommentStart))
+				if (this->_reader.bufferStartsWith(LdfScanner::StringCommentStart))
 				{
 					throw FormatException("Nesting comment");
 				}
 			}
-			if (!this->fillScanBuffer(endCount))
+			if (!this->_reader.fillScanBuffer(endCount))
 			{
 				throw FormatException("Missing comment end");
 			}
-			if (!this->scanBufferStartsWith(LdfScanner::StringCommentEnd))
+			if (!this->_reader.bufferStartsWith(LdfScanner::StringCommentEnd))
 			{
-				this->_scanBuffer.erase(this->_scanBuffer.begin());
+				this->_reader.popBufferFront();
 			}
 			else
 			{
 				checkNext = false;
 				for (size_t i = 0; i < endCount; i++)
 				{
-					this->_scanBuffer.erase(this->_scanBuffer.begin());
+					this->_reader.popBufferFront();
 				}
 			}
 		}
@@ -101,10 +86,10 @@ namespace OptiScan::Parser::Ldf
 
 	void LdfScanner::readLineComment()
 	{
-		bool isValid = this->fillScanBuffer(LdfScanner::StringLineCommentStart.size());
+		bool isValid = this->_reader.fillScanBuffer(LdfScanner::StringLineCommentStart.size());
 		if (isValid)
 		{
-			isValid = this->scanBufferStartsWith(LdfScanner::StringLineCommentStart);
+			isValid = this->_reader.bufferStartsWith(LdfScanner::StringLineCommentStart);
 		}
 		if (!isValid)
 		{
@@ -112,28 +97,17 @@ namespace OptiScan::Parser::Ldf
 		}
 		for (size_t i = 0; i < LdfScanner::StringLineCommentStart.size(); i++)
 		{
-			this->_scanBuffer.erase(this->_scanBuffer.begin());
+			this->_reader.popBufferFront();
 		}
 		bool checkNext = true;
 		while (checkNext)
 		{
-			checkNext = this->fillScanBuffer();
+			checkNext = this->_reader.fillScanBuffer();
 			if (checkNext)
 			{
-				checkNext = !LdfScanner::isCharLineEnd(this->_scanBuffer.front()._value);
-				this->_scanBuffer.erase(this->_scanBuffer.begin());
+				checkNext = !LdfScanner::isCharLineEnd(this->_reader.popBufferFront()._value);
 			}
 		}
-	}
-
-	bool LdfScanner::scanBufferStartsWith(const string & pattern) const
-	{
-		bool result = pattern.size() <= this->_scanBuffer.size();
-		for (size_t i = 0; result && i < pattern.size(); i++)
-		{
-			result = pattern[i] == this->_scanBuffer[i]._value;
-		}
-		return result;
 	}
 
 	void LdfScanner::scanNext()
@@ -148,21 +122,21 @@ namespace OptiScan::Parser::Ldf
 				// Skip white space
 				if (!checkNext)
 				{
-					if (this->fillScanBuffer())
+					if (this->_reader.fillScanBuffer())
 					{
-						checkNext = LdfScanner::isCharWhiteSpace(this->_scanBuffer.front()._value);
+						checkNext = LdfScanner::isCharWhiteSpace(this->_reader.front()._value);
 						if (checkNext)
 						{
-							this->_scanBuffer.erase(this->_scanBuffer.begin());
+							this->_reader.popBufferFront();
 						}
 					}
 				}
 				// Skip comment
 				if (!checkNext)
 				{
-					if (this->fillScanBuffer(LdfScanner::StringCommentStart.size()))
+					if (this->_reader.fillScanBuffer(LdfScanner::StringCommentStart.size()))
 					{
-						checkNext = this->scanBufferStartsWith(LdfScanner::StringCommentStart);
+						checkNext = this->_reader.bufferStartsWith(LdfScanner::StringCommentStart);
 						if (checkNext)
 						{
 							this->readComment();
@@ -172,9 +146,9 @@ namespace OptiScan::Parser::Ldf
 				// Skip line comment
 				if (!checkNext)
 				{
-					if (this->fillScanBuffer(LdfScanner::StringLineCommentStart.size()))
+					if (this->_reader.fillScanBuffer(LdfScanner::StringLineCommentStart.size()))
 					{
-						checkNext = this->scanBufferStartsWith(LdfScanner::StringLineCommentStart);
+						checkNext = this->_reader.bufferStartsWith(LdfScanner::StringLineCommentStart);
 						if (checkNext)
 						{
 							this->readLineComment();
@@ -183,12 +157,13 @@ namespace OptiScan::Parser::Ldf
 				}
 			}
 		}
-		if (this->_scanBuffer.empty())
+		if (this->_reader.empty())
 		{
-			this->_token._position = this->_streamPosition;
+			this->_token._position = this->_reader.streamPosition();
 		}
-		else if (this->tryReadIdentifier())
+		else if (this->_reader.readIdentifier(this->_token._position, this->_token._text))
 		{
+			this->_token._kind = LdfTokenKind::Identifier;
 		}
 		else if (this->tryReadLiteralHexInteger())
 		{
@@ -204,7 +179,7 @@ namespace OptiScan::Parser::Ldf
 		}
 		else
 		{
-			const LdfScanChar & c = this->_scanBuffer.front();
+			const ScanChar & c = this->_reader.front();
 			this->_token._position = c._position;
 			this->_token._text.push_back(c._value);
 			throw FormatException("Unknown token");
@@ -216,69 +191,32 @@ namespace OptiScan::Parser::Ldf
 		return this->_token;
 	}
 
-	bool LdfScanner::tryReadIdentifier()
-	{
-		bool result = false;
-		if (this->fillScanBuffer())
-		{
-			const LdfScanChar & c = this->_scanBuffer.front();
-			if (LdfScanner::isCharIdentifierStart(c._value))
-			{
-				result = true;
-				this->_token._kind = LdfTokenKind::Identifier;
-				this->_token._position = c._position;
-				this->_token._text.push_back(c._value);
-				this->_scanBuffer.erase(this->_scanBuffer.begin());
-				bool checkNext = true;
-				while (checkNext)
-				{
-					checkNext = this->fillScanBuffer();
-					if (checkNext)
-					{
-						const LdfScanChar & c = this->_scanBuffer.front();
-						checkNext = LdfScanner::isCharIdentifier(c._value);
-						if (checkNext)
-						{
-							this->_token._text.push_back(c._value);
-							this->_scanBuffer.erase(this->_scanBuffer.begin());
-						}
-					}
-				}
-			}
-		}
-		return result;
-	}
-
 	bool LdfScanner::tryReadLiteralHexInteger()
 	{
 		bool result = false;
-		if (this->fillScanBuffer(3))
+		if (this->_reader.fillScanBuffer(3))
 		{
-			if (this->_scanBuffer[0]._value == '0'
-				&& this->_scanBuffer[1]._value == 'x'
-				&& LdfScanner::isCharHexDigit(this->_scanBuffer[2]._value))
+			if (this->_reader.at(0)._value == '0'
+				&& this->_reader.at(1)._value == 'x'
+				&& LdfScanner::isCharHexDigit(this->_reader.at(2)._value))
 			{
 				result = true;
 				this->_token._kind = LdfTokenKind::LiteralHexInteger;
-				this->_token._position = this->_scanBuffer[0]._position;
-				this->_token._text.push_back(this->_scanBuffer[0]._value);
-				this->_scanBuffer.erase(this->_scanBuffer.begin());
-				this->_token._text.push_back(this->_scanBuffer[0]._value);
-				this->_scanBuffer.erase(this->_scanBuffer.begin());
-				this->_token._text.push_back(this->_scanBuffer[0]._value);
-				this->_scanBuffer.erase(this->_scanBuffer.begin());
+				this->_token._position = this->_reader.at(0)._position;
+				this->_token._text.push_back(this->_reader.popBufferFront()._value);
+				this->_token._text.push_back(this->_reader.popBufferFront()._value);
+				this->_token._text.push_back(this->_reader.popBufferFront()._value);
 				bool checkNext = true;
 				while (checkNext)
 				{
-					checkNext = this->fillScanBuffer();
+					checkNext = this->_reader.fillScanBuffer();
 					if (checkNext)
 					{
-						const LdfScanChar & c = this->_scanBuffer.front();
+						const ScanChar & c = this->_reader.front();
 						checkNext = LdfScanner::isCharHexDigit(c._value);
 						if (checkNext)
 						{
-							this->_token._text.push_back(c._value);
-							this->_scanBuffer.erase(this->_scanBuffer.begin());
+							this->_token._text.push_back(this->_reader.popBufferFront()._value);
 						}
 					}
 				}
@@ -290,15 +228,15 @@ namespace OptiScan::Parser::Ldf
 	bool LdfScanner::tryReadLiteralIntegerOrReal()
 	{
 		bool result = false;
-		if (this->fillScanBuffer())
+		if (this->_reader.fillScanBuffer())
 		{
-			const LdfScanChar & c = this->_scanBuffer.front();
+			const ScanChar & c = this->_reader.front();
 			bool hasDigit = false;
 			if (c._value == '+' || c._value == '-')
 			{
 				result = true;
 			}
-			else if (LdfScanner::isCharDigit(c._value))
+			else if (CharReader::isCharDigit(c._value))
 			{
 				result = true;
 				hasDigit = true;
@@ -306,15 +244,15 @@ namespace OptiScan::Parser::Ldf
 			if (result)
 			{
 				this->_token._kind = LdfTokenKind::LiteralInteger;
-				this->_token._position = c._position;
-				this->_token._text.push_back(c._value);
-				this->_scanBuffer.erase(this->_scanBuffer.begin());
+				const ScanChar & tmp = this->_reader.popBufferFront();
+				this->_token._position = tmp._position;
+				this->_token._text.push_back(tmp._value);
 				bool checkNext = true;
 				bool hasDecimalSeparator = false;
 				bool hasDecimalDigit = false;
 				while (checkNext)
 				{
-					if (!this->fillScanBuffer())
+					if (!this->_reader.fillScanBuffer())
 					{
 						if (!hasDigit)
 						{
@@ -328,7 +266,7 @@ namespace OptiScan::Parser::Ldf
 					}
 					if (checkNext)
 					{
-						const LdfScanChar & c = this->_scanBuffer.front();
+						const ScanChar & c = this->_reader.front();
 						if (c._value == '.')
 						{
 							if (!hasDigit)
@@ -342,7 +280,7 @@ namespace OptiScan::Parser::Ldf
 							hasDecimalSeparator = true;
 							this->_token._kind = LdfTokenKind::LiteralReal;
 						}
-						else if (LdfScanner::isCharDigit(c._value))
+						else if (CharReader::isCharDigit(c._value))
 						{
 							if (!hasDigit)
 							{
@@ -367,8 +305,7 @@ namespace OptiScan::Parser::Ldf
 						}
 						if (checkNext)
 						{
-							this->_token._text.push_back(c._value);
-							this->_scanBuffer.erase(this->_scanBuffer.begin());
+							this->_token._text.push_back(this->_reader.popBufferFront()._value);
 						}
 					}
 				}
@@ -380,27 +317,26 @@ namespace OptiScan::Parser::Ldf
 	bool LdfScanner::tryReadLiteralString()
 	{
 		bool result = false;
-		if (this->fillScanBuffer())
+		if (this->_reader.fillScanBuffer())
 		{
-			const LdfScanChar & c = this->_scanBuffer.front();
+			const ScanChar & c = this->_reader.front();
 			if (c._value == '"')
 			{
 				result = true;
 				this->_token._kind = LdfTokenKind::LiteralString;
-				this->_token._position = c._position;
-				this->_token._text.push_back(c._value);
-				this->_scanBuffer.erase(this->_scanBuffer.begin());
+				const ScanChar & tmp = this->_reader.popBufferFront();
+				this->_token._position = tmp._position;
+				this->_token._text.push_back(tmp._value);
 				bool checkNext = true;
 				while (checkNext)
 				{
-					if (!this->fillScanBuffer())
+					if (!this->_reader.fillScanBuffer())
 					{
 						throw FormatException("Missing quotation mark");
 					}
-					const LdfScanChar & c = this->_scanBuffer.front();
+					const ScanChar & c = this->_reader.popBufferFront();
 					checkNext = c._value != '"';
 					this->_token._text.push_back(c._value);
-					this->_scanBuffer.erase(this->_scanBuffer.begin());
 				}
 			}
 		}
@@ -410,10 +346,10 @@ namespace OptiScan::Parser::Ldf
 	bool LdfScanner::tryReadOperator()
 	{
 		bool result = false;
-		if (this->fillScanBuffer())
+		if (this->_reader.fillScanBuffer())
 		{
 			result = true;
-			const LdfScanChar & c = this->_scanBuffer.front();
+			const ScanChar & c = this->_reader.front();
 			if (c._value == ':')
 			{
 				this->_token._kind = LdfTokenKind::OperatorColon;
@@ -444,20 +380,12 @@ namespace OptiScan::Parser::Ldf
 			}
 			if (result)
 			{
+				const ScanChar & c = this->_reader.popBufferFront();
 				this->_token._position = c._position;
 				this->_token._text.push_back(c._value);
-				this->_scanBuffer.erase(this->_scanBuffer.begin());
 			}
 		}
 		return result;
-	}
-
-
-	LdfToken::LdfToken()
-		: _kind(LdfTokenKind::None)
-		, _position()
-		, _text()
-	{
 	}
 
 }
