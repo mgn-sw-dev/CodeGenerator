@@ -43,7 +43,7 @@ namespace OptiScan::Parser::Dbc
         static bool isCharExponentStart(const char & c);
         /** */
         static bool isCharWhiteSpace(const char & c);
-        /** @throw DbcFormatException if unknown token. */
+        /** @throw FormatException if unknown token. */
         void scanNext();
         /** @return DbcToken. */
         const DbcToken & token() const;
@@ -53,16 +53,16 @@ namespace OptiScan::Parser::Dbc
         DbcToken _token;
 
         /** @return false If not end of line.
-         *  @throws DbcFormatException. */
+         *  @throws FormatException. */
         bool readEndOfLine();
         /** @return false If not literal integer or literal real.
-         *  @throws DbcFormatException. */
+         *  @throws FormatException. */
         bool readLiteralIntegerOrReal();
         /** @return false If not literal string.
-         *  @throws DbcFormatException. */
+         *  @throws FormatException. */
         bool readLiteralString();
         /** @return false If not operator.
-         *  @throws DbcFormatException. */
+         *  @throws FormatException. */
         bool readOperator();
     };
 

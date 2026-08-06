@@ -1,7 +1,7 @@
 
 #include <OptiScan/Parser/Dbc/DbcScanner.h>
 #include <OptiScan/Parser/Dbc/DbcFormat.h>
-#include <OptiScan/Parser/Dbc/DbcException.h>
+#include <OptiScan/Parser/FileException.h>
 #include <ios>
 
 using namespace std;
@@ -147,11 +147,11 @@ namespace OptiScan::Parser::Dbc
 
 					if (hasDecimalSeparator && !hasDecimalDigit)
 					{
-						throw DbcFormatException("Missing decimal digit");
+						throw FormatException("Missing decimal digit");
 					}
 					if (hasExponent && !hasExponentDigit)
 					{
-						throw DbcFormatException("Missing exponent digit");
+						throw FormatException("Missing exponent digit");
 					}
 
 					if (hasDecimalSeparator || hasExponent)
@@ -185,7 +185,7 @@ namespace OptiScan::Parser::Dbc
 				{
 					if (!this->_reader.fillScanBuffer())
 					{
-						throw DbcFormatException("Missing quotation mark");
+						throw FormatException("Missing quotation mark");
 					}
 					const ScanChar & c = this->_reader.front();
 					if (c._value == DbcFormat::StringEscapeStart)
@@ -193,7 +193,7 @@ namespace OptiScan::Parser::Dbc
 						this->_token._text.push_back(this->_reader.popBufferFront()._value);
 						if (!this->_reader.fillScanBuffer())
 						{
-							throw DbcFormatException("Missing escape marker");
+							throw FormatException("Missing escape marker");
 						}
 						const ScanChar & escaped = this->_reader.front();
 						bool findMarker = true;
@@ -203,7 +203,7 @@ namespace OptiScan::Parser::Dbc
 						}
 						if (findMarker)
 						{
-							throw DbcFormatException("Invalid escape marker");
+							throw FormatException("Invalid escape marker");
 						}
 					}
 					else
@@ -322,7 +322,7 @@ namespace OptiScan::Parser::Dbc
 			const ScanChar & c = this->_reader.front();
 			this->_token._position = c._position;
 			this->_token._text.push_back(c._value);
-			throw DbcFormatException("Unknown token");
+			throw FormatException("Unknown token");
 		}
 	}
 
