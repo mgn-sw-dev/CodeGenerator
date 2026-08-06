@@ -33,6 +33,10 @@ set(OptiScanParser_SOURCES
     Ldf/LdfKeyword.h
     Ldf/LdfParser.cpp
     Ldf/LdfParser.h
+    Ldf/LdfScanner.cpp
+    Ldf/LdfScanner.h
+    Ldf/LdfTokenReader.cpp
+    Ldf/LdfTokenReader.h
     CharReader.cpp
     CharReader.h
     FileException.cpp
