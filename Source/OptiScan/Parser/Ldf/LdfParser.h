@@ -30,13 +30,27 @@ namespace OptiScan::Parser::Ldf
         LdfTokenReader _reader;
 
         /** @throws FormatException. */
-        void parseLinDescriptionFile();
+        void parseChannelName(const std::string & languageVersion, std::string & channelName);
         /** @throws FormatException. */
-        void parseLinLanguageVersion(std::string & languageVersion);
+        void parseDescriptionFile();
         /** @throws FormatException. */
-        void parseLinProtocolVersion(std::string & protocolVersion);
+        void parseLanguageVersion(std::string & languageVersion);
         /** @throws FormatException. */
-        void parseLinVersions(std::string & version);
+        void parseMasterNode(MasterNode & masterNode);
+        /** @throws FormatException. */
+        void parseNodes(MasterNode & masterNode, std::vector<std::string> & slaveNodes);
+        /** @throws FormatException. */
+        void parseNodeComposite();
+        /** @throws FormatException. */
+        void parseProtocolVersion(std::string & protocolVersion);
+        /** @throws FormatException. */
+        void parseSignals( std::vector<LinSignal> & _signals);
+        /** @throws FormatException. */
+        void parseSlaveNodes(std::vector<std::string> & slaveNodes);
+        /** @throws FormatException. */
+        void parseSpeed(double & speed_kBit_per_s);
+        /** @throws FormatException. */
+        void parseVersions(std::string & version);
 
     };
 
