@@ -1,4 +1,5 @@
 
+#include <OptiScan/Parser/Ldf/LdfKeyword.h>
 #include <OptiScan/Parser/Ldf/LdfTokenReader.h>
 #include <OptiScan/Parser/FileException.h>
 #include <charconv>
@@ -87,12 +88,18 @@ namespace OptiScan::Parser::Ldf
 		return result;
 	}
 
-	void LdfTokenReader::matchKeyword(const std::string & id) const
+	void LdfTokenReader::matchKeyword(const string & id) const
 	{
 		if (!this->tryMatchKeyword(id))
 		{
 			throw FormatException("Keyword mismatch");
 		}
+	}
+
+	void LdfTokenReader::matchKeywordAndRead(const string & id)
+	{
+		this->matchKeyword(id);
+		this->readNextToken();
 	}
 
 	void LdfTokenReader::matchToken(const LdfTokenKind kind) const
@@ -101,6 +108,93 @@ namespace OptiScan::Parser::Ldf
 		{
 			throw FormatException("Token mismatch");
 		}
+	}
+
+	void LdfTokenReader::matchTokenAndRead(LdfTokenKind kind)
+	{
+		this->matchToken(kind);
+		this->readNextToken();
+	}
+
+	void LdfTokenReader::parseFloat64(double & value)
+	{
+		if (this->tryMatchToken(LdfTokenKind::LiteralHexInteger))
+		{
+			value = LdfTokenReader::literalHexIntegerTokenTextToUInt32(this->token()._text);
+		}
+		else if (this->tryMatchToken(LdfTokenKind::LiteralInteger) || this->tryMatchToken(LdfTokenKind::LiteralReal))
+		{
+			value = LdfTokenReader::literalRealTokenTextToDouble(this->token()._text);
+		}
+		else
+		{
+			throw FormatException("Literal hex integer, literal integer or literal real expected");
+		}
+		this->readNextToken();
+	}
+
+	void LdfTokenReader::parseFloat64_ms(double & value_ms)
+	{
+		this->parseFloat64(value_ms);
+		this->matchKeywordAndRead(LdfKeyword::Ms);
+	}
+
+	void LdfTokenReader::parseIdentifier(string & value)
+	{
+		this->matchToken(LdfTokenKind::Identifier);
+		value = this->token()._text;
+		this->readNextToken();
+	}
+
+	void LdfTokenReader::parseString(string & value)
+	{
+		this->matchToken(LdfTokenKind::LiteralString);
+		value = LdfTokenReader::literalStringTokenTextToString(this->token()._text);
+		this->readNextToken();
+	}
+
+	void LdfTokenReader::parseUInt8(uint8_t & value)
+	{
+		uint32_t tmp;
+		this->parseUInt32(tmp);
+		if (UINT8_MAX < tmp)
+		{
+			throw FormatException("UInt8 out of range");
+		}
+		value = static_cast<uint8_t>(tmp);
+	}
+
+	void LdfTokenReader::parseUInt16(uint16_t & value)
+	{
+		uint32_t tmp;
+		this->parseUInt32(tmp);
+		if (UINT16_MAX < tmp)
+		{
+			throw FormatException("UInt16 out of range");
+		}
+		value = static_cast<uint16_t>(tmp);
+	}
+
+	void LdfTokenReader::parseUInt32(uint32_t & value)
+	{
+		if (this->tryMatchToken(LdfTokenKind::LiteralHexInteger))
+		{
+			value = LdfTokenReader::literalHexIntegerTokenTextToUInt32(this->token()._text);
+		}
+		else if (this->tryMatchToken(LdfTokenKind::LiteralInteger))
+		{
+			value = LdfTokenReader::literalIntegerTokenTextToUInt32(this->token()._text);
+		}
+		else
+		{
+			throw FormatException("Literal hex integer or literal integer expected");
+		}
+		this->readNextToken();
+	}
+
+	void LdfTokenReader::readNextToken()
+	{
+		this->_scanner.scanNext();
 	}
 
 	const LdfToken & LdfTokenReader::token() const
