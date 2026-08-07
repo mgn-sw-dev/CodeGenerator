@@ -12,39 +12,39 @@ namespace OptiScan::Parser::Dbc
         DbcTokenReader(std::istream * input);
         /** */
         bool hasToken() const;
-        /** @throws DbcFormatException. */
+        /** @throws FormatException. */
         static uint32_t literalIntegerTokenTextToUInt32(const std::string & tokenText);
-        /** @throws DbcFormatException. */
+        /** @throws FormatException. */
         static double literalRealTokenTextToDouble(const std::string & tokenText);
-        /** @throws  DbcFormatException*/
+        /** @throws  FormatException*/
         static std::string literalStringTokenTextToString(const std::string & tokenText);
-        /** @throws DbcFormatException. */
+        /** @throws FormatException. */
         void matchKeyword(const std::string & id) const;
-        /** @throws DbcFormatException. */
+        /** @throws FormatException. */
         void matchToken(DbcTokenKind kind) const;
-        /** @throws DbcFormatException. */
+        /** @throws FormatException. */
         void parseFloat64(double & value);
-        /** @throws DbcFormatException. */
+        /** @throws FormatException. */
         void parseIdentifier(std::string & value);
-        /** @throws DbcFormatException. */
+        /** @throws FormatException. */
         void parseInt32(int32_t & value);
-        /** @throws DbcFormatException. */
+        /** @throws FormatException. */
         void parseString(std::string & value);
-        /** @throws DbcFormatException. */
+        /** @throws FormatException. */
         void parseUInt32(uint32_t & value);
-        /** @throws DbcFormatException */
+        /** @throws FormatException */
         void readNextToken();
         /** */
         const DbcScanner & scanner() const;
-        /** @throws DbcInvalidOperationException if no token. */
+        /** @throws InvalidOperationException if no token. */
         const DbcToken & token() const;
         /** */
         const std::vector<DbcToken> & tokenStack() const;
-        /** @throws DbcInvalidOperationException. */
+        /** @throws InvalidOperationException. */
         void tokenStackBegin();
-        /** @throws DbcInvalidOperationException. */
+        /** @throws InvalidOperationException. */
         void tokenStackCommit();
-        /** @throws DbcInvalidOperationException. */
+        /** @throws InvalidOperationException. */
         void tokenStackRollback();
         /** */
         int64_t tokenStackCount() const;
@@ -53,10 +53,10 @@ namespace OptiScan::Parser::Dbc
         /** */
         bool tryMatchToken(DbcTokenKind kind) const;
         /** @returns null If no error.
-         *  @throws DbcFormatException. */
+         *  @throws FormatException. */
         std::exception_ptr tryParseInt32(int32_t & value);
         /** @returns null If no error.
-         *  @throws DbcFormatException. */
+         *  @throws FormatException. */
         std::exception_ptr tryParseUInt32(uint32_t & value);
     private:
         DbcScanner _scanner;

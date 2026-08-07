@@ -1,7 +1,7 @@
 
-#include <OptiScan/Parser/Dbc/DbcException.h>
 #include <OptiScan/Parser/Dbc/DbcFormat.h>
 #include <OptiScan/Parser/Dbc/DbcTokenReader.h>
+#include <OptiScan/Parser/FileException.h>
 #include <charconv>
 #include <exception>
 
@@ -39,7 +39,7 @@ namespace OptiScan::Parser::Dbc
 		bool const isValid = parseResult.ec == errc() && parseResult.ptr == last;
 		if (!isValid)
 		{
-			throw DbcFormatException("Invalid uint32");
+			throw FormatException("Invalid uint32");
 		}
 		return result;
 	}
@@ -53,7 +53,7 @@ namespace OptiScan::Parser::Dbc
 		bool const isValid = parseResult.ec == errc() && parseResult.ptr == last;
 		if (!isValid)
 		{
-			throw DbcFormatException("Invalid double");
+			throw FormatException("Invalid double");
 		}
 		return result;
 	}
@@ -101,7 +101,7 @@ namespace OptiScan::Parser::Dbc
 		}
 		if (!isValid)
 		{
-			throw DbcFormatException("Invalid string");
+			throw FormatException("Invalid string");
 		}
 		return result;
 	}
@@ -110,7 +110,7 @@ namespace OptiScan::Parser::Dbc
 	{
 		if (!this->tryMatchKeyword(id))
 		{
-			throw DbcFormatException("Keyword mismatch");
+			throw FormatException("Keyword mismatch");
 		}
 	}
 
@@ -118,7 +118,7 @@ namespace OptiScan::Parser::Dbc
 	{
 		if (!this->tryMatchToken(kind))
 		{
-			throw DbcFormatException("Token mismatch");
+			throw FormatException("Token mismatch");
 		}
 	}
 
@@ -141,7 +141,7 @@ namespace OptiScan::Parser::Dbc
 		}
 		else
 		{
-			throw DbcFormatException("literal integer or literal real expected");
+			throw FormatException("literal integer or literal real expected");
 		}
 		if (isSigned)
 		{
@@ -217,7 +217,7 @@ namespace OptiScan::Parser::Dbc
 	{
 		if (!this->hasToken())
 		{
-			throw DbcInvalidOperationException("No token");
+			throw InvalidOperationException("No token");
 		}
 		const DbcToken * result;
 		if (this->_tokenStackCount == -1)
@@ -240,7 +240,7 @@ namespace OptiScan::Parser::Dbc
 	{
 		if (this->_tokenStackCount != -1)
 		{
-			throw DbcInvalidOperationException("Token stack begin error: token stack already in use");
+			throw InvalidOperationException("Token stack begin error: token stack already in use");
 		}
 		if (this->_tokenStack.size() < 1)
 		{
@@ -256,7 +256,7 @@ namespace OptiScan::Parser::Dbc
 	{
 		if (this->_tokenStackCount == -1)
 		{
-			throw DbcInvalidOperationException("Token stack commit error: no token stack");
+			throw InvalidOperationException("Token stack commit error: no token stack");
 		}
 		for (int64_t i = 0; i < this->_tokenStackCount; i++)
 		{
@@ -274,7 +274,7 @@ namespace OptiScan::Parser::Dbc
 	{
 		if (this->_tokenStackCount == -1)
 		{
-			throw DbcInvalidOperationException("Token stack rollback error: no token stack");
+			throw InvalidOperationException("Token stack rollback error: no token stack");
 		}
 		this->_tokenStackCount = -1;
 	}
@@ -324,13 +324,13 @@ namespace OptiScan::Parser::Dbc
 			}
 			if (signedValue < INT32_MIN || INT32_MAX < signedValue)
 			{
-				throw DbcFormatException("Int32 out of range");
+				throw FormatException("Int32 out of range");
 			}
 			value = static_cast<int32_t>(signedValue);
 			this->tokenStackCommit();
 			this->readNextToken();
 		}
-		catch (const DbcFormatException & ex)
+		catch (const FormatException & ex)
 		{
 			result = current_exception();
 			this->tokenStackRollback();
@@ -353,9 +353,9 @@ namespace OptiScan::Parser::Dbc
 			this->tokenStackCommit();
 			this->readNextToken();
 		}
-		catch (const DbcFormatException & ex)
+		catch (const FormatException & ex)
 		{
-			// catch only DbcFormatException and not DbcInvalidOperationException
+			// catch only FormatException and not InvalidOperationException
 			result = current_exception();
 			this->tokenStackRollback();
 		}
