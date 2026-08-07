@@ -1,7 +1,7 @@
 #pragma once
 
 #include <OptiScan/Parser/Ldf/LdfDatabase.h>
-#include <OptiScan/Parser/Ldf/LdfScanner.h>
+#include <OptiScan/Parser/Ldf/LdfTokenReader.h>
 #include <OptiScan/Parser/Flags.h>
 #include <fstream>
 
@@ -10,7 +10,6 @@ namespace OptiScan::Parser::Ldf
 
     class LdfParser 
     {
-#if 0
     public:
         enum class Mode : int
         {
@@ -22,16 +21,23 @@ namespace OptiScan::Parser::Ldf
         LdfParser(std::istream * input);
         /** */
         LdfParser::Modes modes() const;
-        /** @throws . */
-        void parse(LdfDatabase & LdfDatabase);
-        /** */
-        const LdfScanner & scanner() const;
+        /** @throws FormatException. */
+        void parse(LdfDatabase & ldfDatabase);
         /** */
         void setModes(LdfParser::Modes modes);
     private:
         LdfParser::Modes _modes;
-        LdfScanner _scanner;
-#endif
+        LdfTokenReader _reader;
+
+        /** @throws FormatException. */
+        void parseLinDescriptionFile();
+        /** @throws FormatException. */
+        void parseLinLanguageVersion(std::string & languageVersion);
+        /** @throws FormatException. */
+        void parseLinProtocolVersion(std::string & protocolVersion);
+        /** @throws FormatException. */
+        void parseLinVersions(std::string & version);
+
     };
 
 }

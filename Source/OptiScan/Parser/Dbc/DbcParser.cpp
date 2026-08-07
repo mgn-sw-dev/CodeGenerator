@@ -2,6 +2,7 @@
 #include <OptiScan/Parser/Dbc/DbcParser.h>
 #include <OptiScan/Parser/Dbc/DbcException.h>
 #include <OptiScan/Parser/Dbc/DbcKeyword.h>
+#include <OptiScan/Parser/TokenReaderUtils.h>
 
 using namespace std;
 
@@ -608,7 +609,7 @@ namespace OptiScan::Parser::Dbc
 			{
 				item._multiplexorIndicators.setFlag(DbcMultiplexorIndicator::MultiplexedSignal);
 				id.erase(0, 1);
-				item._multiplexorSwitchValue = DbcTokenReader::literalIntegerTokenTextToUInt32(id);
+				item._multiplexorSwitchValue = TokenReaderUtils::literalIntegerTokenTextToUInt32(id);
 				id.clear();
 			}
 			if (!id.empty())
