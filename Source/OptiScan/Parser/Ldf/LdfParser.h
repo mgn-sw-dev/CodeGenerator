@@ -34,9 +34,23 @@ namespace OptiScan::Parser::Ldf
         /** @throws FormatException. */
         void parseDescriptionFile();
         /** @throws FormatException. */
+        void parseDiagnosticFrames();
+        /** @throws FormatException. */
+        void parseDiagnosticSignals();
+        /** @throws FormatException. */
+        void parseEndOfFile() const;
+        /** @throws FormatException. */
+        void parseEventTriggeredFrames();
+        /** @throws FormatException. */
+        void parseFrames(std::vector<LinFrame> & frames);
+        /** @throws FormatException. */
+        void parseFrameSignals(std::vector<LinFrameSignal> & signals);
+        /** @throws FormatException. */
         void parseLanguageVersion(std::string & languageVersion);
         /** @throws FormatException. */
         void parseMasterNode(MasterNode & masterNode);
+        /** @throws FormatException. */
+        void parseNodeAttributes();
         /** @throws FormatException. */
         void parseNodes(MasterNode & masterNode, std::vector<std::string> & slaveNodes);
         /** @throws FormatException. */
@@ -44,7 +58,17 @@ namespace OptiScan::Parser::Ldf
         /** @throws FormatException. */
         void parseProtocolVersion(std::string & protocolVersion);
         /** @throws FormatException. */
+        void parseScheduleTables(const std::string & languageVersion);
+        /** @throws FormatException. */
+        void parseSignalEncodingTypes(std::vector<LinSignalEncodingType> & signalEncodingTypes);
+        /** @throws FormatException. */
+        void parseSignalRepresentations(std::vector<LinSignalRepresentation> & signalRepresentations);
+        /** @throws FormatException. */
         void parseSignals( std::vector<LinSignal> & _signals);
+        /** @throws FormatException. */
+        void parseSignalInitValues(LinSignal & signal);
+        /** @throws FormatException. */
+        void parseSporadicFrames();
         /** @throws FormatException. */
         void parseSlaveNodes(std::vector<std::string> & slaveNodes);
         /** @throws FormatException. */

@@ -1,13 +1,21 @@
 #include <OptiScan/Core/Database/SystemDatabase.h>
 #include <OptiScan/View/Console/ConsoleLogHandler.h>
 #include <OptiScan/Core/Database/CanDatabase.h>
+#include <iostream>
 
 int main(int argc, char *argv[])
 {
 	OptiScan::View::Console::ConsoleLogHandler logHandler;
 	OptiScan::Core::Database::CanDatabase canDatabase;
 	OptiScan::Core::Database::LinDatabase linDatabase;
-	linDatabase.loadLdfDatabase("C:/CodeGenerator/Test/SAM_LIN2_2024_20a.ldf");
+	try
+	{
+		linDatabase.loadLdfDatabase("C:/CodeGenerator/Test/SAM_LIN2_2024_20a.ldf");
+	}
+	catch (const std::exception & error)
+	{
+		std::cout << error.what() << std::endl;
+	}
 	canDatabase.loadDbcDatabase("C:/CodeGenerator/Test/240102BatteryCAN.dbc");
 	OptiScan::Core::Database::SystemDatabase systemDatabase;
 	systemDatabase.setLogHandler(&logHandler);
