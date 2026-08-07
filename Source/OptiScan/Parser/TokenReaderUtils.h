@@ -1,0 +1,20 @@
+#pragma once
+
+#include <string>
+
+namespace OptiScan::Parser
+{
+    class TokenReaderUtils 
+    {
+    public:
+        /** @throws FormatException. */
+        static uint32_t literalHexIntegerTokenTextToUInt32(const std::string & tokenText);
+        /** @throws FormatException. */
+        static uint32_t literalIntegerTokenTextToUInt32(const std::string & tokenText);
+        /** @throws FormatException. */
+        static double literalRealTokenTextToDouble(const std::string & tokenText);
+        /**  @throws FormatException. */
+        static std::string literalStringTokenTextToString(const std::string & tokenText);
+    };
+
+}

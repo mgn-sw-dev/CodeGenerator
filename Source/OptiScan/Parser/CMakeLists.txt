@@ -45,6 +45,8 @@ set(OptiScanParser_SOURCES
     Flags.inl.h
     ScanPosition.h
     Token.h
+    TokenReaderUtils.cpp
+    TokenReaderUtils.h
 )
 
 target_sources(OptiScanParser PRIVATE ${OptiScanParser_SOURCES})

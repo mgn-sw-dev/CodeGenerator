@@ -13,14 +13,6 @@ namespace OptiScan::Parser::Ldf
         /** */
         bool hasToken() const;
         /** @throws FormatException. */
-        static uint32_t literalHexIntegerTokenTextToUInt32(const std::string & tokenText);
-        /** @throws FormatException. */
-        static uint32_t literalIntegerTokenTextToUInt32(const std::string & tokenText);
-        /** @throws FormatException. */
-        static double literalRealTokenTextToDouble(const std::string & tokenText);
-        /**  @throws FormatException. */
-        static std::string literalStringTokenTextToString(const std::string & tokenText);
-        /** @throws FormatException. */
         void matchKeyword(const std::string & id) const;
         /** @throws FormatException. */
         void matchKeywordAndRead(const std::string & id);
@@ -35,13 +27,13 @@ namespace OptiScan::Parser::Ldf
         /** @throws FormatException. */
         void parseIdentifier(std::string & value);
         /** @throws FormatException. */
+        void parseString(std::string & value);
+        /** @throws FormatException. */
         void parseUInt8(uint8_t & value);
         /** @throws FormatException. */
         void parseUInt16(uint16_t & value);
         /** @throws FormatException. */
         void parseUInt32(uint32_t & value);
-        /** @throws FormatException. */
-        void parseString(std::string & value);
         /** @throws FormatException */
         void readNextToken();
         /** @throws InvalidOperationException if no token. */

@@ -12,10 +12,6 @@ namespace OptiScan::Parser::Dbc
         DbcTokenReader(std::istream * input);
         /** */
         bool hasToken() const;
-        /** @throws FormatException. */
-        static uint32_t literalIntegerTokenTextToUInt32(const std::string & tokenText);
-        /** @throws FormatException. */
-        static double literalRealTokenTextToDouble(const std::string & tokenText);
         /** @throws  FormatException*/
         static std::string literalStringTokenTextToString(const std::string & tokenText);
         /** @throws FormatException. */

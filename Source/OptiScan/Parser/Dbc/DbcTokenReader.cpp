@@ -2,7 +2,7 @@
 #include <OptiScan/Parser/Dbc/DbcFormat.h>
 #include <OptiScan/Parser/Dbc/DbcTokenReader.h>
 #include <OptiScan/Parser/FileException.h>
-#include <charconv>
+#include <OptiScan/Parser/TokenReaderUtils.h>
 #include <exception>
 
 using namespace std;
@@ -26,34 +26,6 @@ namespace OptiScan::Parser::Dbc
 		else
 		{
 			result = 0 < this->_tokenStackCount && this->_tokenStackCount <= this->_tokenStack.size();
-		}
-		return result;
-	}
-
-	uint32_t DbcTokenReader::literalIntegerTokenTextToUInt32(const string & tokenText)
-	{
-		uint32_t result = 0;
-		char const * const first = tokenText.data();
-		char const * const last = tokenText.data() + tokenText.size();
-		from_chars_result const parseResult = from_chars(first, last, result);
-		bool const isValid = parseResult.ec == errc() && parseResult.ptr == last;
-		if (!isValid)
-		{
-			throw FormatException("Invalid uint32");
-		}
-		return result;
-	}
-
-	double DbcTokenReader::literalRealTokenTextToDouble(const std::string & tokenText)
-	{
-		double result = 0;
-		char const * const first = tokenText.data();
-		char const * const last = tokenText.data() + tokenText.size();
-		from_chars_result const parseResult = from_chars(first, last, result);
-		bool const isValid = parseResult.ec == errc() && parseResult.ptr == last;
-		if (!isValid)
-		{
-			throw FormatException("Invalid double");
 		}
 		return result;
 	}
@@ -137,7 +109,7 @@ namespace OptiScan::Parser::Dbc
 		double tmp;
 		if (this->tryMatchToken(DbcTokenKind::LiteralInteger) || this->tryMatchToken(DbcTokenKind::LiteralReal))
 		{
-			tmp = DbcTokenReader::literalRealTokenTextToDouble(this->token()._text);
+			tmp = TokenReaderUtils::literalRealTokenTextToDouble(this->token()._text);
 		}
 		else
 		{
@@ -316,7 +288,7 @@ namespace OptiScan::Parser::Dbc
 				this->readNextToken();
 			}
 			this->matchToken(DbcTokenKind::LiteralInteger);
-			uint32_t const raw = DbcTokenReader::literalIntegerTokenTextToUInt32(this->token()._text);
+			uint32_t const raw = TokenReaderUtils::literalIntegerTokenTextToUInt32(this->token()._text);
 			int64_t signedValue = static_cast<int64_t>(raw);
 			if (isSigned)
 			{
@@ -349,7 +321,7 @@ namespace OptiScan::Parser::Dbc
 				this->readNextToken();
 			}
 			this->matchToken(DbcTokenKind::LiteralInteger);
-			value = DbcTokenReader::literalIntegerTokenTextToUInt32(this->token()._text);
+			value = TokenReaderUtils::literalIntegerTokenTextToUInt32(this->token()._text);
 			this->tokenStackCommit();
 			this->readNextToken();
 		}
