@@ -10,15 +10,14 @@ using namespace std;
 namespace OptiScan::Parser::Ldf
 {
 	LdfTokenReader::LdfTokenReader(std::istream * input)
-		: _scanner(input)
-		, _tokenStack()
-		, _tokenStackCount(-1)
+		: _hasToken(false)
+		, _scanner(input)
 	{
 	}
 
 	bool LdfTokenReader::hasToken() const
 	{
-		return true;
+		return this->_hasToken;
 	}
 
 	uint32_t LdfTokenReader::literalHexIntegerTokenTextToUInt32(const string & tokenText)
@@ -195,6 +194,7 @@ namespace OptiScan::Parser::Ldf
 	void LdfTokenReader::readNextToken()
 	{
 		this->_scanner.scanNext();
+		this->_hasToken = true;
 	}
 
 	const LdfToken & LdfTokenReader::token() const

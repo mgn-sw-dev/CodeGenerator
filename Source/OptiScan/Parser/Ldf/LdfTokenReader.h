@@ -53,9 +53,8 @@ namespace OptiScan::Parser::Ldf
 
 
     private:
+        bool _hasToken;
         LdfScanner _scanner;
-        std::vector<LdfToken> _tokenStack;
-        int64_t _tokenStackCount;
     };
 
 }
