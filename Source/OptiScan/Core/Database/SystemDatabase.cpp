@@ -202,8 +202,8 @@ namespace OptiScan::Core::Database
 				ldfModes._allowSignalEncodingType32 = true;
 				ldfModes._allowSignalWithoutSubscriber = true;
 				this->logInfo("LdfModes:");
-				this->log("\t- allowSignalEncodingType32: " + to_string(ldfModes._allowSignalEncodingType32));
-				this->log("\t- allowSignalWithoutSubscriber: " + to_string(ldfModes._allowSignalWithoutSubscriber));
+				this->log("\t- allowSignalEncodingType32: " + LogHandler::boolToString(ldfModes._allowSignalEncodingType32));
+				this->log("\t- allowSignalWithoutSubscriber: " + LogHandler::boolToString(ldfModes._allowSignalWithoutSubscriber));
 				for (const LinBusObject & linBus : this->_configDatabase._linObject.value()._busses)
 				{
 					this->loadLdfDatabase(linBus, ldfModes);
