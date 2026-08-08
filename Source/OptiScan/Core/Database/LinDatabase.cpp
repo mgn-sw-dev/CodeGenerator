@@ -21,7 +21,7 @@ namespace OptiScan::Core::Database
 		this->_name.clear();
 	}
 
-	void LinDatabase::loadLdfDatabase(const path & ldfPath)
+	void LinDatabase::loadLdfDatabase(const path & ldfPath, const LdfModes & ldfModes)
 	{
 		if (!exists(ldfPath))
 		{
@@ -33,6 +33,7 @@ namespace OptiScan::Core::Database
 			throw runtime_error("LinDatabase::loadLdfDatabase: Ldf file '" + ldfPath.string() + "' could not be opened.");
 		}
 		LdfParser parser(&file);
+		parser.setLdfModes(ldfModes);
 		parser.parse(this->_ldfDatabase);
 	}
 

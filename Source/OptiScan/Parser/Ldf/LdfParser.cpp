@@ -9,10 +9,14 @@ using namespace std;
 namespace OptiScan::Parser::Ldf
 {
 	LdfParser::LdfParser(istream * input)
-		: _modes(Mode::None)
+		: _ldfModes()
 		, _reader(input)
 	{
-		this->_modes.setFlag(Mode::AllowSignalWithoutSubscriber);
+	}
+
+	void LdfParser::getLdfModes(LdfModes & ldfModes) const
+	{
+		ldfModes = this->_ldfModes;
 	}
 
 	void LdfParser::parse(LdfDatabase & ldfDatabase)
@@ -244,6 +248,121 @@ namespace OptiScan::Parser::Ldf
 		this->_reader.matchKeywordAndRead(LdfKeyword::LinLanguageVersion);
 		this->parseVersions(languageVersion);
 	}
+
+	void LdfParser::parseMasterNode(MasterNode & masterNode)
+	{
+		this->_reader.matchKeywordAndRead(LdfKeyword::Master);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorColon);
+		this->_reader.parseIdentifier(masterNode._name);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		this->_reader.parseFloat64_ms(masterNode._timeBase_ms);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		this->_reader.parseFloat64_ms(masterNode._jitter_ms);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+	}
+
+	void LdfParser::parseNodeAttributeConfigurableFrames(const pair<uint8_t, uint8_t> & protocolVersion)
+	{
+		this->_reader.matchKeywordAndRead(LdfKeyword::ConfigurableFrames);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
+		bool nextFrame = true;
+		while (nextFrame)
+		{
+			string name;
+			this->_reader.parseIdentifier(name);
+			if (protocolVersion == pair<uint8_t, uint8_t>(2,0))
+			{
+				this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
+				uint32_t messageId;
+				this->_reader.parseUInt32(messageId);
+			}
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+			nextFrame = !this->_reader.tryMatchToken(LdfTokenKind::OperatorRightCurlyBracket);
+		}
+	}
+
+	void LdfParser::parseNodeAttributeFaultStateSignals()
+	{
+		if (this->_reader.tryMatchKeyword(LdfKeyword::FaultStateSignals))
+		{
+			this->_reader.readNextToken();
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
+			vector<string> faultSignals;
+			bool nextSignal = true;
+			while (nextSignal)
+			{
+				string tmp;
+				this->_reader.parseIdentifier(tmp);
+				faultSignals.push_back(tmp);
+				nextSignal = this->_reader.tryMatchToken(LdfTokenKind::OperatorComma);
+				if (nextSignal)
+				{
+					this->_reader.readNextToken();
+				}
+			}
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+		}
+	}
+
+	void LdfParser::parseNodeAttributeInitialNad()
+	{
+		if (this->_reader.tryMatchKeyword(LdfKeyword::InitialNad))
+		{
+			this->_reader.readNextToken();
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
+			uint32_t initialNad;
+			this->_reader.parseUInt32(initialNad);
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+		}
+	}
+
+	void LdfParser::parseNodeAttributeNasTimeout()
+	{
+		if (this->_reader.tryMatchKeyword(LdfKeyword::NAsTimeout))
+		{
+			this->_reader.readNextToken();
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
+			double nAsTimeout_ms;
+			this->_reader.parseFloat64_ms(nAsTimeout_ms);
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+		}
+	}
+
+	void LdfParser::parseNodeAttributeNcrTimeout()
+	{
+		if (this->_reader.tryMatchKeyword(LdfKeyword::NCrTimeout))
+		{
+			this->_reader.readNextToken();
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
+			double nCrTimeout_ms;
+			this->_reader.parseFloat64_ms(nCrTimeout_ms);
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+		}
+	}
+
+	void LdfParser::parseNodeAttributeP2Min()
+	{
+		if (this->_reader.tryMatchKeyword(LdfKeyword::P2Min))
+		{
+			this->_reader.readNextToken();
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
+			double p2Min_ms;
+			this->_reader.parseFloat64_ms(p2Min_ms);
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+		}
+	}
+
+	void LdfParser::parseNodeAttributeStMin()
+	{
+		if (this->_reader.tryMatchKeyword(LdfKeyword::StMin))
+		{
+			this->_reader.readNextToken();
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
+			double stMin_ms;
+			this->_reader.parseFloat64_ms(stMin_ms);
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+		}
+	}
 	
 	void LdfParser::parseNodeAttributes()
 	{
@@ -259,117 +378,19 @@ namespace OptiScan::Parser::Ldf
 			string version;
 			this->_reader.matchKeywordAndRead(LdfKeyword::LinProtocol);
 			this->parseVersions(version);
-			stringstream ss(version);
-			uint16_t majorVersion = 0, minorVersion = 0;
-			char dot;
-			ss >> majorVersion >> dot >> minorVersion;
+			pair<uint8_t, uint8_t> protocolVersion = TokenReaderUtils::literalStringTokenTextToVersionPair(version);
 			
 			this->_reader.matchKeywordAndRead(LdfKeyword::ConfiguredNad);
 			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
 			uint32_t configuredNad;
 			this->_reader.parseUInt32(configuredNad);
 			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-			
-			if (this->_reader.tryMatchKeyword(LdfKeyword::InitialNad))
+
+			this->parseNodeAttributeInitialNad();
+
+			if (2 <= protocolVersion.first)
 			{
-				this->_reader.readNextToken();
-				this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
-				uint32_t initialNad;
-				this->_reader.parseUInt32(initialNad);
-				this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-			}
-			if (2 <= majorVersion)
-			{
-				this->_reader.matchKeywordAndRead(LdfKeyword::ProductId);
-				this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
-				uint32_t supplierId;
-				this->_reader.parseUInt32(supplierId);
-				this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-				uint32_t functionId;
-				this->_reader.parseUInt32(functionId);
-				if (this->_reader.tryMatchToken(LdfTokenKind::OperatorComma))
-				{
-					this->_reader.readNextToken();
-					uint32_t variant;
-					this->_reader.parseUInt32(variant);
-				}
-				this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-				
-				this->_reader.matchKeywordAndRead(LdfKeyword::ResponseError);
-				this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
-				string errorSignalName;
-				this->_reader.parseIdentifier(errorSignalName);
-				this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-				
-				if (this->_reader.tryMatchKeyword(LdfKeyword::FaultStateSignals))
-				{
-					this->_reader.readNextToken();
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
-					vector<string> faultSignals;
-					bool nextSignal = true;
-					while (nextSignal)
-					{
-						string tmp;
-						this->_reader.parseIdentifier(tmp);
-						faultSignals.push_back(tmp);
-						nextSignal = this->_reader.tryMatchToken(LdfTokenKind::OperatorComma);
-						if (nextSignal)
-						{
-							this->_reader.readNextToken();
-						}
-					}
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-				}				
-				if (this->_reader.tryMatchKeyword(LdfKeyword::P2Min))
-				{
-					this->_reader.readNextToken();
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
-					double p2Min_ms;
-					this->_reader.parseFloat64_ms(p2Min_ms);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-				}				
-				if (this->_reader.tryMatchKeyword(LdfKeyword::StMin))
-				{
-					this->_reader.readNextToken();
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
-					double stMin_ms;
-					this->_reader.parseFloat64_ms(stMin_ms);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-				}
-				if (this->_reader.tryMatchKeyword(LdfKeyword::NAsTimeout))
-				{
-					this->_reader.readNextToken();
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
-					double nAsTimeout_ms;
-					this->_reader.parseFloat64_ms(nAsTimeout_ms);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-				}
-				if (this->_reader.tryMatchKeyword(LdfKeyword::NCrTimeout))
-				{
-					this->_reader.readNextToken();
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
-					double nCrTimeout_ms;
-					this->_reader.parseFloat64_ms(nCrTimeout_ms);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-				}
-				
-				this->_reader.matchKeywordAndRead(LdfKeyword::ConfigurableFrames);
-				this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
-				bool nextFrame = true;
-				while (nextFrame)
-				{
-					string name;
-					this->_reader.parseIdentifier(name);
-					if (majorVersion == 2 && minorVersion == 0)
-					{
-						this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
-						uint32_t messageId;
-						this->_reader.parseUInt32(messageId);
-					}
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-					nextFrame = !this->_reader.tryMatchToken(LdfTokenKind::OperatorRightCurlyBracket);
-				}
-				this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+				this->parseNodeAttributesForProtocolMajorVersion2(protocolVersion);
 			}			
 			
 			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
@@ -379,17 +400,37 @@ namespace OptiScan::Parser::Ldf
 		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
 	}
 
-	void LdfParser::parseMasterNode(MasterNode & masterNode)
+	void LdfParser::parseNodeAttributesForProtocolMajorVersion2(const pair<uint8_t, uint8_t> & protocolVersion)
 	{
-		this->_reader.matchKeywordAndRead(LdfKeyword::Master);
-		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorColon);
-		this->_reader.parseIdentifier(masterNode._name);
+		this->_reader.matchKeywordAndRead(LdfKeyword::ProductId);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
+		uint32_t supplierId;
+		this->_reader.parseUInt32(supplierId);
 		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-		this->_reader.parseFloat64_ms(masterNode._timeBase_ms);
-		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-		// todo: double Wert hat viele nachkommastellen
-		this->_reader.parseFloat64_ms(masterNode._jitter_ms);
+		uint32_t functionId;
+		this->_reader.parseUInt32(functionId);
+		if (this->_reader.tryMatchToken(LdfTokenKind::OperatorComma))
+		{
+			this->_reader.readNextToken();
+			uint32_t variant;
+			this->_reader.parseUInt32(variant);
+		}
 		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+
+		this->_reader.matchKeywordAndRead(LdfKeyword::ResponseError);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
+		string errorSignalName;
+		this->_reader.parseIdentifier(errorSignalName);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+
+		this->parseNodeAttributeFaultStateSignals();
+		this->parseNodeAttributeP2Min();
+		this->parseNodeAttributeStMin();
+		this->parseNodeAttributeNasTimeout();
+		this->parseNodeAttributeNcrTimeout();
+		this->parseNodeAttributeConfigurableFrames(protocolVersion);
+
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
 	}
 
 	void LdfParser::parseNodes(MasterNode & masterNode, std::vector<std::string> & slaveNodes)
@@ -449,6 +490,141 @@ namespace OptiScan::Parser::Ldf
 		this->parseVersions(protocolVersion);
 	}
 
+	void LdfParser::parseScheduleTableAssignFrameId()
+	{
+		this->_reader.readNextToken();
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
+		string nodeName;
+		this->_reader.parseIdentifier(nodeName);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		string frameName;
+		this->_reader.parseIdentifier(frameName);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+	}
+
+	void LdfParser::parseScheduleTableAssignFrameIdRange()
+	{
+		this->_reader.readNextToken();
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
+		string nodeName;
+		this->_reader.parseIdentifier(nodeName);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint32_t frameIndex;
+		this->_reader.parseUInt32(frameIndex);
+		if (this->_reader.tryMatchToken(LdfTokenKind::OperatorComma))
+		{
+			this->_reader.readNextToken();
+			string framePid1;
+			this->_reader.parseIdentifier(framePid1);
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+			string framePid2;
+			this->_reader.parseIdentifier(framePid2);
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+			string framePid3;
+			this->_reader.parseIdentifier(framePid3);
+			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+			string framePid4;
+			this->_reader.parseIdentifier(framePid4);
+		}
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+	}
+
+	void LdfParser::parseScheduleTableAssignNad()
+	{
+		this->_reader.readNextToken();
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
+		string nodeName;
+		this->_reader.parseIdentifier(nodeName);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+	}
+
+	void LdfParser::parseScheduleTableConditionalChangeNad()
+	{
+		this->_reader.readNextToken();
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
+		uint8_t nad;
+		this->_reader.parseUInt8(nad);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t id;
+		this->_reader.parseUInt8(id);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t byte;
+		this->_reader.parseUInt8(byte);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t mask;
+		this->_reader.parseUInt8(mask);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t inv;
+		this->_reader.parseUInt8(inv);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t newNad;
+		this->_reader.parseUInt8(newNad);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+	}
+
+	void LdfParser::parseScheduleTableDataDump()
+	{
+		this->_reader.readNextToken();
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
+		string nodeName;
+		this->_reader.parseIdentifier(nodeName);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t d1;
+		this->_reader.parseUInt8(d1);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t d2;
+		this->_reader.parseUInt8(d2);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t d3;
+		this->_reader.parseUInt8(d3);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t d4;
+		this->_reader.parseUInt8(d4);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t d5;
+		this->_reader.parseUInt8(d5);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+	}
+
+	void LdfParser::parseScheduleTableFreeFormat()
+	{
+		this->_reader.readNextToken();
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
+		uint8_t d1;
+		this->_reader.parseUInt8(d1);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t d2;
+		this->_reader.parseUInt8(d2);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t d3;
+		this->_reader.parseUInt8(d3);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t d4;
+		this->_reader.parseUInt8(d4);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t d5;
+		this->_reader.parseUInt8(d5);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t d6;
+		this->_reader.parseUInt8(d6);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t d7;
+		this->_reader.parseUInt8(d7);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		uint8_t d8;
+		this->_reader.parseUInt8(d8);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+	}
+
+	void LdfParser::parseScheduleTableSaveConfiguration()
+	{
+		this->_reader.readNextToken();
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
+		string nodeName;
+		this->_reader.parseIdentifier(nodeName);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+	}
+
 	void LdfParser::parseScheduleTables(const std::string & languageVersion)
 	{
 		this->_reader.matchKeywordAndRead(LdfKeyword::ScheduleTables);
@@ -474,131 +650,31 @@ namespace OptiScan::Parser::Ldf
 				}
 				else if (this->_reader.tryMatchKeyword(LdfKeyword::AssignNad))
 				{
-					this->_reader.readNextToken();
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
-					string nodeName;
-					this->_reader.parseIdentifier(nodeName);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);					
+					this->parseScheduleTableAssignNad();
 				}
 				else if (this->_reader.tryMatchKeyword(LdfKeyword::ConditionalChangeNad))
 				{
-					this->_reader.readNextToken();
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
-					uint8_t nad;
-					this->_reader.parseUInt8(nad);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t id;
-					this->_reader.parseUInt8(id);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t byte;
-					this->_reader.parseUInt8(byte);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t mask;
-					this->_reader.parseUInt8(mask);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t inv;
-					this->_reader.parseUInt8(inv);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t newNad;
-					this->_reader.parseUInt8(newNad);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+					this->parseScheduleTableConditionalChangeNad();
 				}
 				else if (this->_reader.tryMatchKeyword(LdfKeyword::DataDump))
 				{
-					this->_reader.readNextToken();
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
-					string nodeName;
-					this->_reader.parseIdentifier(nodeName);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t d1;
-					this->_reader.parseUInt8(d1);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t d2;
-					this->_reader.parseUInt8(d2);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t d3;
-					this->_reader.parseUInt8(d3);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t d4;
-					this->_reader.parseUInt8(d4);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t d5;
-					this->_reader.parseUInt8(d5);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+					this->parseScheduleTableDataDump();
 				}
 				else if (this->_reader.tryMatchKeyword(LdfKeyword::SaveConfiguration))
 				{
-					this->_reader.readNextToken();
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
-					string nodeName;
-					this->_reader.parseIdentifier(nodeName);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+					this->parseScheduleTableSaveConfiguration();
 				}
 				else if (this->_reader.tryMatchKeyword(LdfKeyword::AssignFrameIdRange))
 				{
-					this->_reader.readNextToken();
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
-					string nodeName;
-					this->_reader.parseIdentifier(nodeName);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint32_t frameIndex;
-					this->_reader.parseUInt32(frameIndex);
-					if (this->_reader.tryMatchToken(LdfTokenKind::OperatorComma))
-					{
-						this->_reader.readNextToken();
-						string framePid1;
-						this->_reader.parseIdentifier(framePid1);
-						this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-						string framePid2;
-						this->_reader.parseIdentifier(framePid2);
-						this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-						string framePid3;
-						this->_reader.parseIdentifier(framePid3);
-						this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-						string framePid4;
-						this->_reader.parseIdentifier(framePid4);						
-					}
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);					
+					this->parseScheduleTableAssignFrameIdRange();
 				}
 				else if (this->_reader.tryMatchKeyword(LdfKeyword::FreeFormat))
 				{
-					this->_reader.readNextToken();
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
-					uint8_t d1;
-					this->_reader.parseUInt8(d1);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t d2;
-					this->_reader.parseUInt8(d2);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t d3;
-					this->_reader.parseUInt8(d3);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t d4;
-					this->_reader.parseUInt8(d4);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t d5;
-					this->_reader.parseUInt8(d5);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t d6;
-					this->_reader.parseUInt8(d6);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t d7;
-					this->_reader.parseUInt8(d7);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					uint8_t d8;
-					this->_reader.parseUInt8(d8);					
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+					this->parseScheduleTableFreeFormat();
 				}
 				else if (this->_reader.tryMatchKeyword(LdfKeyword::AssignFrameId) && languageVersion == "2.0")
 				{
-					this->_reader.readNextToken();
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
-					string nodeName;
-					this->_reader.parseIdentifier(nodeName);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					string frameName;
-					this->_reader.parseIdentifier(frameName);					
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
+					this->parseScheduleTableAssignFrameId();
 				}
 				else
 				{
@@ -622,6 +698,108 @@ namespace OptiScan::Parser::Ldf
 		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
 	}
 
+	void LdfParser::parseSignalEncodingTypeAsciiValue(LinSignalEncodingType & type)
+	{
+		this->_reader.readNextToken();
+		LinAsciiValue linAsciiValue;
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+		type._values.push_back(linAsciiValue);
+	}
+
+	void LdfParser::parseSignalEncodingTypeBcdValue(LinSignalEncodingType & type)
+	{
+		this->_reader.readNextToken();
+		LinBcdValue linBcdValue;
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+		type._values.push_back(linBcdValue);
+	}
+
+	void LdfParser::parseSignalEncodingTypeLogicalValue(LinSignalEncodingType & type)
+	{
+		this->_reader.readNextToken();
+		LinLogicalValue logicalValue;
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		if (this->_ldfModes._allowSignalEncodingType32)
+		{
+			this->_reader.parseUInt32(logicalValue._signalValue);
+		}
+		else
+		{
+			try
+			{
+				uint16_t value;
+				this->_reader.parseUInt16(value);
+				logicalValue._signalValue = value;
+			}
+			catch (const FormatException & e)
+			{
+				throw FormatException("LdfParser: SignalEncodingType for signal value must be uint32.");
+			}
+		}
+		if (this->_reader.tryMatchToken(LdfTokenKind::OperatorComma))
+		{
+			this->_reader.readNextToken();
+			this->_reader.parseString(logicalValue._textInfo);
+		}
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+		type._values.push_back(logicalValue);
+	}
+
+	void LdfParser::parseSignalEncodingTypePhysicalValue(LinSignalEncodingType & type)
+	{
+		this->_reader.readNextToken();
+		LinPhysicalValue physicalValue;
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		if (this->_ldfModes._allowSignalEncodingType32)
+		{
+			this->_reader.parseUInt32(physicalValue._minValue);
+		}
+		else
+		{
+			try
+			{
+				uint16_t value;
+				this->_reader.parseUInt16(value);
+				physicalValue._minValue = value;
+			}
+			catch (const FormatException & e)
+			{
+				throw FormatException("LdfParser: SignalEncodingType for min value must be uint32.");
+			}
+
+		}
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		if (this->_ldfModes._allowSignalEncodingType32)
+		{
+			this->_reader.parseUInt32(physicalValue._maxValue);
+		}
+		else
+		{
+			try
+			{
+				uint16_t value;
+				this->_reader.parseUInt16(value);
+				physicalValue._maxValue = value;
+			}
+			catch (const FormatException & e)
+			{
+				throw FormatException("LdfParser: SignalEncodingType for max value must be uint32.");
+			}
+
+		}
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		this->_reader.parseFloat64(physicalValue._scale);
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
+		this->_reader.parseFloat64(physicalValue._offset);
+		if (this->_reader.tryMatchToken(LdfTokenKind::OperatorComma))
+		{
+			this->_reader.readNextToken();
+			this->_reader.parseString(physicalValue._textInfo);
+		}
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
+		type._values.push_back(physicalValue);
+	}
+
 	void LdfParser::parseSignalEncodingTypes(vector<LinSignalEncodingType> & signalEncodingTypes)
 	{
 		this->_reader.matchKeywordAndRead(LdfKeyword::SignalEncodingTypes);
@@ -636,87 +814,26 @@ namespace OptiScan::Parser::Ldf
 			bool nextValue = true;
 			while (nextValue)
 			{
-				LinValue value;
 				if (this->_reader.tryMatchKeyword(LdfKeyword::LogicalValue))
 				{
-					this->_reader.readNextToken();
-					LinLogicalValue logicalValue;
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					if (this->_modes.testFlag(LdfParser::Mode::AllowSignalEncodingType32))
-					{
-						this->_reader.parseUInt32(logicalValue._signalValue);
-					}
-					else
-					{
-						uint16_t value;
-						this->_reader.parseUInt16(value);
-						logicalValue._signalValue = value;
-					}					
-					if (this->_reader.tryMatchToken(LdfTokenKind::OperatorComma))
-					{
-						this->_reader.readNextToken();						
-						this->_reader.parseString(logicalValue._textInfo);
-					}
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-					type._values.push_back(logicalValue);
+					this->parseSignalEncodingTypeLogicalValue(type);
 				}
 				else if (this->_reader.tryMatchKeyword(LdfKeyword::PhysicalValue))
 				{
-					this->_reader.readNextToken();
-					LinPhysicalValue physicalValue;
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					if (this->_modes.testFlag(LdfParser::Mode::AllowSignalEncodingType32))
-					{
-						this->_reader.parseUInt32(physicalValue._minValue);
-					}
-					else
-					{
-						uint16_t value;
-						this->_reader.parseUInt16(value);
-						physicalValue._minValue = value;
-					}
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					if (this->_modes.testFlag(LdfParser::Mode::AllowSignalEncodingType32))
-					{
-						this->_reader.parseUInt32(physicalValue._maxValue);
-					}
-					else
-					{
-						uint16_t value;
-						this->_reader.parseUInt16(value);
-						physicalValue._maxValue = value;
-					}
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					this->_reader.parseFloat64(physicalValue._scale);
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
-					this->_reader.parseFloat64(physicalValue._offset);
-					if (this->_reader.tryMatchToken(LdfTokenKind::OperatorComma))
-					{
-						this->_reader.readNextToken();
-						this->_reader.parseString(physicalValue._textInfo);
-					}					
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-					type._values.push_back(physicalValue);
+					this->parseSignalEncodingTypePhysicalValue(type);
 				}
 				else if (this->_reader.tryMatchKeyword(LdfKeyword::BcdValue))
 				{
-					this->_reader.readNextToken();
-					LinBcdValue linBcdValue;
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-					type._values.push_back(linBcdValue);
+					this->parseSignalEncodingTypeBcdValue(type);
 				}
 				else if (this->_reader.tryMatchKeyword(LdfKeyword::AsciiValue))
 				{
-					this->_reader.readNextToken();
-					LinAsciiValue linAsciiValue;
-					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-					type._values.push_back(linAsciiValue);
+					this->parseSignalEncodingTypeAsciiValue(type);
 				}
 				else
 				{
 					throw FormatException("Unknown value");
 				}
-				type._values.push_back(value);
 				nextValue = !this->_reader.tryMatchToken(LdfTokenKind::OperatorRightCurlyBracket);
 			}
 			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);			
@@ -756,7 +873,7 @@ namespace OptiScan::Parser::Ldf
 		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
 	}
 
-	void LdfParser::parseSignals( std::vector<LinSignal> & _signals)
+	void LdfParser::parseSignals( std::vector<LinSignal> & signals)
 	{
 		this->_reader.matchKeywordAndRead(LdfKeyword::Signals);
 		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorLeftCurlyBracket);
@@ -771,8 +888,9 @@ namespace OptiScan::Parser::Ldf
 			this->parseSignalInitValues(signal);
 			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
 			this->_reader.parseIdentifier(signal._publishedBy);
-			if (!this->_modes.testFlag(LdfParser::Mode::AllowSignalWithoutSubscriber))
+			if (!this->_ldfModes._allowSignalWithoutSubscriber)
 			{
+				// must be at least one subscriber
 				try
 				{
 					this->_reader.matchTokenAndRead(LdfTokenKind::OperatorComma);
@@ -793,7 +911,7 @@ namespace OptiScan::Parser::Ldf
 				signal._subscribedBy.push_back(subscriber);
 			}
 			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
-			_signals.push_back(signal);
+			signals.push_back(signal);
 			checkNext = !this->_reader.tryMatchToken(LdfTokenKind::OperatorRightCurlyBracket);
 		}
 		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
@@ -891,7 +1009,6 @@ namespace OptiScan::Parser::Ldf
 	{
 		this->_reader.matchKeywordAndRead(LdfKeyword::LinSpeed);
 		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorEqualSign);
-		// todo: double wert hat zu viele nachkommastellen
 		this->_reader.parseFloat64(speed_kBit_per_s);
 		this->_reader.matchKeywordAndRead(LdfKeyword::Kbps);
 		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
@@ -905,4 +1022,10 @@ namespace OptiScan::Parser::Ldf
 		this->_reader.readNextToken();
 		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
 	}
+
+	void LdfParser::setLdfModes(const LdfModes & ldfModes)
+	{
+		this->_ldfModes = ldfModes;
+	}
+
 }

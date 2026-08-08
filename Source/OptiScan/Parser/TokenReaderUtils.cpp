@@ -1,6 +1,6 @@
 
 #include <OptiScan/Parser/FileException.h>
-#include <Optiscan/Parser/TokenReaderUtils.h>
+#include <OptiScan/Parser/TokenReaderUtils.h>
 #include <charconv>
 
 using namespace std;
@@ -74,4 +74,19 @@ namespace OptiScan::Parser
 		return result;
 	}
 
+	pair<uint8_t, uint8_t> TokenReaderUtils::literalStringTokenTextToVersionPair(const string_view & tokenText)
+	{
+		size_t const dotPos = tokenText.find('.');
+		if (dotPos == string_view::npos)
+		{
+			throw FormatException("Invalid version");
+		}
+		string_view const majorStr = tokenText.substr(0, dotPos);
+		string_view const minorStr = tokenText.substr(dotPos + 1);
+
+		uint32_t const major = TokenReaderUtils::literalIntegerTokenTextToUInt32(string(majorStr));
+		uint32_t const minor = TokenReaderUtils::literalIntegerTokenTextToUInt32(string(minorStr));
+
+		return make_pair(static_cast<uint8_t>(major), static_cast<uint8_t>(minor));
+	}
 }

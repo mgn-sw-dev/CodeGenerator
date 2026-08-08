@@ -1,8 +1,8 @@
 #pragma once
 
 #include <OptiScan/Parser/Ldf/LdfDatabase.h>
+#include <OptiScan/Parser/Ldf/LdfModes.h>
 #include <OptiScan/Parser/Ldf/LdfTokenReader.h>
-#include <OptiScan/Parser/Flags.h>
 #include <fstream>
 
 namespace OptiScan::Parser::Ldf
@@ -11,22 +11,16 @@ namespace OptiScan::Parser::Ldf
     class LdfParser 
     {
     public:
-        enum class Mode : int
-        {
-            None = 0,
-            AllowSignalEncodingType32 = 1 << 0,
-            AllowSignalWithoutSubscriber = 1 << 1,
-        };
-        using Modes = Flags<Mode>;
+        /** */
         LdfParser(std::istream * input);
         /** */
-        LdfParser::Modes modes() const;
+        void getLdfModes(LdfModes & ldfModes) const;
         /** @throws FormatException. */
         void parse(LdfDatabase & ldfDatabase);
         /** */
-        void setModes(LdfParser::Modes modes);
+        void setLdfModes(const LdfModes & ldfModes);
     private:
-        LdfParser::Modes _modes;
+        LdfModes _ldfModes;
         LdfTokenReader _reader;
 
         /** @throws FormatException. */
@@ -50,7 +44,23 @@ namespace OptiScan::Parser::Ldf
         /** @throws FormatException. */
         void parseMasterNode(MasterNode & masterNode);
         /** @throws FormatException. */
+        void parseNodeAttributeConfigurableFrames(const std::pair<uint8_t, uint8_t> & protocolVersion);
+        /** @throws FormatException. */
+        void parseNodeAttributeFaultStateSignals();
+        /** @throws FormatException. */
+        void parseNodeAttributeInitialNad();
+        /** @throws FormatException. */
+        void parseNodeAttributeNasTimeout();
+        /** @throws FormatException. */
+        void parseNodeAttributeNcrTimeout();
+        /** @throws FormatException. */
+        void parseNodeAttributeP2Min();
+        /** @throws FormatException. */
+        void parseNodeAttributeStMin();
+        /** @throws FormatException. */
         void parseNodeAttributes();
+        /** @throws FormatException. */
+        void parseNodeAttributesForProtocolMajorVersion2(const std::pair<uint8_t, uint8_t> & protocolVersion);
         /** @throws FormatException. */
         void parseNodes(MasterNode & masterNode, std::vector<std::string> & slaveNodes);
         /** @throws FormatException. */
@@ -58,13 +68,35 @@ namespace OptiScan::Parser::Ldf
         /** @throws FormatException. */
         void parseProtocolVersion(std::string & protocolVersion);
         /** @throws FormatException. */
+        void parseScheduleTableAssignFrameId();
+        /** @throws FormatException. */
+        void parseScheduleTableAssignFrameIdRange();
+        /** @throws FormatException. */
+        void parseScheduleTableAssignNad();
+        /** @throws FormatException. */
+        void parseScheduleTableConditionalChangeNad();
+        /** @throws FormatException. */
+        void parseScheduleTableDataDump();
+        /** @throws FormatException. */
+        void parseScheduleTableFreeFormat();
+        /** @throws FormatException. */
+        void parseScheduleTableSaveConfiguration();
+        /** @throws FormatException. */
         void parseScheduleTables(const std::string & languageVersion);
+        /** @throws FormatException. */
+        void parseSignalEncodingTypeAsciiValue(LinSignalEncodingType & type);
+        /** @throws FormatException. */
+        void parseSignalEncodingTypeBcdValue(LinSignalEncodingType & type);
+        /** @throws FormatException. */
+        void parseSignalEncodingTypeLogicalValue(LinSignalEncodingType & type);
+        /** @throws FormatException. */
+        void parseSignalEncodingTypePhysicalValue(LinSignalEncodingType & type);
         /** @throws FormatException. */
         void parseSignalEncodingTypes(std::vector<LinSignalEncodingType> & signalEncodingTypes);
         /** @throws FormatException. */
         void parseSignalRepresentations(std::vector<LinSignalRepresentation> & signalRepresentations);
         /** @throws FormatException. */
-        void parseSignals( std::vector<LinSignal> & _signals);
+        void parseSignals( std::vector<LinSignal> & signals);
         /** @throws FormatException. */
         void parseSignalInitValues(LinSignal & signal);
         /** @throws FormatException. */

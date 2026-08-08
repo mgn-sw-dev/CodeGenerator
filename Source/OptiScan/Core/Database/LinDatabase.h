@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OptiScan/Parser/Ldf/LdfDatabase.h>
+#include <OptiScan/Parser/Ldf/LdfModes.h>
 #include <filesystem>
 #include <string>
 
@@ -18,7 +19,7 @@ namespace OptiScan::Core::Database
         void clear();
         /** @throw runtime_error if dbcPath does not exist.
          *  @throw runtime_error if dbcPath could not be opened. */
-        void loadLdfDatabase(const std::filesystem::path & ldfPath);
+        void loadLdfDatabase(const std::filesystem::path & ldfPath, const Parser::Ldf::LdfModes & ldfModes);
     };
     
 }

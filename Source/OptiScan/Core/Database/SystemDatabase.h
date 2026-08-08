@@ -44,7 +44,7 @@ namespace OptiScan::Core::Database
         /** */
         void loadDbcDatabase(const Config::CanBusObject & canBus);
         /** */
-        void loadLdfDatabase(const Config::LinBusObject & linBus);
+        void loadLdfDatabase(const Config::LinBusObject & linBus, const Parser::Ldf::LdfModes & ldfModes);
         /** */
         void log(const std::string & message) const;
         /** */

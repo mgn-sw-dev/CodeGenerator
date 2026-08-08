@@ -4,6 +4,7 @@
 
 using namespace OptiScan::Core::Config;
 using namespace OptiScan::Core::Json;
+using namespace OptiScan::Parser::Ldf;
 using namespace std;
 
 namespace OptiScan::Core::Database
@@ -51,7 +52,7 @@ namespace OptiScan::Core::Database
 		}
 	}
 
-	void SystemDatabase::loadLdfDatabase(const LinBusObject & linBus)
+	void SystemDatabase::loadLdfDatabase(const LinBusObject & linBus, const LdfModes & ldfModes)
 	{
 		this->logInfo("Load LinBus " + to_string(linBus._hardwareId));
 		this->log("\t- LDF: " + linBus._ldfName);
@@ -60,7 +61,7 @@ namespace OptiScan::Core::Database
 		filesystem::path ldfPath = this->_systemPath / linBus._ldfName += ".ldf";
 		try
 		{
-			linDatabase.loadLdfDatabase(ldfPath);
+			linDatabase.loadLdfDatabase(ldfPath, ldfModes);
 		}
 		catch (const exception & error)
 		{
@@ -197,9 +198,15 @@ namespace OptiScan::Core::Database
 			}
 			if (this->_configDatabase._linObject.has_value())
 			{
+				LdfModes ldfModes;
+				ldfModes._allowSignalEncodingType32 = true;
+				ldfModes._allowSignalWithoutSubscriber = true;
+				this->logInfo("LdfModes:");
+				this->log("\t- allowSignalEncodingType32: " + to_string(ldfModes._allowSignalEncodingType32));
+				this->log("\t- allowSignalWithoutSubscriber: " + to_string(ldfModes._allowSignalWithoutSubscriber));
 				for (const LinBusObject & linBus : this->_configDatabase._linObject.value()._busses)
 				{
-					this->loadLdfDatabase(linBus);
+					this->loadLdfDatabase(linBus, ldfModes);
 				}
 			}
 		}

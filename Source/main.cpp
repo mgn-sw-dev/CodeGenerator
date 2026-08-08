@@ -10,16 +10,16 @@ int main(int argc, char *argv[])
 	OptiScan::Core::Database::LinDatabase linDatabase;
 	try
 	{
-		linDatabase.loadLdfDatabase("C:/CodeGenerator/Test/SAM_LIN2_2024_20a.ldf");
+		// linDatabase.loadLdfDatabase("C:/CodeGenerator/Test/SAM_LIN2_2024_20a.ldf");
 	}
 	catch (const std::exception & error)
 	{
 		std::cout << error.what() << std::endl;
 	}
-	canDatabase.loadDbcDatabase("C:/CodeGenerator/Test/240102BatteryCAN.dbc");
+	// canDatabase.loadDbcDatabase("C:/CodeGenerator/Test/240102BatteryCAN.dbc");
 	OptiScan::Core::Database::SystemDatabase systemDatabase;
 	systemDatabase.setLogHandler(&logHandler);
-	systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigBevLongHaul.json");
+	systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigBevLongHaulLin.json");
 	systemDatabase.loadSelectionTables();
 	systemDatabase.loadMapping();
 	systemDatabase.loadVmms();
