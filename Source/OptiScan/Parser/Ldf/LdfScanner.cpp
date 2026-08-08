@@ -17,11 +17,6 @@ namespace OptiScan::Parser::Ldf
 		, _token()
 	{
 	}
-	
-	bool LdfScanner::isCharHexDigit(const char & c)
-	{
-		return CharReader::isCharDigit(c) || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F');
-	}
 
 	bool LdfScanner::isCharLineEnd(const char & c)
 	{
@@ -198,7 +193,7 @@ namespace OptiScan::Parser::Ldf
 		{
 			if (this->_reader.at(0)._value == '0'
 				&& this->_reader.at(1)._value == 'x'
-				&& LdfScanner::isCharHexDigit(this->_reader.at(2)._value))
+				&& CharReader::isCharHexDigit(this->_reader.at(2)._value))
 			{
 				result = true;
 				this->_token._kind = LdfTokenKind::LiteralHexInteger;
@@ -213,7 +208,7 @@ namespace OptiScan::Parser::Ldf
 					if (checkNext)
 					{
 						const ScanChar & c = this->_reader.front();
-						checkNext = LdfScanner::isCharHexDigit(c._value);
+						checkNext = CharReader::isCharHexDigit(c._value);
 						if (checkNext)
 						{
 							this->_token._text.push_back(this->_reader.popBufferFront()._value);

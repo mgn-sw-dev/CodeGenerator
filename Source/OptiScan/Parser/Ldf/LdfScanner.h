@@ -36,8 +36,6 @@ namespace OptiScan::Parser::Ldf
 
         LdfScanner(std::istream * input);
         /** */
-        static bool isCharHexDigit(const char & c);
-        /** */
         static bool isCharLineEnd(const char & c);
         /** */
         static bool isCharWhiteSpace(const char & c);

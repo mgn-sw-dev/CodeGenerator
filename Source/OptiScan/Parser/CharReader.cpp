@@ -52,6 +52,11 @@ namespace OptiScan::Parser
 		return '0' <= c && c <= '9';
 	}
 
+	bool CharReader::isCharHexDigit(const char & c)
+	{
+		return CharReader::isCharDigit(c) || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F');
+	}
+
 	bool CharReader::isCharIdentifier(const char & c)
 	{
 		return CharReader::isCharIdentifierStart(c) || CharReader::isCharDigit(c);

@@ -25,6 +25,8 @@ namespace OptiScan::Parser
         /** */
         static bool isCharDigit(const char & c);
         /** */
+        static bool isCharHexDigit(const char & c);
+        /** */
         static bool isCharIdentifier(const char & c);
         /** */
         static bool isCharIdentifierStart(const char & c);
