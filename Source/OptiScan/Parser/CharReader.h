@@ -14,7 +14,7 @@ namespace OptiScan::Parser
         /** */
         const ScanChar & at(size_t index) const;
         /** Check if @c _scanBuffer starts with a specific string pattern. */
-        bool bufferStartsWith(const std::string & pattern) const;
+        bool bufferStartsWith(const std::string & pattern, size_t offset = 0) const;
         /** */
         bool empty() const;
         /** @return false If end of stream detected.

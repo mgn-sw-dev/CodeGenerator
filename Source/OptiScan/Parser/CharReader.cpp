@@ -17,12 +17,12 @@ namespace OptiScan::Parser
 		return this->_scanBuffer.at(index);
 	}
 
-	bool CharReader::bufferStartsWith(const std::string & pattern) const
+	bool CharReader::bufferStartsWith(const std::string & pattern, size_t offset) const
 	{
-		bool result = pattern.size() <= this->_scanBuffer.size();
+		bool result = offset + pattern.size() <= this->_scanBuffer.size();
 		for (size_t i = 0; result && i < pattern.size(); i++)
 		{
-			result = pattern[i] == this->_scanBuffer[i]._value;
+			result = pattern[i] == this->_scanBuffer[offset + i]._value;
 		}
 		return result;
 	}
