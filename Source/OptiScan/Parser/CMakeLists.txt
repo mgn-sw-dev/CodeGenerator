@@ -38,6 +38,8 @@ set(OptiScanParser_SOURCES
     Ldf/LdfScanner.h
     Ldf/LdfTokenReader.cpp
     Ldf/LdfTokenReader.h
+    Ldf/LinSignal.h
+    Ldf/LinSignalEncodingType.h
     CharReader.cpp
     CharReader.h
     FileException.cpp
