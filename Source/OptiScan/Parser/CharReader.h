@@ -30,12 +30,18 @@ namespace OptiScan::Parser
         static bool isCharIdentifier(const char & c);
         /** */
         static bool isCharIdentifierStart(const char & c);
-        /** */
+        /** Get one char in buffer and return as @c ScanChar type.
+         *  Need @ref fillScanBuffer (count) before. */
         ScanChar popBufferFront();
+        /** Get count of chars in the buffer a return as string.
+         *  Need @ref fillScanBuffer (count) before. */
+        std::string popFront(size_t count);
         /** @return ScanPosition. */
         const ScanPosition & streamPosition() const;
         /** */
         bool readIdentifier(ScanPosition & position, std::string & text);
+    	/** */
+    	bool tryMatchBufferStart(const std::string & pattern, size_t offset = 0);
 
     private:
         std::vector<ScanChar> _scanBuffer;

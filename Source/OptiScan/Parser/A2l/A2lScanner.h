@@ -82,9 +82,15 @@ namespace OptiScan::Parser::A2l
         A2lToken _token;
 
         /** @throws FormatException. */
+        bool checkNextIsSeparator(size_t count);
+        /** @throws FormatException. */
+        void commitToken(A2lTokenKind kind, size_t count);
+        /** @throws FormatException. */
         void readComment();
         /** @throws FormatException. */
         void readLineComment();
+        /** @throws FormatException. */
+        bool tryReadEscape();
 
     };
 

@@ -78,6 +78,17 @@ namespace OptiScan::Parser
 		return result;
 	}
 
+	std::string CharReader::popFront(size_t count)
+	{
+		string result;
+		result.reserve(count);
+		for (size_t i = 0; i < count; i++)
+		{
+			result.push_back(this->popBufferFront()._value);
+		}
+		return result;
+	}
+
 	bool CharReader::readCharFromStream(char & c)
 	{
 		bool result = false;
@@ -149,6 +160,16 @@ namespace OptiScan::Parser
 					}
 				}
 			}
+		}
+		return result;
+	}
+
+	bool CharReader::tryMatchBufferStart(const string & pattern, size_t offset)
+	{
+		bool result = this->fillScanBuffer(offset + pattern.size());
+		if (result)
+		{
+			result = this->bufferStartsWith(pattern, offset);
 		}
 		return result;
 	}
