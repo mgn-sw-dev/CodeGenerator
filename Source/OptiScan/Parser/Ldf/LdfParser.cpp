@@ -279,6 +279,7 @@ namespace OptiScan::Parser::Ldf
 			this->_reader.matchTokenAndRead(LdfTokenKind::OperatorSemicolon);
 			nextFrame = !this->_reader.tryMatchToken(LdfTokenKind::OperatorRightCurlyBracket);
 		}
+		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
 	}
 
 	void LdfParser::parseNodeAttributeFaultStateSignals()
@@ -430,7 +431,6 @@ namespace OptiScan::Parser::Ldf
 		this->parseNodeAttributeNcrTimeout();
 		this->parseNodeAttributeConfigurableFrames(protocolVersion);
 
-		this->_reader.matchTokenAndRead(LdfTokenKind::OperatorRightCurlyBracket);
 	}
 
 	void LdfParser::parseNodes(MasterNode & masterNode, std::vector<std::string> & slaveNodes)
