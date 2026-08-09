@@ -191,6 +191,28 @@ namespace OptiScan::Parser::A2l
 		else if (this->tryReadEscape())
 		{
 		}
+		else if (this->tryReadFloatOrIntegerLiteral())
+		{
+		}
+		else if (this->tryReadHexLiteral())
+		{
+		}
+		else if (this->tryReadIdentifier())
+		{
+		}
+		else if (this->tryReadOperator())
+		{
+		}
+		else if (this->tryReadStringLiteral())
+		{
+		}
+		else
+		{
+			const ScanChar & c = this->_reader.front();
+			this->_token._position = c._position;
+			this->_token._text.push_back(c._value);
+			throw FormatException("A2lScanner: Unknown token");
+		}
 	}
 
 	void A2lScanner::setCompatStyles(const A2lScannerCompatStyles & compatStyles)
@@ -227,6 +249,353 @@ namespace OptiScan::Parser::A2l
 		if (result)
 		{
 			this->commitToken(kind, count);
+		}
+		return result;
+	}
+
+	bool A2lScanner::tryReadFloatOrIntegerLiteral()
+	{
+		bool hasDecimalDigit = false;
+		bool hasDecimalSeparator = false;
+		bool hasDigit = false;
+		bool hasExponent = false;
+		bool hasExponentDigit = false;
+		bool hasExponentSign = false;
+		bool hasSign = false;
+		size_t count = 0;
+		bool checkNext = true;
+		while (checkNext)
+		{
+			checkNext = this->_reader.fillScanBuffer(count + 1);
+			if (checkNext)
+			{
+				char const c = this->_reader.at(count)._value;
+				if (CharReader::isCharDigit(c))
+				{
+					if (hasExponent)
+					{
+						hasExponentDigit = true;
+					}
+					else if (hasDecimalSeparator)
+					{
+						hasDecimalDigit = true;
+					}
+					else
+					{
+						hasDigit = true;
+					}
+				}
+				else if (c == '.')
+				{
+					if (hasDecimalSeparator || hasExponent)
+					{
+						checkNext = false;
+					}
+					else
+					{
+						hasDecimalSeparator = true;
+					}
+				}
+				else if (c == 'E' || c == 'e')
+				{
+					if ((!hasDecimalSeparator && !hasDigit)
+						|| (hasDecimalSeparator && !hasDecimalDigit)
+						|| hasExponent)
+					{
+						checkNext = false;
+					}
+					else
+					{
+						hasExponent = true;
+					}
+				}
+				else if (c == '+' || c == '-')
+				{
+					if (hasExponent)
+					{
+						if (hasExponentDigit || hasExponentSign)
+						{
+							checkNext = false;
+						}
+						else
+						{
+							hasExponentSign = true;
+						}
+					}
+					else
+					{
+						if (hasSign || hasDigit || hasDecimalSeparator || hasDecimalDigit)
+						{
+							checkNext = false;
+						}
+						else
+						{
+							hasSign = true;
+						}
+					}
+				}
+				else
+				{
+					checkNext = false;
+				}
+			}
+			if (checkNext)
+			{
+				count++;
+			}
+		}
+		bool result = true
+			&& (!hasDecimalSeparator || hasDecimalDigit)
+			&& (!hasExponent || hasExponentDigit)
+			&& (hasDigit || hasDecimalDigit)
+		;
+		if (result)
+		{
+			result = this->checkNextIsSeparator(count);
+		}
+		if (result)
+		{
+			if (hasDecimalSeparator || hasExponent)
+			{
+				this->commitToken(A2lTokenKind::FloatLiteral, count);
+			}
+			else
+			{
+				this->commitToken(A2lTokenKind::IntegerLiteral, count);
+			}
+		}
+		return result;
+	}
+
+	bool A2lScanner::tryReadHexLiteral()
+	{
+		size_t count = A2lScanner::StringHexLowerStart.size();
+		bool result = this->_reader.tryMatchBufferStart(A2lScanner::StringHexLowerStart);
+		if (!result)
+		{
+			count = A2lScanner::StringHexUpperStart.size();
+			result = this->_reader.tryMatchBufferStart(A2lScanner::StringHexUpperStart);
+		}
+		if (result)
+		{
+			result = this->_reader.fillScanBuffer(count + 1);
+			if (result)
+			{
+				result = CharReader::isCharHexDigit(this->_reader.at(count)._value);
+				if (result)
+				{
+					count++;
+					bool checkNext = true;
+					while (checkNext)
+					{
+						checkNext = this->_reader.fillScanBuffer(count + 1);
+						if (checkNext)
+						{
+							checkNext = CharReader::isCharHexDigit(this->_reader.at(count)._value);
+							if (checkNext)
+							{
+								count++;
+							}
+						}
+					}
+				}
+			}
+		}
+		if (result)
+		{
+			result = this->checkNextIsSeparator(count);
+		}
+		if (result)
+		{
+			this->commitToken(A2lTokenKind::HexLiteral, count);
+		}
+		return result;
+	}
+
+	bool A2lScanner::tryReadIdentifier()
+	{
+		size_t count = 0;
+		bool result = this->_reader.fillScanBuffer(count + 1);
+		if (result)
+		{
+			result = CharReader::isCharIdentifierStart(this->_reader.at(count)._value);
+			if (result)
+			{
+				count++;
+				bool checkNext = true;
+				while (checkNext)
+				{
+					checkNext = this->_reader.fillScanBuffer(count + 1);
+					if (checkNext)
+					{
+						checkNext = CharReader::isCharIdentifier(this->_reader.at(count)._value);
+						if (checkNext)
+						{
+							count++;
+						}
+					}
+				}
+			}
+		}
+		if (result)
+		{
+			result = this->checkNextIsSeparator(count);
+		}
+		if (result)
+		{
+			this->commitToken(A2lTokenKind::Identifier, count);
+		}
+		return result;
+	}
+
+	bool A2lScanner::tryReadOperator()
+	{
+		bool result = this->_reader.fillScanBuffer();
+		if (result)
+		{
+			A2lTokenKind kind = A2lTokenKind::None;
+			char const c = this->_reader.front()._value;
+			switch (c)
+			{
+			case '*':
+				kind = A2lTokenKind::Asterisk;
+				break;
+			case ',':
+				kind = A2lTokenKind::Comma;
+				break;
+			case '.':
+				kind = A2lTokenKind::Dot;
+				break;
+			case '=':
+				kind = A2lTokenKind::EqualSign;
+				break;
+			case '{':
+				kind = A2lTokenKind::LeftCurlyBracket;
+				break;
+			case '(':
+				kind = A2lTokenKind::LeftParenthesis;
+				break;
+			case '[':
+				kind = A2lTokenKind::LeftSquareBracket;
+				break;
+			case '}':
+				kind = A2lTokenKind::RightCurlyBracket;
+				break;
+			case ']':
+				kind = A2lTokenKind::RightSquareBracket;
+				break;
+			case ')':
+				kind = A2lTokenKind::RightParenthesis;
+				break;
+			case ';':
+				kind = A2lTokenKind::Semicolon;
+				break;
+			case '-':
+				if (this->_compatStyles._allowCompatMinus)
+				{
+					kind = A2lTokenKind::CompatMinus;
+				}
+				break;
+			default:
+				result = false;
+				break;
+			}
+			if (result)
+			{
+				this->commitToken(kind, 1);
+			}
+		}
+		return result;
+	}
+
+	bool A2lScanner::tryReadStringLiteral()
+	{
+		size_t count = 1;
+		bool result = this->_reader.fillScanBuffer(count);
+		if (result)
+		{
+			result = this->_reader.front()._value == A2lScanner::CharQuotationMark;
+		}
+		bool checkNext = true;
+		bool hasBackSlashEscape = false;
+		bool hasQuotationMark = false;
+		while (result && checkNext)
+		{
+			if (!this->_reader.fillScanBuffer(count + 1))
+			{
+				result = hasQuotationMark;
+				checkNext = false;
+				if (!result)
+				{
+					throw FormatException("A2lScanner: Missing quotation mark at the end");
+				}
+			}
+			else
+			{
+				char const c = this->_reader.at(count)._value;
+				if (hasQuotationMark && c != '"')
+				{
+					checkNext = false;
+				}
+				else if (hasQuotationMark && c == '"')
+				{
+					count++;
+					hasQuotationMark = false;
+				}
+				else if (hasBackSlashEscape)
+				{
+					result = false
+						|| c == '\''
+						|| c == '"'
+						|| c == '\\'
+						|| c == 'n'
+						|| c == 'r'
+						|| c == 't'
+					;
+					hasBackSlashEscape = false;
+					if (result)
+					{
+						count++;
+					}
+					else
+					{
+						throw FormatException("A2lScanner: Invalid escape sequence");
+					}
+				}
+				else if (c == '\\')
+				{
+					count++;
+					hasBackSlashEscape = true;
+				}
+				else if (c == '"')
+				{
+					count++;
+					hasQuotationMark = true;
+				}
+				else if (A2lScanner::isCharLineEnd(c))
+				{
+					if (this->_compatStyles._allowLineEndInStringLiteral)
+					{
+						count++;
+					}
+					else
+					{
+						throw FormatException("A2lScanner: Invalid line end; Activate compatibility mode AllowLineEndInStringLiteral.");
+					}
+				}
+				else
+				{
+					count++;
+				}
+			}
+		}
+		if (result)
+		{
+			result = this->checkNextIsSeparator(count);
+		}
+		if (result)
+		{
+			this->commitToken(A2lTokenKind::StringLiteral, count);
 		}
 		return result;
 	}

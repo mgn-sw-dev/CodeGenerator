@@ -91,6 +91,16 @@ namespace OptiScan::Parser::A2l
         void readLineComment();
         /** @throws FormatException. */
         bool tryReadEscape();
+        /** @throws FormatException. */
+        bool tryReadFloatOrIntegerLiteral();
+        /** @throws FormatException. */
+        bool tryReadHexLiteral();
+        /** @throws FormatException. */
+        bool tryReadIdentifier();
+        /** @throws FormatException. */
+        bool tryReadOperator();
+        /** @throws FormatException. */
+        bool tryReadStringLiteral();
 
     };
 
