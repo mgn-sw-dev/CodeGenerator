@@ -17,6 +17,16 @@ namespace OptiScan::Parser::A2l
         const A2lScanner & scanner() const;
         /** */
         const A2lToken & token() const;
+        /** */
+        const std::vector<A2lToken> & tokenStack() const;
+        /** @throws InvalidOperationException. */
+        void tokenStackBegin();
+        /** @throws InvalidOperationException. */
+        void tokenStackCommit();
+        /** */
+        int64_t tokenStackCount() const;
+        /** @throws InvalidOperationException. */
+        void tokenStackRollback();
     private:
         A2lScanner _scanner;
         std::vector<A2lToken> _tokenStack;

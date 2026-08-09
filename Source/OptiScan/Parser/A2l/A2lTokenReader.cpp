@@ -51,4 +51,52 @@ namespace OptiScan::Parser::A2l
 		}
 		return *result;
 	}
+
+	const vector<A2lToken> & A2lTokenReader::tokenStack() const
+	{
+		return this->_tokenStack;
+	}
+
+	void A2lTokenReader::tokenStackBegin()
+	{
+		if (this->_tokenStackCount != -1)
+		{
+			throw InvalidOperationException("Token stack begin error: token stack already in use");
+		}
+		if (this->_tokenStack.size() < 1)
+		{
+			this->_tokenStackCount = 0;
+		}
+		else
+		{
+			this->_tokenStackCount = 1;
+		}
+	}
+
+	void A2lTokenReader::tokenStackCommit()
+	{
+		if (this->_tokenStackCount == -1)
+		{
+			throw InvalidOperationException("Token stack commit error: no token stack");
+		}
+		for (int64_t i = 0; i < this->_tokenStackCount; i++)
+		{
+			this->_tokenStack.erase(this->_tokenStack.begin());
+		}
+		this->_tokenStackCount = -1;
+	}
+
+	int64_t A2lTokenReader::tokenStackCount() const
+	{
+		return this->_tokenStackCount;
+	}
+
+	void A2lTokenReader::tokenStackRollback()
+	{
+		if (this->_tokenStackCount == -1)
+		{
+			throw InvalidOperationException("Token stack rollback error: no token stack");
+		}
+		this->_tokenStackCount = -1;
+	}
 }
