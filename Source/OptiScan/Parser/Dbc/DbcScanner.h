@@ -38,10 +38,6 @@ namespace OptiScan::Parser::Dbc
     public:
         DbcScanner(std::istream * input);
         /** */
-        static bool isCharDecimalSeparator(const char & c);
-        /** */
-        static bool isCharExponentStart(const char & c);
-        /** */
         static bool isCharWhiteSpace(const char & c);
         /** @throw FormatException if unknown token. */
         void scanNext();

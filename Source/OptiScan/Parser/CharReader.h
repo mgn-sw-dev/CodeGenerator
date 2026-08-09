@@ -22,8 +22,12 @@ namespace OptiScan::Parser
         bool fillScanBuffer(size_t count = 1);
         /** */
         const ScanChar & front() const;
+    	/** */
+    	static bool isCharDecimalSeparator(const char & c);
         /** */
         static bool isCharDigit(const char & c);
+    	/** */
+    	static bool isCharExponentStart(const char & c);
         /** */
         static bool isCharHexDigit(const char & c);
         /** */

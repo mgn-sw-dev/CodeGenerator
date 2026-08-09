@@ -36,11 +36,7 @@ namespace OptiScan::Parser::Ldf
 	void LdfScanner::readComment()
 	{
 		size_t const startCount = LdfScanner::StringCommentStart.size();
-		bool isValid = this->_reader.fillScanBuffer(startCount);
-		if (isValid)
-		{
-			isValid = this->_reader.bufferStartsWith(LdfScanner::StringCommentStart);
-		}
+		bool isValid = this->_reader.tryMatchBufferStart(LdfScanner::StringCommentStart);
 		if (!isValid)
 		{
 			throw FormatException("Invalid comment");
@@ -53,12 +49,9 @@ namespace OptiScan::Parser::Ldf
 		bool checkNext = true;
 		while (checkNext)
 		{
-			if (this->_reader.fillScanBuffer(startCount))
+			if (this->_reader.tryMatchBufferStart(LdfScanner::StringCommentStart))
 			{
-				if (this->_reader.bufferStartsWith(LdfScanner::StringCommentStart))
-				{
-					throw FormatException("Nesting comment");
-				}
+				throw FormatException("Nesting comment");
 			}
 			if (!this->_reader.fillScanBuffer(endCount))
 			{
@@ -81,11 +74,7 @@ namespace OptiScan::Parser::Ldf
 
 	void LdfScanner::readLineComment()
 	{
-		bool isValid = this->_reader.fillScanBuffer(LdfScanner::StringLineCommentStart.size());
-		if (isValid)
-		{
-			isValid = this->_reader.bufferStartsWith(LdfScanner::StringLineCommentStart);
-		}
+		bool isValid = this->_reader.tryMatchBufferStart(LdfScanner::StringLineCommentStart);
 		if (!isValid)
 		{
 			throw FormatException("Invalid line comment");
@@ -129,25 +118,19 @@ namespace OptiScan::Parser::Ldf
 				// Skip comment
 				if (!checkNext)
 				{
-					if (this->_reader.fillScanBuffer(LdfScanner::StringCommentStart.size()))
+					if (this->_reader.tryMatchBufferStart(LdfScanner::StringCommentStart))
 					{
-						checkNext = this->_reader.bufferStartsWith(LdfScanner::StringCommentStart);
-						if (checkNext)
-						{
-							this->readComment();
-						}
+						checkNext = true;
+						this->readComment();
 					}
 				}
 				// Skip line comment
 				if (!checkNext)
 				{
-					if (this->_reader.fillScanBuffer(LdfScanner::StringLineCommentStart.size()))
+					if (this->_reader.tryMatchBufferStart(LdfScanner::StringLineCommentStart))
 					{
-						checkNext = this->_reader.bufferStartsWith(LdfScanner::StringLineCommentStart);
-						if (checkNext)
-						{
-							this->readLineComment();
-						}
+						checkNext = true;
+						this->readLineComment();
 					}
 				}
 			}

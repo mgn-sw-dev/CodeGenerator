@@ -285,7 +285,7 @@ namespace OptiScan::Parser::A2l
 						hasDigit = true;
 					}
 				}
-				else if (c == '.')
+				else if (CharReader::isCharDecimalSeparator(c))
 				{
 					if (hasDecimalSeparator || hasExponent)
 					{
@@ -296,7 +296,7 @@ namespace OptiScan::Parser::A2l
 						hasDecimalSeparator = true;
 					}
 				}
-				else if (c == 'E' || c == 'e')
+				else if (CharReader::isCharExponentStart(c))
 				{
 					if ((!hasDecimalSeparator && !hasDigit)
 						|| (hasDecimalSeparator && !hasDecimalDigit)

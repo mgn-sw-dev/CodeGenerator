@@ -14,16 +14,6 @@ namespace OptiScan::Parser::Dbc
 	{
 	}
 
-	bool DbcScanner::isCharDecimalSeparator(const char & c)
-	{
-		return c == '.';
-	}
-
-	bool DbcScanner::isCharExponentStart(const char & c)
-	{
-		return c == 'e' || c == 'E';
-	}
-
 	bool DbcScanner::isCharWhiteSpace(const char & c)
 	{
 		return false
@@ -59,7 +49,7 @@ namespace OptiScan::Parser::Dbc
 		if (this->_reader.fillScanBuffer())
 		{
 			size_t scanBufferIndex = 0;
-			bool hasDecimalSeparator = DbcScanner::isCharDecimalSeparator(this->_reader.at(scanBufferIndex)._value);
+			bool hasDecimalSeparator = CharReader::isCharDecimalSeparator(this->_reader.at(scanBufferIndex)._value);
 			if (hasDecimalSeparator)
 			{
 				scanBufferIndex++;
@@ -90,7 +80,7 @@ namespace OptiScan::Parser::Dbc
 						if (checkNext)
 						{
 							const ScanChar & c = this->_reader.front();
-							if (DbcScanner::isCharDecimalSeparator(c._value))
+							if (CharReader::isCharDecimalSeparator(c._value))
 							{
 								if (hasDecimalSeparator || hasExponent)
 								{
@@ -114,7 +104,7 @@ namespace OptiScan::Parser::Dbc
 								}
 								this->_token._text.push_back(this->_reader.popScanCharFromBufferFront()._value);
 							}
-							else if (DbcScanner::isCharExponentStart(c._value))
+							else if (CharReader::isCharExponentStart(c._value))
 							{
 								if (hasExponent || (hasDecimalSeparator && !hasDecimalDigit))
 								{

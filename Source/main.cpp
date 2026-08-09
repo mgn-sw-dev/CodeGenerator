@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	// canDatabase.loadDbcDatabase("C:/CodeGenerator/Test/240102BatteryCAN.dbc");
 	OptiScan::Core::Database::SystemDatabase systemDatabase;
 	systemDatabase.setLogHandler(&logHandler);
-	systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigBevLongHaulLin.json");
+	systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigBevLongHaul.json");
 	systemDatabase.loadSelectionTables();
 	systemDatabase.loadMapping();
 	systemDatabase.loadVmms();

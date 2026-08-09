@@ -47,9 +47,19 @@ namespace OptiScan::Parser
 		return this->_scanBuffer.front();
 	}
 
+	bool CharReader::isCharDecimalSeparator(const char & c)
+	{
+		return c == '.';
+	}
+
 	bool CharReader::isCharDigit(const char & c)
 	{
 		return '0' <= c && c <= '9';
+	}
+
+	bool CharReader::isCharExponentStart(const char & c)
+	{
+		return c == 'e' || c == 'E';
 	}
 
 	bool CharReader::isCharHexDigit(const char & c)
