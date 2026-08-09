@@ -71,20 +71,20 @@ namespace OptiScan::Parser
 		;
 	}
 
-	ScanChar CharReader::popBufferFront()
+	ScanChar CharReader::popScanCharFromBufferFront()
 	{
 		ScanChar const result = this->_scanBuffer.front();
 		this->_scanBuffer.erase(this->_scanBuffer.begin());
 		return result;
 	}
 
-	std::string CharReader::popFront(size_t count)
+	std::string CharReader::popStringFromBufferFront(size_t stringSize)
 	{
 		string result;
-		result.reserve(count);
-		for (size_t i = 0; i < count; i++)
+		result.reserve(stringSize);
+		for (size_t i = 0; i < stringSize; i++)
 		{
-			result.push_back(this->popBufferFront()._value);
+			result.push_back(this->popScanCharFromBufferFront()._value);
 		}
 		return result;
 	}
@@ -144,7 +144,7 @@ namespace OptiScan::Parser
 			{
 				result = true;
 				position = c._position;
-				text.push_back(this->popBufferFront()._value);
+				text.push_back(this->popScanCharFromBufferFront()._value);
 				bool checkNext = true;
 				while (checkNext)
 				{
@@ -155,11 +155,21 @@ namespace OptiScan::Parser
 						checkNext = CharReader::isCharIdentifier(c._value);
 						if (checkNext)
 						{
-							text.push_back(this->popBufferFront()._value);
+							text.push_back(this->popScanCharFromBufferFront()._value);
 						}
 					}
 				}
 			}
+		}
+		return result;
+	}
+
+	bool CharReader::tryMatchBufferChar(const char & c, size_t offset)
+	{
+		bool result = this->fillScanBuffer(offset + 1);
+		if (result)
+		{
+			result = this->at(offset)._value == c;
 		}
 		return result;
 	}

@@ -51,7 +51,7 @@ namespace OptiScan::Parser::A2l
 	{
 		this->_token._kind = kind;
 		this->_token._position = this->_reader.at(0)._position;
-		this->_token._text = this->_reader.popFront(count);
+		this->_token._text = this->_reader.popStringFromBufferFront(count);
 	}
 
 	void A2lScanner::getCompatStyles(A2lScannerCompatStyles & compatStyles) const
@@ -107,7 +107,7 @@ namespace OptiScan::Parser::A2l
 		}
 		if (isValid)
 		{
-			this->_reader.popFront(count);
+			this->_reader.popStringFromBufferFront(count);
 		}
 		else
 		{
@@ -137,7 +137,7 @@ namespace OptiScan::Parser::A2l
 		}
 		if (isValid)
 		{
-			this->_reader.popFront(count);
+			this->_reader.popStringFromBufferFront(count);
 		}
 		else
 		{
@@ -161,7 +161,7 @@ namespace OptiScan::Parser::A2l
 					checkNext = A2lScanner::isCharWhiteSpace(this->_reader.front()._value);
 					if (checkNext)
 					{
-						this->_reader.popBufferFront();
+						this->_reader.popScanCharFromBufferFront();
 					}
 				}
 			}
@@ -511,11 +511,7 @@ namespace OptiScan::Parser::A2l
 	bool A2lScanner::tryReadStringLiteral()
 	{
 		size_t count = 1;
-		bool result = this->_reader.fillScanBuffer(count);
-		if (result)
-		{
-			result = this->_reader.front()._value == A2lScanner::CharQuotationMark;
-		}
+		bool result = this->_reader.tryMatchBufferChar(A2lScanner::CharQuotationMark);
 		bool checkNext = true;
 		bool hasBackSlashEscape = false;
 		bool hasQuotationMark = false;

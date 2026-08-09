@@ -47,7 +47,7 @@ namespace OptiScan::Parser::Ldf
 		}
 		for (size_t i = 0; i < startCount; i++)
 		{
-			this->_reader.popBufferFront();
+			this->_reader.popScanCharFromBufferFront();
 		}
 		size_t const endCount = LdfScanner::StringCommentEnd.size();
 		bool checkNext = true;
@@ -66,14 +66,14 @@ namespace OptiScan::Parser::Ldf
 			}
 			if (!this->_reader.bufferStartsWith(LdfScanner::StringCommentEnd))
 			{
-				this->_reader.popBufferFront();
+				this->_reader.popScanCharFromBufferFront();
 			}
 			else
 			{
 				checkNext = false;
 				for (size_t i = 0; i < endCount; i++)
 				{
-					this->_reader.popBufferFront();
+					this->_reader.popScanCharFromBufferFront();
 				}
 			}
 		}
@@ -92,7 +92,7 @@ namespace OptiScan::Parser::Ldf
 		}
 		for (size_t i = 0; i < LdfScanner::StringLineCommentStart.size(); i++)
 		{
-			this->_reader.popBufferFront();
+			this->_reader.popScanCharFromBufferFront();
 		}
 		bool checkNext = true;
 		while (checkNext)
@@ -100,7 +100,7 @@ namespace OptiScan::Parser::Ldf
 			checkNext = this->_reader.fillScanBuffer();
 			if (checkNext)
 			{
-				checkNext = !LdfScanner::isCharLineEnd(this->_reader.popBufferFront()._value);
+				checkNext = !LdfScanner::isCharLineEnd(this->_reader.popScanCharFromBufferFront()._value);
 			}
 		}
 	}
@@ -122,7 +122,7 @@ namespace OptiScan::Parser::Ldf
 						checkNext = LdfScanner::isCharWhiteSpace(this->_reader.front()._value);
 						if (checkNext)
 						{
-							this->_reader.popBufferFront();
+							this->_reader.popScanCharFromBufferFront();
 						}
 					}
 				}
@@ -198,9 +198,9 @@ namespace OptiScan::Parser::Ldf
 				result = true;
 				this->_token._kind = LdfTokenKind::LiteralHexInteger;
 				this->_token._position = this->_reader.at(0)._position;
-				this->_token._text.push_back(this->_reader.popBufferFront()._value);
-				this->_token._text.push_back(this->_reader.popBufferFront()._value);
-				this->_token._text.push_back(this->_reader.popBufferFront()._value);
+				this->_token._text.push_back(this->_reader.popScanCharFromBufferFront()._value);
+				this->_token._text.push_back(this->_reader.popScanCharFromBufferFront()._value);
+				this->_token._text.push_back(this->_reader.popScanCharFromBufferFront()._value);
 				bool checkNext = true;
 				while (checkNext)
 				{
@@ -211,7 +211,7 @@ namespace OptiScan::Parser::Ldf
 						checkNext = CharReader::isCharHexDigit(c._value);
 						if (checkNext)
 						{
-							this->_token._text.push_back(this->_reader.popBufferFront()._value);
+							this->_token._text.push_back(this->_reader.popScanCharFromBufferFront()._value);
 						}
 					}
 				}
@@ -239,7 +239,7 @@ namespace OptiScan::Parser::Ldf
 			if (result)
 			{
 				this->_token._kind = LdfTokenKind::LiteralInteger;
-				const ScanChar & tmp = this->_reader.popBufferFront();
+				const ScanChar & tmp = this->_reader.popScanCharFromBufferFront();
 				this->_token._position = tmp._position;
 				this->_token._text.push_back(tmp._value);
 				bool checkNext = true;
@@ -300,7 +300,7 @@ namespace OptiScan::Parser::Ldf
 						}
 						if (checkNext)
 						{
-							this->_token._text.push_back(this->_reader.popBufferFront()._value);
+							this->_token._text.push_back(this->_reader.popScanCharFromBufferFront()._value);
 						}
 					}
 				}
@@ -319,7 +319,7 @@ namespace OptiScan::Parser::Ldf
 			{
 				result = true;
 				this->_token._kind = LdfTokenKind::LiteralString;
-				const ScanChar & tmp = this->_reader.popBufferFront();
+				const ScanChar & tmp = this->_reader.popScanCharFromBufferFront();
 				this->_token._position = tmp._position;
 				this->_token._text.push_back(tmp._value);
 				bool checkNext = true;
@@ -329,7 +329,7 @@ namespace OptiScan::Parser::Ldf
 					{
 						throw FormatException("Missing quotation mark");
 					}
-					const ScanChar & c = this->_reader.popBufferFront();
+					const ScanChar & c = this->_reader.popScanCharFromBufferFront();
 					checkNext = c._value != '"';
 					this->_token._text.push_back(c._value);
 				}
@@ -375,7 +375,7 @@ namespace OptiScan::Parser::Ldf
 			}
 			if (result)
 			{
-				const ScanChar & c = this->_reader.popBufferFront();
+				const ScanChar & c = this->_reader.popScanCharFromBufferFront();
 				this->_token._position = c._position;
 				this->_token._text.push_back(c._value);
 			}
