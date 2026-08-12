@@ -43,9 +43,18 @@ namespace OptiScan::Parser
 
 	double TokenReaderUtils::literalRealTokenTextToDouble(const string & tokenText)
 	{
+		if (tokenText.empty())
+		{
+			throw FormatException("Invalid double, empty string");
+		}
 		double result = 0;
-		char const * const first = tokenText.data();
+		char const * first = tokenText.data();
 		char const * const last = tokenText.data() + tokenText.size();
+		// skip '+' sign, std::from_chars did not parse it
+		if (*first == '+')
+		{
+			first++;
+		}
 		from_chars_result const parseResult = from_chars(first, last, result);
 		bool const isValid = parseResult.ec == errc() && parseResult.ptr == last;
 		if (!isValid)
