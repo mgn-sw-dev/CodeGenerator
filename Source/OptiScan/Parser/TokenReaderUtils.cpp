@@ -140,19 +140,15 @@ namespace OptiScan::Parser
 
 	string TokenReaderUtils::literalStringTokenTextToString(const string & tokenText)
 	{
-		string result;
-		bool isValid = false;
-		if (2 <= tokenText.size())
-		{
-			if (!tokenText.empty() && tokenText.front() == '"' && tokenText.back() == '"')
-			{
-				result = tokenText.substr(1, tokenText.size() - 2);
-				isValid = result.find('"') == string::npos;
-			}
-		}
-		if (!isValid)
+		if (tokenText.size() < 2 || tokenText.front() != '"' || tokenText.back() != '"')
 		{
 			throw FormatException("Invalid string");
+		}
+		string result = tokenText.substr(1, tokenText.size() - 2);
+		// not allowed string in style: "Hello "World""
+		if (result.find('"') != string::npos)
+		{
+			throw FormatException("Invalid string: contains double quote");
 		}
 		return result;
 	}
