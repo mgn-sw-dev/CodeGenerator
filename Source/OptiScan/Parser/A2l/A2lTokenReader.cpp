@@ -102,6 +102,88 @@ namespace OptiScan::Parser::A2l
 		this->readNextToken();
 	}
 
+	void A2lTokenReader::parseString(string & value)
+	{
+		this->matchToken(A2lTokenKind::StringLiteral);
+		value = TokenReaderUtils::literalStringTokenTextToString(this->token()._text);
+		this->readNextToken();
+	}
+
+	void A2lTokenReader::parseUInt8(uint8_t & value)
+	{
+		uint64_t tmp = 0;
+		this->parseUInt64(tmp);
+		if (UINT8_MAX < tmp)
+		{
+			throw FormatException("A2lTokenReader: UInt8 literal is not uint8");
+		}
+		value = static_cast<uint8_t>(tmp);
+	}
+
+	void A2lTokenReader::parseUInt16(uint16_t & value)
+	{
+		uint64_t tmp = 0;
+		this->parseUInt64(tmp);
+		if (UINT16_MAX < tmp)
+		{
+			throw FormatException("A2lTokenReader: UInt16 literal is not uint16");
+		}
+		value = static_cast<uint16_t>(tmp);
+	}
+
+	void A2lTokenReader::parseUInt32(uint32_t & value)
+	{
+		uint64_t tmp = 0;
+		this->parseUInt64(tmp);
+		if (UINT32_MAX < tmp)
+		{
+			throw FormatException("A2lTokenReader: UInt32 literal is not uint32");
+		}
+		value = static_cast<uint32_t>(tmp);
+	}
+
+	void A2lTokenReader::parseUInt64(uint64_t & value)
+	{
+		if (this->tryMatchToken(A2lTokenKind::HexLiteral))
+		{
+			value = TokenReaderUtils::literalHexIntegerTokenTextToUInt64(this->token()._text);
+		}
+		else if (this->tryMatchToken(A2lTokenKind::IntegerLiteral))
+		{
+			value = TokenReaderUtils::literalIntegerTokenTextToUInt64(this->token()._text);
+		}
+		else
+		{
+			throw FormatException("A2lTokenReader: Hex literal or integer literal expected");
+		}
+		this->readNextToken();
+	}
+
+	void A2lTokenReader::readNextToken()
+	{
+		if (this->_tokenStackCount == -1)
+		{
+			if (0 < this->_tokenStack.size())
+			{
+				this->_tokenStack.erase(this->_tokenStack.begin());
+			}
+			if (0 == this->_tokenStack.size())
+			{
+				this->_scanner.scanNext();
+				this->_tokenStack.push_back(this->_scanner.token());
+			}
+		}
+		else
+		{
+			if (this->_tokenStack.size() <= this->_tokenStackCount)
+			{
+				this->_scanner.scanNext();
+				this->_tokenStack.push_back(this->_scanner.token());
+			}
+			this->_tokenStackCount++;
+		}
+	}
+
 	const A2lScanner & A2lTokenReader::scanner() const
 	{
 		return this->_scanner;
@@ -171,5 +253,50 @@ namespace OptiScan::Parser::A2l
 			throw InvalidOperationException("Token stack rollback error: no token stack");
 		}
 		this->_tokenStackCount = -1;
+	}
+
+	bool A2lTokenReader::tryMatchKeyword(const string & id) const
+	{
+		bool result = false;
+		if (this->tryMatchToken(A2lTokenKind::Identifier))
+		{
+			result = this->token()._text == id;
+		}
+		return result;
+	}
+
+	bool A2lTokenReader::tryMatchToken(A2lTokenKind kind) const
+	{
+		bool result = false;
+		if (this->hasToken())
+		{
+			result = this->token()._kind == kind;
+		}
+		return result;
+	}
+
+	bool A2lTokenReader::tryParseUInt16(uint16_t & value, exception_ptr & error)
+	{
+		error = nullptr;
+		bool result = false;
+		try
+		{
+			if (!this->tryMatchToken(A2lTokenKind::HexLiteral) && !this->tryMatchToken(A2lTokenKind::IntegerLiteral))
+			{
+				error = make_exception_ptr(FormatException("Hex literal or integer literal expected"));
+				result = false;
+			}
+			else
+			{
+				this->parseUInt16(value);
+				result = true;
+			}
+		}
+		catch (const exception & e)
+		{
+			error = current_exception();
+			result = false;
+		}
+		return result;
 	}
 }
