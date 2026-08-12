@@ -29,6 +29,79 @@ namespace OptiScan::Parser::A2l
 		return result;
 	}
 
+	void A2lTokenReader::matchKeyword(const string & id) const
+	{
+		if (!this->tryMatchKeyword(id))
+		{
+			throw FormatException("A2lTokenReader: Keyword mismatch");
+		}
+	}
+
+	void A2lTokenReader::matchToken(A2lTokenKind kind) const
+	{
+		if (!this->tryMatchToken(kind))
+		{
+			throw FormatException("A2lTokenReader: Token mismatch");
+		}
+	}
+
+	void A2lTokenReader::parseFloat64(double & value)
+	{
+		if (this->tryMatchToken(A2lTokenKind::FloatLiteral) || this->tryMatchToken(A2lTokenKind::IntegerLiteral))
+		{
+			value = TokenReaderUtils::literalRealTokenTextToDouble(this->token()._text);
+			this->readNextToken();
+		}
+		else
+		{
+			throw FormatException("A2lTokenReader: Float literal or integer literal expected");
+		}
+	}
+
+	void A2lTokenReader::parseInt16(int16_t & value)
+	{
+		int64_t tmp;
+		this->parseInt64(tmp);
+		if (tmp < INT16_MIN || INT16_MAX < tmp)
+		{
+			throw FormatException("A2lTokenReader: Int16 out of range");
+		}
+		value = static_cast<int16_t>(tmp);
+	}
+
+	void A2lTokenReader::parseInt32(int32_t & value)
+	{
+		int64_t tmp;
+		this->parseInt64(tmp);
+		if (tmp < INT32_MIN || INT32_MAX < tmp)
+		{
+			throw FormatException("A2lTokenReader: Int32 out of range");
+		}
+		value = static_cast<int32_t>(tmp);
+	}
+
+	void A2lTokenReader::parseInt64(int64_t & value)
+	{
+		if (this->tryMatchToken(A2lTokenKind::HexLiteral))
+		{
+			uint64_t tmp = TokenReaderUtils::literalHexIntegerTokenTextToUInt64(this->token()._text);
+			if (INT64_MAX < tmp)
+			{
+				throw FormatException("A2lTokenReader: Hex literal is not int64");
+			}
+			value = static_cast<int64_t>(tmp);
+		}
+		else if (this->tryMatchToken(A2lTokenKind::IntegerLiteral))
+		{
+			value = TokenReaderUtils::literalIntegerTokenTextToInt64(this->token()._text);
+		}
+		else
+		{
+			throw FormatException("A2lTokenReader: Hex literal or integer literal expected");
+		}
+		this->readNextToken();
+	}
+
 	const A2lScanner & A2lTokenReader::scanner() const
 	{
 		return this->_scanner;

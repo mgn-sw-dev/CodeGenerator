@@ -13,6 +13,30 @@ namespace OptiScan::Parser::A2l
         A2lTokenReader(std::istream * input);
         /** */
         bool hasToken() const;
+        /** @throws FormatException. */
+        void matchKeyword(const std::string & id) const;
+        /** @throws FormatException. */
+        void matchToken(A2lTokenKind kind) const;
+        /** @throws FormatException. */
+        void parseFloat64(double & value);
+        /** @throws FormatException. */
+        void parseInt16(int16_t & value);
+        /** @throws FormatException. */
+        void parseInt32(int32_t & value);
+        /** @throws FormatException. */
+        void parseInt64(int64_t & value);
+        /** @throws FormatException. */
+        void parseString(std::string & value);
+        /** @throws FormatException. */
+        void parseUInt8(uint8_t & value);
+        /** @throws FormatException. */
+        void parseUInt16(uint16_t & value);
+        /** @throws FormatException. */
+        void parseUInt32(uint32_t & value);
+        /** @throws FormatException. */
+        void parseUInt64(uint64_t & value);
+        /** @throws FormatException */
+        void readNextToken();
         /** */
         const A2lScanner & scanner() const;
         /** */
@@ -27,6 +51,10 @@ namespace OptiScan::Parser::A2l
         int64_t tokenStackCount() const;
         /** @throws InvalidOperationException. */
         void tokenStackRollback();
+        /** */
+        bool tryMatchKeyword(const std::string & id) const;
+        /** */
+        bool tryMatchToken(A2lTokenKind kind) const;
     private:
         A2lScanner _scanner;
         std::vector<A2lToken> _tokenStack;
