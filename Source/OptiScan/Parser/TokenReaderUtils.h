@@ -11,7 +11,13 @@ namespace OptiScan::Parser
         /** @throws FormatException. */
         static uint32_t literalHexIntegerTokenTextToUInt32(const std::string & tokenText);
         /** @throws FormatException. */
+        static uint64_t literalHexIntegerTokenTextToUInt64(const std::string & tokenText);
+        /** @throws FormatException. */
+        static int64_t literalIntegerTokenTextToInt64(const std::string & tokenText);
+        /** @throws FormatException. */
         static uint32_t literalIntegerTokenTextToUInt32(const std::string & tokenText);
+        /** @throws FormatException. */
+        static uint64_t literalIntegerTokenTextToUInt64(const std::string & tokenText);
         /** @throws FormatException. */
         static double literalRealTokenTextToDouble(const std::string & tokenText);
         /**  @throws FormatException. */

@@ -27,16 +27,90 @@ namespace OptiScan::Parser
 		return result;
 	}
 
+	uint64_t TokenReaderUtils::literalHexIntegerTokenTextToUInt64(const string & tokenText)
+	{
+		if (tokenText.size() < 2 || tokenText[0] != '0' || (tokenText[1] != 'x' && tokenText[1] != 'X'))
+		{
+			throw FormatException("Invalid hex uint64: missing 0x prefix");
+		}
+		// pointer after '0x'
+		char const * const first = tokenText.data() + 2;
+		char const * const last = tokenText.data() + tokenText.size();
+		uint64_t result = 0;
+		from_chars_result const parseResult = from_chars(first, last, result, 16);
+		bool const isValid = parseResult.ec == errc() && parseResult.ptr == last;
+		if (!isValid)
+		{
+			throw FormatException("Invalid hex uint64");
+		}
+		return result;
+	}
+
+	int64_t TokenReaderUtils::literalIntegerTokenTextToInt64(const string & tokenText)
+	{
+		if (tokenText.empty())
+		{
+			throw FormatException("Invalid int64, empty string");
+		}
+		int64_t result = 0;
+		char const * first = tokenText.data();
+		char const * const last = tokenText.data() + tokenText.size();
+		// skip '+' sign, std::from_chars did not parse it
+		if (*first == '+')
+		{
+			first++;
+		}
+		from_chars_result const parseResult = from_chars(first, last, result);
+		bool const isValid = parseResult.ec == errc() && parseResult.ptr == last;
+		if (!isValid)
+		{
+			throw FormatException("Invalid int64");
+		}
+		return result;
+	}
+
 	uint32_t TokenReaderUtils::literalIntegerTokenTextToUInt32(const string & tokenText)
 	{
+		if (tokenText.empty())
+		{
+			throw FormatException("Invalid uint32, empty string");
+		}
 		uint32_t result = 0;
-		char const * const first = tokenText.data();
+		char const * first = tokenText.data();
 		char const * const last = tokenText.data() + tokenText.size();
+		// skip '+' sign, std::from_chars did not parse it
+		if (*first == '+')
+		{
+			first++;
+		}
 		from_chars_result const parseResult = from_chars(first, last, result);
 		bool const isValid = parseResult.ec == errc() && parseResult.ptr == last;
 		if (!isValid)
 		{
 			throw FormatException("Invalid uint32");
+		}
+		return result;
+	}
+
+	uint64_t TokenReaderUtils::literalIntegerTokenTextToUInt64(const string & tokenText)
+	{
+		if (tokenText.empty())
+		{
+			throw FormatException("Invalid uint64, empty string");
+		}
+		uint64_t result = 0;
+		char const * first = tokenText.data();
+		char const * const last = tokenText.data() + tokenText.size();
+		// skip '+' sign, std::from_chars did not parse it
+		if (*first == '+')
+		{
+			first++;
+		}
+		from_chars_result const parseResult = from_chars(first, last, result);
+		bool const isValid = parseResult.ec == errc() && parseResult.ptr == last;
+		if (!isValid)
+		{
+			throw FormatException("Invalid uint64");
 		}
 		return result;
 	}
