@@ -45,6 +45,15 @@ namespace OptiScan::Parser::A2l
 		}
 	}
 
+	void A2lTokenReader::trackOneTimeKeyword(unordered_set<string> & oneTimeKeywords, const string & keyword)
+	{
+		if (oneTimeKeywords.find(keyword) != oneTimeKeywords.end())
+		{
+			throw FormatException("A2lTokenReader: Keyword already encountered");
+		}
+		oneTimeKeywords.insert(keyword);
+	}
+
 	void A2lTokenReader::parseFloat64(double & value)
 	{
 		if (this->tryMatchToken(A2lTokenKind::FloatLiteral) || this->tryMatchToken(A2lTokenKind::IntegerLiteral))
@@ -268,11 +277,27 @@ namespace OptiScan::Parser::A2l
 
 	bool A2lTokenReader::tryMatchToken(A2lTokenKind kind) const
 	{
-		bool result = false;
-		if (this->hasToken())
+		exception_ptr error;
+		return this->tryMatchToken(kind, error);
+	}
+
+	bool A2lTokenReader::tryMatchToken(A2lTokenKind kind, exception_ptr & error) const
+	{
+		error = nullptr;
+		bool result = this->hasToken();
+		if (!result)
+		{
+			error = make_exception_ptr(InvalidOperationException("A2lTokenReader: No token"));
+		}
+		else
 		{
 			result = this->token()._kind == kind;
+			if (!result)
+			{
+				error = make_exception_ptr(FormatException("A2lTokenReader: Token mismatch"));
+			}
 		}
+
 		return result;
 	}
 
@@ -294,6 +319,59 @@ namespace OptiScan::Parser::A2l
 			this->tokenStackRollback();
 			result = false;
 		}
+		return result;
+	}
+
+	bool A2lTokenReader::tryTokenStackBlockBegin(const string & keyword)
+	{
+		exception_ptr error;
+		return this->tryTokenStackBlockBegin(keyword, error);
+	}
+
+	bool A2lTokenReader::tryTokenStackBlockBegin(const string & keyword, exception_ptr & error)
+	{
+		error = nullptr;
+		string tmp;
+		bool result = this->tryTokenStackBlockBeginAny(tmp, error);
+		if (result)
+		{
+			result = keyword == tmp;
+			if (!result)
+			{
+				error = make_exception_ptr(FormatException("A2lTokenReader: Keyword mismatch"));
+			}
+		}
+		return result;
+	}
+
+	bool A2lTokenReader::tryTokenStackBlockBeginAny(string & keyword)
+	{
+		exception_ptr error;
+		return this->tryTokenStackBlockBeginAny(keyword, error);
+	}
+
+	bool A2lTokenReader::tryTokenStackBlockBeginAny(string & keyword, exception_ptr & error)
+	{
+		error = nullptr;
+		bool result = false;
+		this->tokenStackBegin();
+		try
+		{
+			if (this->tryMatchToken(A2lTokenKind::EscapeBegin, error))
+			{
+				this->readNextToken();
+				if (this->tryMatchToken(A2lTokenKind::Identifier, error))
+				{
+					keyword = this->token()._text;
+					result = true;
+				}
+			}
+		}
+		catch (const exception & e)
+		{
+			error = current_exception();
+		}
+		this->tokenStackRollback();
 		return result;
 	}
 }

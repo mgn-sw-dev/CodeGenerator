@@ -2,6 +2,7 @@
 
 #include <OptiScan/Parser/A2l/A2lScanner.h>
 #include <istream>
+#include <unordered_set>
 #include <vector>
 
 namespace OptiScan::Parser::A2l
@@ -17,6 +18,8 @@ namespace OptiScan::Parser::A2l
         void matchKeyword(const std::string & id) const;
         /** @throws FormatException. */
         void matchToken(A2lTokenKind kind) const;
+        /** */
+        static void trackOneTimeKeyword(std::unordered_set<std::string> & oneTimeKeywords, const std::string & keyword);
         /** @throws FormatException. */
         void parseFloat64(double & value);
         /** @throws FormatException. */
@@ -55,9 +58,19 @@ namespace OptiScan::Parser::A2l
         bool tryMatchKeyword(const std::string & id) const;
         /** */
         bool tryMatchToken(A2lTokenKind kind) const;
+        /** */
+        bool tryMatchToken(A2lTokenKind kind, std::exception_ptr & error) const;
         /** @throws InvalidOperationException.
          *  @throws FormatException. */
         bool tryParseUInt16(uint16_t & value, std::exception_ptr & error);
+        /**@throws FormatException.*/
+        bool tryTokenStackBlockBegin(const std::string & keyword);
+        /**@throws FormatException.*/
+        bool tryTokenStackBlockBegin(const std::string & keyword,std::exception_ptr & error);
+        /** @throws FormatException.*/
+        bool tryTokenStackBlockBeginAny(std::string & keyword);
+        /** @throws FormatException.*/
+        bool tryTokenStackBlockBeginAny(std::string & keyword, std::exception_ptr & error);
     private:
         A2lScanner _scanner;
         std::vector<A2lToken> _tokenStack;
