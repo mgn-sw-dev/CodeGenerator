@@ -132,8 +132,8 @@ namespace OptiScan::Parser::Dbc
 
 	void DbcTokenReader::parseInt32(int32_t & value)
 	{
-		exception_ptr const error = this->tryParseInt32(value);
-		if (error)
+		exception_ptr error;
+		if (!this->tryParseInt32(value, error))
 		{
 			rethrow_exception(error);
 		}
@@ -148,8 +148,8 @@ namespace OptiScan::Parser::Dbc
 
 	void DbcTokenReader::parseUInt32(uint32_t & value)
 	{
-		exception_ptr const error = this->tryParseUInt32(value);
-		if (error)
+		exception_ptr error;
+		if (!this->tryParseUInt32(value, error))
 		{
 			rethrow_exception(error);
 		}
