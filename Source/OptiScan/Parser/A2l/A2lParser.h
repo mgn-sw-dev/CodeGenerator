@@ -16,6 +16,13 @@ namespace OptiScan::Parser::A2l
 
     private:
         A2lTokenReader _reader;
+
+        /** */
+        void parseAsap2Version(McdVersion & version);
+        /** */
+        void parseA2mlVersion(McdVersion & version);
+        /** */
+        void parseVersion(McdVersion & version);
     
     };
 

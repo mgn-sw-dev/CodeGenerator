@@ -35,7 +35,7 @@ namespace OptiScan::Parser::A2l
 	{
 	public:
 		std::optional<McdVersion> _a2mlVersion;
-		McdVersion _mcdVersion;
+		McdVersion _asap2Version;
 		McdProject _project;
 	};
 }

@@ -21,21 +21,24 @@ int main(int argc, char *argv[])
 	}
 	OptiScan::Core::Database::CanDatabase canDatabase;
 	OptiScan::Core::Database::LinDatabase linDatabase;
-	try
-	{
-		// linDatabase.loadLdfDatabase("C:/CodeGenerator/Test/SAM_LIN2_2024_20a.ldf");
-	}
-	catch (const std::exception & error)
-	{
-		std::cout << error.what() << std::endl;
-	}
+	// try
+	// {
+	// 	OptiScan::Parser::Ldf::LdfModes ldfModes;
+	// 	ldfModes._allowSignalEncodingType32 = true;
+	// 	ldfModes._allowSignalWithoutSubscriber = true;
+	// 	linDatabase.loadLdfDatabase("C:/CodeGenerator/Test/SAM_LIN2_2024_20a.ldf", ldfModes);
+	// }
+	// catch (const std::exception & error)
+	// {
+	// 	std::cout << error.what() << std::endl;
+	// }
 	// canDatabase.loadDbcDatabase("C:/CodeGenerator/Test/240102BatteryCAN.dbc");
-	OptiScan::Core::Database::SystemDatabase systemDatabase;
-	systemDatabase.setLogHandler(&logHandler);
-	systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigBevLongHaul.json");
-	systemDatabase.loadSelectionTables();
-	systemDatabase.loadMapping();
-	systemDatabase.loadVmms();
+	// OptiScan::Core::Database::SystemDatabase systemDatabase;
+	// systemDatabase.setLogHandler(&logHandler);
+	// systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigBevLongHaul.json");
+	// systemDatabase.loadSelectionTables();
+	// systemDatabase.loadMapping();
+	// systemDatabase.loadVmms();
 	return 0;
 
 #if 0
