@@ -9,7 +9,10 @@ target_link_libraries(OptiScanParser PUBLIC
 target_include_directories(OptiScanParser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../..)
 
 set(OptiScanParser_SOURCES
+    A2l/A2lDatabase.h
     A2l/A2lKeyword.h
+    A2l/A2lParser.cpp
+    A2l/A2lParser.h
     A2l/A2lScanner.cpp
     A2l/A2lScanner.h
     A2l/A2lTokenReader.cpp

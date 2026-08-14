@@ -3,9 +3,22 @@
 #include <OptiScan/Core/Database/CanDatabase.h>
 #include <iostream>
 
+#include <OptiScan/Parser/A2l/A2lParser.h>
+
 int main(int argc, char *argv[])
 {
 	OptiScan::View::Console::ConsoleLogHandler logHandler;
+	std::ifstream file("C:/CodeGenerator/Test/ACM_FS_DTA30_0d1_S10_52_01_000.a2l");
+	OptiScan::Parser::A2l::A2lParser a2lParser(&file);
+	OptiScan::Parser::A2l::A2lDatabase a2lDatabase;
+	try
+	{
+		a2lParser.parse(a2lDatabase);
+	}
+	catch (const std::exception & error)
+	{
+		std::cout << error.what() << std::endl;
+	}
 	OptiScan::Core::Database::CanDatabase canDatabase;
 	OptiScan::Core::Database::LinDatabase linDatabase;
 	try
