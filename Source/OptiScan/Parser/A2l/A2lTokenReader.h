@@ -55,7 +55,8 @@ namespace OptiScan::Parser::A2l
         bool tryMatchKeyword(const std::string & id) const;
         /** */
         bool tryMatchToken(A2lTokenKind kind) const;
-        /** @throws InvalidOperationException. */
+        /** @throws InvalidOperationException.
+         *  @throws FormatException. */
         bool tryParseUInt16(uint16_t & value, std::exception_ptr & error);
     private:
         A2lScanner _scanner;

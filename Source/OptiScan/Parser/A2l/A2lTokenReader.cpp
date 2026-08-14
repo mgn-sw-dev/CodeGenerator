@@ -105,7 +105,8 @@ namespace OptiScan::Parser::A2l
 	void A2lTokenReader::parseString(string & value)
 	{
 		this->matchToken(A2lTokenKind::StringLiteral);
-		value = TokenReaderUtils::literalStringTokenTextToString(this->token()._text);
+		// todo: process escape sequences
+		value = TokenReaderUtils::literalStringTokenTextWithNestedStringToString(this->token()._text);
 		this->readNextToken();
 	}
 
@@ -279,22 +280,18 @@ namespace OptiScan::Parser::A2l
 	{
 		error = nullptr;
 		bool result = false;
+		this->tokenStackBegin();
 		try
 		{
-			if (!this->tryMatchToken(A2lTokenKind::HexLiteral) && !this->tryMatchToken(A2lTokenKind::IntegerLiteral))
-			{
-				error = make_exception_ptr(FormatException("Hex literal or integer literal expected"));
-				result = false;
-			}
-			else
-			{
-				this->parseUInt16(value);
-				result = true;
-			}
+			// check if A2lTokenKind::HexLiteral or A2lTokenKind::IntegerLiteral in parseUInt64 method
+			this->parseUInt16(value);
+			this->tokenStackCommit();
+			result = true;
 		}
-		catch (const exception & e)
+		catch (const FormatException & e)
 		{
 			error = current_exception();
+			this->tokenStackRollback();
 			result = false;
 		}
 		return result;
