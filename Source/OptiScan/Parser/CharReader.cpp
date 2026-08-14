@@ -10,6 +10,7 @@ namespace OptiScan::Parser
 		, _stream(input)
 		, _streamPosition()
 	{
+		this->skipUtf8Bom();
 	}
 
 	const ScanChar & CharReader::at(size_t index) const
@@ -172,6 +173,32 @@ namespace OptiScan::Parser
 			}
 		}
 		return result;
+	}
+
+	void CharReader::skipUtf8Bom()
+	{
+		// Skip UTF-8 BOM (0xEF 0xBB 0xBF) if present
+		char c[3] = {};
+		if (this->_stream->read(c, 3))
+		{
+			if (static_cast<unsigned char>(c[0]) != CharReader::Bom[0]
+				|| static_cast<unsigned char>(c[1]) != CharReader::Bom[1]
+				|| static_cast<unsigned char>(c[2]) != CharReader::Bom[2])
+			{
+				// No BOM: put the bytes back into the stream
+				for (int i = 2; i >= 0; i--)
+				{
+					this->_stream->putback(c[i]);
+				}
+			}
+			// else: BOM found and skipped
+		}
+		else
+		{
+			// Stream has less than 3 bytes, clear error and seek back
+			this->_stream->clear();
+			this->_stream->seekg(0);
+		}
 	}
 
 	bool CharReader::tryMatchBufferChar(const char & c, size_t offset)

@@ -211,7 +211,7 @@ namespace OptiScan::Parser::A2l
 			const ScanChar & c = this->_reader.front();
 			this->_token._position = c._position;
 			this->_token._text.push_back(c._value);
-			throw FormatException("A2lScanner: Unknown token");
+			throw FormatException("A2lScanner: Unknown token: " + this->_token._text);
 		}
 	}
 

@@ -52,6 +52,7 @@ namespace OptiScan::Parser
     	bool tryMatchBufferStart(const std::string & pattern, size_t offset = 0);
 
     private:
+    	constexpr static unsigned char Bom[3] = { 0xEF, 0xBB, 0xBF };
         std::vector<ScanChar> _scanBuffer;
         std::istream * _stream;
         ScanPosition _streamPosition;
@@ -62,6 +63,8 @@ namespace OptiScan::Parser
         /** @return false If end of stream detected.
          *  @throws ios_base::failure. */
         bool readCharFromStreamToScanBuffer();
+    	/** */
+    	void skipUtf8Bom();
     
     };
 
