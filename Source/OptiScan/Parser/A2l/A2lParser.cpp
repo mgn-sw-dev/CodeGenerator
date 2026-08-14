@@ -3,6 +3,7 @@
 #include <OptiScan/Parser/A2l/A2lParser.h>
 #include <OptiScan/Parser/FileException.h>
 #include <OptiScan/Parser/TokenReaderUtils.h>
+#include <unordered_set>
 
 using namespace std;
 
@@ -45,6 +46,14 @@ namespace OptiScan::Parser::A2l
 	void A2lParser::parseBlockBegin(const string & keyword)
 	{
 		this->_reader.matchToken(A2lTokenKind::EscapeBegin);
+		this->_reader.readNextToken();
+		this->_reader.matchKeyword(keyword);
+		this->_reader.readNextToken();
+	}
+
+	void A2lParser::parseBlockEnd(const string & keyword)
+	{
+		this->_reader.matchToken(A2lTokenKind::EscapeEnd);
 		this->_reader.readNextToken();
 		this->_reader.matchKeyword(keyword);
 		this->_reader.readNextToken();
@@ -96,6 +105,23 @@ namespace OptiScan::Parser::A2l
 	{
 		this->parseBlockBegin(A2lKeyword::Project);
 		this->parseIdent(project._name);
+		this->_reader.parseString(project._longIdentifier);
+		string keyword;
+		unordered_set<string> oneTimeKeywords;
+		while (this->_reader.tryTokenStackBlockBeginAny(keyword))
+		{
+			if (keyword == A2lKeyword::Header)
+			{
+				A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+				this->parseHeader();
+			}
+			else
+			{
+				this->parseModule();
+			}
+		}
+		this->parseBlockEnd(A2lKeyword::Project);
+
 	}
 
 	void A2lParser::parseVersion(McdVersion & version)
