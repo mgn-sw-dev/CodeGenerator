@@ -271,9 +271,10 @@ namespace OptiScan::Parser::Dbc
 		return result;
 	}
 
-	exception_ptr DbcTokenReader::tryParseInt32(int32_t & value)
+	bool DbcTokenReader::tryParseInt32(int32_t & value, exception_ptr & error)
 	{
-		exception_ptr result;
+		error = nullptr;
+		bool result = true;
 		this->tokenStackBegin();
 		try
 		{
@@ -301,18 +302,21 @@ namespace OptiScan::Parser::Dbc
 			value = static_cast<int32_t>(signedValue);
 			this->tokenStackCommit();
 			this->readNextToken();
+			result = true;
 		}
 		catch (const FormatException & ex)
 		{
-			result = current_exception();
+			error = current_exception();
 			this->tokenStackRollback();
+			result = false;
 		}
 		return result;
 	}
 
-	exception_ptr DbcTokenReader::tryParseUInt32(uint32_t & value)
+	bool DbcTokenReader::tryParseUInt32(uint32_t & value, exception_ptr & error)
 	{
-		exception_ptr result;
+		error = nullptr;
+		bool result = true;
 		this->tokenStackBegin();
 		try
 		{
@@ -324,12 +328,14 @@ namespace OptiScan::Parser::Dbc
 			value = TokenReaderUtils::literalIntegerTokenTextToUInt32(this->token()._text);
 			this->tokenStackCommit();
 			this->readNextToken();
+			result = true;
 		}
 		catch (const FormatException & ex)
 		{
 			// catch only FormatException and not InvalidOperationException
-			result = current_exception();
+			error = current_exception();
 			this->tokenStackRollback();
+			result = false;
 		}
 		return result;
 	}

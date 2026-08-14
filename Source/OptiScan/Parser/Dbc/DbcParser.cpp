@@ -253,8 +253,7 @@ namespace OptiScan::Parser::Dbc
 			exception_ptr error;
 			{
 				uint32_t tmp;
-				error = this->_reader.tryParseUInt32(tmp);
-				if (!error)
+				if (this->_reader.tryParseUInt32(tmp, error))
 				{
 					value = tmp;
 				}
@@ -262,8 +261,7 @@ namespace OptiScan::Parser::Dbc
 			if (error)
 			{
 				int32_t tmp;
-				error = this->_reader.tryParseInt32(tmp);
-				if (!error)
+				if (this->_reader.tryParseInt32(tmp, error))
 				{
 					value = tmp;
 				}

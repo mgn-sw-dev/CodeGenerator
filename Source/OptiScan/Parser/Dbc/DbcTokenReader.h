@@ -48,12 +48,12 @@ namespace OptiScan::Parser::Dbc
         bool tryMatchKeyword(const std::string & id) const;
         /** */
         bool tryMatchToken(DbcTokenKind kind) const;
-        /** @returns null If no error.
+        /** @throws InvalidOperationException.
          *  @throws FormatException. */
-        std::exception_ptr tryParseInt32(int32_t & value);
-        /** @returns null If no error.
+        bool tryParseInt32(int32_t & value, std::exception_ptr & error);
+        /** @throws InvalidOperationException.
          *  @throws FormatException. */
-        std::exception_ptr tryParseUInt32(uint32_t & value);
+        bool tryParseUInt32(uint32_t & value, std::exception_ptr & error);
     private:
         DbcScanner _scanner;
         std::vector<DbcToken> _tokenStack;
