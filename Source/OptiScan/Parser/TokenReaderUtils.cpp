@@ -153,6 +153,16 @@ namespace OptiScan::Parser
 		return result;
 	}
 
+	string TokenReaderUtils::literalStringTokenTextWithNestedStringToString(const string & tokenText)
+	{
+		if (tokenText.size() < 2 || tokenText.front() != '"' || tokenText.back() != '"')
+		{
+			throw FormatException("Invalid string");
+		}
+		string result = tokenText.substr(1, tokenText.size() - 2);
+		return result;
+	}
+
 	pair<uint8_t, uint8_t> TokenReaderUtils::literalStringTokenTextToVersionPair(const string_view & tokenText)
 	{
 		size_t const dotPos = tokenText.find('.');

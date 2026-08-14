@@ -22,6 +22,8 @@ namespace OptiScan::Parser
         static double literalRealTokenTextToDouble(const std::string & tokenText);
         /**  @throws FormatException. */
         static std::string literalStringTokenTextToString(const std::string & tokenText);
+        /**  @throws FormatException. */
+        static std::string literalStringTokenTextWithNestedStringToString(const std::string & tokenText);
         /** @throws FormatException. */
         static std::pair<uint8_t, uint8_t> literalStringTokenTextToVersionPair(const std::string_view & tokenText);
     private:
