@@ -6,7 +6,7 @@
 
 namespace OptiScan::Parser::A2l
 {
-    using McdArrayIndex = std::variant<int32_t, uint32_t, std::string>;
+    using McdArrayIndex = std::variant<int64_t, std::string>;
 
     class McdIdentPart
     {
