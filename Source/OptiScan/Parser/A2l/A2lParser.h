@@ -26,9 +26,13 @@ namespace OptiScan::Parser::A2l
         /** @throws FormatException. */
         void parseBlockEnd(const std::string & keyword);
         /** @throws FormatException. */
+        void parseHeader(McdHeader & header);
+        /** @throws FormatException. */
         void parseIdent(McdIdent & ident);
         /** @throws FormatException. */
         void parseIdentPart(McdIdentPart & part);
+        /** */
+        void parseModule();
         /** @throws FormatException. */
         void parseProject(McdProject & project);
         /** @throws FormatException. */

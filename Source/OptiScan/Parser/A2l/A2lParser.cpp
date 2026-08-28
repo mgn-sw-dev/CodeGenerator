@@ -59,6 +59,33 @@ namespace OptiScan::Parser::A2l
 		this->_reader.readNextToken();
 	}
 
+	void A2lParser::parseHeader(McdHeader & header)
+	{
+		this->parseBlockBegin(A2lKeyword::Header);
+		this->_reader.parseString(header._comment);
+		unordered_set<string> oneTimeKeywords;
+		while (!this->_reader.tryMatchToken(A2lTokenKind::EscapeEnd))
+		{
+			this->_reader.matchToken(A2lTokenKind::Identifier);
+			string const keyword = this->_reader.token()._text;
+			A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+			this->_reader.readNextToken();
+			if (keyword == A2lKeyword::ProjectNo)
+			{
+				this->parseIdent(header._projectNo);
+			}
+			else if (keyword == A2lKeyword::Version)
+			{
+				this->_reader.parseString(header._version);
+			}
+			else
+			{
+				throw FormatException("A2lParser::parseHeader: Unknown keyword '" + keyword + "'");
+			}
+		}
+		this->parseBlockEnd(A2lKeyword::Header);
+	}
+
 	void A2lParser::parseIdent(McdIdent & ident)
 	{
 		bool checkNext = true;
@@ -101,6 +128,16 @@ namespace OptiScan::Parser::A2l
 		}
 	}
 
+	void A2lParser::parseModule()
+	{
+		this->parseBlockBegin(A2lKeyword::Module);
+		// todo: MODULE-Inhalt vollständig parsen (COMPU_METHOD, MEASUREMENT, IF_DATA, ...).
+		//       Bis dahin: Inhalt überspringen, damit der Tokenstrom nicht steckenbleibt.
+		// this->_reader.parseUnknownBlockContent();
+		this->parseBlockEnd(A2lKeyword::Module);
+
+	}
+
 	void A2lParser::parseProject(McdProject & project)
 	{
 		this->parseBlockBegin(A2lKeyword::Project);
@@ -113,7 +150,8 @@ namespace OptiScan::Parser::A2l
 			if (keyword == A2lKeyword::Header)
 			{
 				A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
-				this->parseHeader();
+				project._header.emplace();
+				this->parseHeader(*project._header);
 			}
 			else
 			{
