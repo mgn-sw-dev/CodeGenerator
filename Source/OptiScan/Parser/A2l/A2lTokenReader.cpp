@@ -33,7 +33,7 @@ namespace OptiScan::Parser::A2l
 	{
 		if (!this->tryMatchKeyword(id))
 		{
-			throw FormatException("A2lTokenReader: Keyword mismatch");
+			throw FormatException("A2lTokenReader: Keyword mismatch '" + id + "'");
 		}
 	}
 
@@ -41,7 +41,7 @@ namespace OptiScan::Parser::A2l
 	{
 		if (!this->tryMatchToken(kind))
 		{
-			throw FormatException("A2lTokenReader: Token mismatch");
+			throw FormatException("A2lTokenReader: Token mismatch '" + to_string(static_cast<int>(kind)) +"'");
 		}
 	}
 
