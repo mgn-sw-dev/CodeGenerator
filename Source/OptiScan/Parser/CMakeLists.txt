@@ -19,6 +19,8 @@ set(OptiScanParser_SOURCES
     A2l/A2lTokenReader.h
     A2l/McdIdent.cpp
     A2l/McdIdent.h
+    A2l/McdModule.cpp
+    A2l/McdModule.h
     Dbc/DbcAttribute.h
     Dbc/DbcBitTiming.cpp
     Dbc/DbcBitTiming.h
