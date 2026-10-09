@@ -20,7 +20,6 @@ namespace OptiScan::Parser::A2l
 		static inline const std::string Header = "HEADER";
 		static inline const std::string IfData = "IF_DATA";
 		static inline const std::string Measurement = "MEASUREMENT";
-		static inline const std::string ModBus = "MODBUS";
 		static inline const std::string ModCommon = "MOD_COMMON";
 		static inline const std::string ModPar = "MOD_PAR";
 		static inline const std::string Module = "MODULE";

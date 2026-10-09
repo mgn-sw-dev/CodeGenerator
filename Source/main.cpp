@@ -1,59 +1,78 @@
-#include <OptiScan/Core/Database/SystemDatabase.h>
-#include <OptiScan/View/Console/ConsoleLogHandler.h>
-#include <OptiScan/Core/Database/CanDatabase.h>
-#include <iostream>
-
 #include <OptiScan/Parser/A2l/A2lParser.h>
+#include <chrono>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <string>
+#include <vector>
 
-int main(int argc, char *argv[])
+namespace
 {
-	OptiScan::View::Console::ConsoleLogHandler logHandler;
-	std::ifstream file("C:/CodeGenerator/Test/ACM_FS_DTA30_0d1_S10_52_01_000.a2l");
-	OptiScan::Parser::A2l::A2lParser a2lParser(&file);
-	OptiScan::Parser::A2l::A2lDatabase a2lDatabase;
-	try
+	/** Temporary check path for the A2L parser (plan 11-m1-arbeitspakete.md, AP 1.10).
+	 *  To be replaced by the parser test project once P7 is in place. */
+	bool parseCheck(const std::filesystem::path & path)
 	{
-		a2lParser.parse(a2lDatabase);
-	}
-	catch (const std::exception & error)
-	{
-		std::cout << error.what() << std::endl;
-	}
-	OptiScan::Core::Database::CanDatabase canDatabase;
-	OptiScan::Core::Database::LinDatabase linDatabase;
-	// try
-	// {
-	// 	OptiScan::Parser::Ldf::LdfModes ldfModes;
-	// 	ldfModes._allowSignalEncodingType32 = true;
-	// 	ldfModes._allowSignalWithoutSubscriber = true;
-	// 	linDatabase.loadLdfDatabase("C:/CodeGenerator/Test/SAM_LIN2_2024_20a.ldf", ldfModes);
-	// }
-	// catch (const std::exception & error)
-	// {
-	// 	std::cout << error.what() << std::endl;
-	// }
-	// canDatabase.loadDbcDatabase("C:/CodeGenerator/Test/240102BatteryCAN.dbc");
-	// OptiScan::Core::Database::SystemDatabase systemDatabase;
-	// systemDatabase.setLogHandler(&logHandler);
-	// systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigBevLongHaul.json");
-	// systemDatabase.loadSelectionTables();
-	// systemDatabase.loadMapping();
-	// systemDatabase.loadVmms();
-	return 0;
+		using namespace OptiScan::Parser::A2l;
 
-#if 0
-	Q_INIT_RESOURCE(OptiScanCoreCodeGenerator);
-	QApplication a(argc, argv);
-	a.setApplicationName(VERSION_PRODUCT);
-	a.setOrganizationName(VERSION_ORGANIZATION);
-	QString version = QVersionNumber(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION).toString();
-#ifdef QT_DEBUG
-	version.append("-debug");
-#endif
-	a.setApplicationVersion(version);
-	MainModel model;
-	MainWindow w(&model);
-	w.show();
-	return a.exec();
-#endif
+		std::cout << "=== " << path.filename().string() << std::endl;
+		std::ifstream file(path, std::ios::binary);
+		if (!file.is_open())
+		{
+			std::cout << "  file not found" << std::endl;
+			return false;
+		}
+
+		A2lParser parser(&file);
+		A2lDatabase database;
+		const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+		try
+		{
+			parser.parse(database);
+		}
+		catch (const std::exception & error)
+		{
+			std::cout << "  FAILED: " << error.what() << std::endl;
+			return false;
+		}
+		const std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+		const int64_t duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+		std::cout << "  asap2Version:  " << database._asap2Version._versionNo
+			<< "." << database._asap2Version._upgradeNo << std::endl;
+		std::cout << "  a2mlVersion:   "
+			<< (database._a2mlVersion.has_value() ? "yes" : "no") << std::endl;
+		std::cout << "  project:       " << database._project._name.toString() << std::endl;
+		std::cout << "  header:        "
+			<< (database._project._header.has_value() ? "yes" : "no") << std::endl;
+		std::cout << "  modules:       " << database._project._modules.size() << std::endl;
+		for (const McdModule & module : database._project._modules)
+		{
+			std::cout << "    - " << module._name.toString() << std::endl;
+		}
+		std::cout << "  duration:      " << duration_ms << " ms" << std::endl;
+		return true;
+	}
+}
+
+int main(int argc, char * argv[])
+{
+	std::vector<std::filesystem::path> paths;
+	for (int i = 1; i < argc; i++)
+	{
+		paths.emplace_back(argv[i]);
+	}
+	if (paths.empty())
+	{
+		paths.emplace_back("C:/CodeGenerator/Test/ACM_FS_DTA30_0d1_S10_52_01_000.a2l");
+		paths.emplace_back("C:/CodeGenerator/Test/MCM2_M19.12.0.3_CLASSIC_EURO_ROM_xcp_measurementsystem.a2l");
+	}
+
+	bool succeeded = true;
+	for (const std::filesystem::path & path : paths)
+	{
+		succeeded = parseCheck(path) && succeeded;
+	}
+	std::cout << (succeeded ? "all files parsed" : "at least one file failed") << std::endl;
+	return succeeded ? 0 : 1;
 }

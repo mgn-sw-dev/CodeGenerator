@@ -3,11 +3,14 @@
 #include <OptiScan/Parser/A2l/A2lTokenReader.h>
 #include <OptiScan/Parser/FileException.h>
 #include <OptiScan/Parser/TokenReaderUtils.h>
+#include <vector>
 
 using namespace std;
 
 namespace OptiScan::Parser::A2l
 {
+	const size_t A2lTokenReader::UnknownBlockStackReserve = 16;
+
 	A2lTokenReader::A2lTokenReader(istream * input)
 		: _scanner(input)
 		, _tokenStack()
@@ -20,11 +23,11 @@ namespace OptiScan::Parser::A2l
 		bool result;
 		if (this->_tokenStackCount == -1)
 		{
-			result = 0 < this->_tokenStack.size();
+			result = !this->_tokenStack.empty();
 		}
 		else
 		{
-			result = 0 < this->_tokenStackCount && this->_tokenStackCount <= this->_tokenStack.size();
+			result = 0 < this->_tokenStackCount && this->_tokenStackCount <= this->tokenStackSize();
 		}
 		return result;
 	}
@@ -33,7 +36,21 @@ namespace OptiScan::Parser::A2l
 	{
 		if (!this->tryMatchKeyword(id))
 		{
-			throw FormatException("A2lTokenReader: Keyword mismatch '" + id + "'");
+			string found;
+			if (this->hasToken())
+			{
+				found = A2lTokenReader::tokenKindToText(this->token()._kind);
+				if (this->token()._kind == A2lTokenKind::Identifier)
+				{
+					found += " '" + this->token()._text + "'";
+				}
+			}
+			else
+			{
+				found = "no token";
+			}
+			this->throwFormatError("A2lTokenReader::matchKeyword",
+				"Expected keyword '" + id + "', found " + found);
 		}
 	}
 
@@ -41,7 +58,11 @@ namespace OptiScan::Parser::A2l
 	{
 		if (!this->tryMatchToken(kind))
 		{
-			throw FormatException("A2lTokenReader: Token mismatch '" + to_string(static_cast<int>(kind)) +"'");
+			string const found = this->hasToken()
+				? A2lTokenReader::tokenKindToText(this->token()._kind)
+				: string("no token");
+			this->throwFormatError("A2lTokenReader::matchToken",
+				"Expected " + A2lTokenReader::tokenKindToText(kind) + ", found " + found);
 		}
 	}
 
@@ -49,9 +70,34 @@ namespace OptiScan::Parser::A2l
 	{
 		if (oneTimeKeywords.find(keyword) != oneTimeKeywords.end())
 		{
-			throw FormatException("A2lTokenReader: Keyword already encountered");
+			throw FormatException("A2lTokenReader: Keyword '" + keyword + "' already encountered");
 		}
 		oneTimeKeywords.insert(keyword);
+	}
+
+	void A2lTokenReader::parseBlockBegin(const string & keyword)
+	{
+		this->matchToken(A2lTokenKind::EscapeBegin);
+		this->readNextToken();
+		this->matchKeyword(keyword);
+		this->readNextToken();
+	}
+
+	void A2lTokenReader::parseBlockBeginAny(string & keyword)
+	{
+		this->matchToken(A2lTokenKind::EscapeBegin);
+		this->readNextToken();
+		this->matchToken(A2lTokenKind::Identifier);
+		keyword = this->token()._text;
+		this->readNextToken();
+	}
+
+	void A2lTokenReader::parseBlockEnd(const string & keyword)
+	{
+		this->matchToken(A2lTokenKind::EscapeEnd);
+		this->readNextToken();
+		this->matchKeyword(keyword);
+		this->readNextToken();
 	}
 
 	void A2lTokenReader::parseFloat64(double & value)
@@ -63,7 +109,7 @@ namespace OptiScan::Parser::A2l
 		}
 		else
 		{
-			throw FormatException("A2lTokenReader: Float literal or integer literal expected");
+			this->throwFormatError("A2lTokenReader::parseFloat64", "Float literal or integer literal expected");
 		}
 	}
 
@@ -73,7 +119,7 @@ namespace OptiScan::Parser::A2l
 		this->parseInt64(tmp);
 		if (tmp < INT16_MIN || INT16_MAX < tmp)
 		{
-			throw FormatException("A2lTokenReader: Int16 out of range");
+			this->throwFormatError("A2lTokenReader::parseInt16", "Int16 out of range");
 		}
 		value = static_cast<int16_t>(tmp);
 	}
@@ -84,7 +130,7 @@ namespace OptiScan::Parser::A2l
 		this->parseInt64(tmp);
 		if (tmp < INT32_MIN || INT32_MAX < tmp)
 		{
-			throw FormatException("A2lTokenReader: Int32 out of range");
+			this->throwFormatError("A2lTokenReader::parseInt32", "Int32 out of range");
 		}
 		value = static_cast<int32_t>(tmp);
 	}
@@ -96,7 +142,7 @@ namespace OptiScan::Parser::A2l
 			uint64_t tmp = TokenReaderUtils::literalHexIntegerTokenTextToUInt64(this->token()._text);
 			if (INT64_MAX < tmp)
 			{
-				throw FormatException("A2lTokenReader: Hex literal is not int64");
+				this->throwFormatError("A2lTokenReader::parseInt64", "Hex literal is not int64");
 			}
 			value = static_cast<int64_t>(tmp);
 		}
@@ -106,7 +152,7 @@ namespace OptiScan::Parser::A2l
 		}
 		else
 		{
-			throw FormatException("A2lTokenReader: Hex literal or integer literal expected");
+			this->throwFormatError("A2lTokenReader::parseInt64", "Hex literal or integer literal expected");
 		}
 		this->readNextToken();
 	}
@@ -125,7 +171,7 @@ namespace OptiScan::Parser::A2l
 		this->parseUInt64(tmp);
 		if (UINT8_MAX < tmp)
 		{
-			throw FormatException("A2lTokenReader: UInt8 literal is not uint8");
+			this->throwFormatError("A2lTokenReader::parseUInt8", "Literal is not uint8");
 		}
 		value = static_cast<uint8_t>(tmp);
 	}
@@ -136,7 +182,7 @@ namespace OptiScan::Parser::A2l
 		this->parseUInt64(tmp);
 		if (UINT16_MAX < tmp)
 		{
-			throw FormatException("A2lTokenReader: UInt16 literal is not uint16");
+			this->throwFormatError("A2lTokenReader::parseUInt16", "Literal is not uint16");
 		}
 		value = static_cast<uint16_t>(tmp);
 	}
@@ -147,7 +193,7 @@ namespace OptiScan::Parser::A2l
 		this->parseUInt64(tmp);
 		if (UINT32_MAX < tmp)
 		{
-			throw FormatException("A2lTokenReader: UInt32 literal is not uint32");
+			this->throwFormatError("A2lTokenReader::parseUInt32", "Literal is not uint32");
 		}
 		value = static_cast<uint32_t>(tmp);
 	}
@@ -164,20 +210,83 @@ namespace OptiScan::Parser::A2l
 		}
 		else
 		{
-			throw FormatException("A2lTokenReader: Hex literal or integer literal expected");
+			this->throwFormatError("A2lTokenReader::parseUInt64", "Hex literal or integer literal expected");
 		}
 		this->readNextToken();
+	}
+
+	void A2lTokenReader::parseUnknownBlock()
+	{
+		string keyword;
+		this->parseBlockBeginAny(keyword);
+		this->parseUnknownBlockContent();
+		this->parseBlockEnd(keyword);
+	}
+
+	void A2lTokenReader::parseUnknownBlockContent()
+	{
+		vector<A2lTokenKind> blockStack;
+		blockStack.reserve(A2lTokenReader::UnknownBlockStackReserve);
+		while (!blockStack.empty() || !this->tryMatchToken(A2lTokenKind::EscapeEnd))
+		{
+			bool isMatchRequired = false;
+			switch (this->token()._kind)
+			{
+			case A2lTokenKind::EscapeBegin:
+				blockStack.push_back(A2lTokenKind::EscapeEnd);
+				break;
+			case A2lTokenKind::LeftCurlyBracket:
+				blockStack.push_back(A2lTokenKind::RightCurlyBracket);
+				break;
+			case A2lTokenKind::LeftParenthesis:
+				blockStack.push_back(A2lTokenKind::RightParenthesis);
+				break;
+			case A2lTokenKind::LeftSquareBracket:
+				blockStack.push_back(A2lTokenKind::RightSquareBracket);
+				break;
+			case A2lTokenKind::EscapeEnd:
+			case A2lTokenKind::RightCurlyBracket:
+			case A2lTokenKind::RightParenthesis:
+			case A2lTokenKind::RightSquareBracket:
+				isMatchRequired = true;
+				break;
+			case A2lTokenKind::None:
+				this->throwFormatError("A2lTokenReader::parseUnknownBlockContent",
+					"Unexpected end of file inside a block");
+			default:
+				break;
+			}
+			if (isMatchRequired)
+			{
+				if (blockStack.empty())
+				{
+					this->throwFormatError("A2lTokenReader::parseUnknownBlockContent",
+						"Missing block open token for " + A2lTokenReader::tokenKindToText(this->token()._kind));
+				}
+				else if (this->token()._kind != blockStack.back())
+				{
+					this->throwFormatError("A2lTokenReader::parseUnknownBlockContent",
+						"Expected " + A2lTokenReader::tokenKindToText(blockStack.back())
+						+ ", found " + A2lTokenReader::tokenKindToText(this->token()._kind));
+				}
+				else
+				{
+					blockStack.pop_back();
+				}
+			}
+			this->readNextToken();
+		}
 	}
 
 	void A2lTokenReader::readNextToken()
 	{
 		if (this->_tokenStackCount == -1)
 		{
-			if (0 < this->_tokenStack.size())
+			if (!this->_tokenStack.empty())
 			{
-				this->_tokenStack.erase(this->_tokenStack.begin());
+				this->_tokenStack.pop_front();
 			}
-			if (0 == this->_tokenStack.size())
+			if (this->_tokenStack.empty())
 			{
 				this->_scanner.scanNext();
 				this->_tokenStack.push_back(this->_scanner.token());
@@ -185,7 +294,7 @@ namespace OptiScan::Parser::A2l
 		}
 		else
 		{
-			if (this->_tokenStack.size() <= this->_tokenStackCount)
+			if (this->tokenStackSize() <= this->_tokenStackCount)
 			{
 				this->_scanner.scanNext();
 				this->_tokenStack.push_back(this->_scanner.token());
@@ -197,6 +306,18 @@ namespace OptiScan::Parser::A2l
 	const A2lScanner & A2lTokenReader::scanner() const
 	{
 		return this->_scanner;
+	}
+
+	void A2lTokenReader::throwFormatError(const string & context, const string & message) const
+	{
+		string position;
+		if (this->hasToken())
+		{
+			const ScanPosition & tokenPosition = this->token()._position;
+			position = " (line " + to_string(tokenPosition._line)
+				+ ", column " + to_string(tokenPosition._charInLine) + ")";
+		}
+		throw FormatException(context + position + ": " + message);
 	}
 
 	const A2lToken & A2lTokenReader::token() const
@@ -217,7 +338,79 @@ namespace OptiScan::Parser::A2l
 		return *result;
 	}
 
-	const vector<A2lToken> & A2lTokenReader::tokenStack() const
+	string A2lTokenReader::tokenKindToText(A2lTokenKind kind)
+	{
+		string result;
+		switch (kind)
+		{
+		case A2lTokenKind::None:
+			result = "end of file";
+			break;
+		case A2lTokenKind::Asterisk:
+			result = "'*'";
+			break;
+		case A2lTokenKind::Comma:
+			result = "','";
+			break;
+		case A2lTokenKind::CompatMinus:
+			result = "'-'";
+			break;
+		case A2lTokenKind::Dot:
+			result = "'.'";
+			break;
+		case A2lTokenKind::EqualSign:
+			result = "'='";
+			break;
+		case A2lTokenKind::EscapeBegin:
+			result = "'/begin'";
+			break;
+		case A2lTokenKind::EscapeEnd:
+			result = "'/end'";
+			break;
+		case A2lTokenKind::FloatLiteral:
+			result = "float literal";
+			break;
+		case A2lTokenKind::HexLiteral:
+			result = "hex literal";
+			break;
+		case A2lTokenKind::Identifier:
+			result = "identifier";
+			break;
+		case A2lTokenKind::IntegerLiteral:
+			result = "integer literal";
+			break;
+		case A2lTokenKind::LeftCurlyBracket:
+			result = "'{'";
+			break;
+		case A2lTokenKind::LeftParenthesis:
+			result = "'('";
+			break;
+		case A2lTokenKind::LeftSquareBracket:
+			result = "'['";
+			break;
+		case A2lTokenKind::RightCurlyBracket:
+			result = "'}'";
+			break;
+		case A2lTokenKind::RightParenthesis:
+			result = "')'";
+			break;
+		case A2lTokenKind::RightSquareBracket:
+			result = "']'";
+			break;
+		case A2lTokenKind::Semicolon:
+			result = "';'";
+			break;
+		case A2lTokenKind::StringLiteral:
+			result = "string literal";
+			break;
+		default:
+			result = "unknown token";
+			break;
+		}
+		return result;
+	}
+
+	const deque<A2lToken> & A2lTokenReader::tokenStack() const
 	{
 		return this->_tokenStack;
 	}
@@ -228,7 +421,7 @@ namespace OptiScan::Parser::A2l
 		{
 			throw InvalidOperationException("Token stack begin error: token stack already in use");
 		}
-		if (this->_tokenStack.size() < 1)
+		if (this->_tokenStack.empty())
 		{
 			this->_tokenStackCount = 0;
 		}
@@ -246,7 +439,7 @@ namespace OptiScan::Parser::A2l
 		}
 		for (int64_t i = 0; i < this->_tokenStackCount; i++)
 		{
-			this->_tokenStack.erase(this->_tokenStack.begin());
+			this->_tokenStack.pop_front();
 		}
 		this->_tokenStackCount = -1;
 	}
@@ -263,6 +456,11 @@ namespace OptiScan::Parser::A2l
 			throw InvalidOperationException("Token stack rollback error: no token stack");
 		}
 		this->_tokenStackCount = -1;
+	}
+
+	int64_t A2lTokenReader::tokenStackSize() const
+	{
+		return static_cast<int64_t>(this->_tokenStack.size());
 	}
 
 	bool A2lTokenReader::tryMatchKeyword(const string & id) const
@@ -313,11 +511,10 @@ namespace OptiScan::Parser::A2l
 			this->tokenStackCommit();
 			result = true;
 		}
-		catch (const FormatException & e)
+		catch (const FormatException &)
 		{
 			error = current_exception();
 			this->tokenStackRollback();
-			result = false;
 		}
 		return result;
 	}
@@ -367,7 +564,7 @@ namespace OptiScan::Parser::A2l
 				}
 			}
 		}
-		catch (const exception & e)
+		catch (const exception &)
 		{
 			error = current_exception();
 		}

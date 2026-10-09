@@ -4,6 +4,7 @@
 #include <OptiScan/Parser/FileException.h>
 #include <OptiScan/Parser/TokenReaderUtils.h>
 #include <unordered_set>
+#include <utility>
 
 using namespace std;
 
@@ -21,9 +22,7 @@ namespace OptiScan::Parser::A2l
 		this->parseAsap2Version(a2lDatabase._asap2Version);
 		this->parseA2mlVersion(a2lDatabase._a2mlVersion);
 		this->parseProject(a2lDatabase._project);
-
-		// end of file, do uncomment if all parsing methods available
-		// this->_reader.matchToken(A2lTokenKind::None);
+		this->_reader.matchToken(A2lTokenKind::None);
 	}
 
 	void A2lParser::parseA2mlVersion(optional<McdVersion> & version)
@@ -43,25 +42,9 @@ namespace OptiScan::Parser::A2l
 		this->parseVersion(version);
 	}
 
-	void A2lParser::parseBlockBegin(const string & keyword)
-	{
-		this->_reader.matchToken(A2lTokenKind::EscapeBegin);
-		this->_reader.readNextToken();
-		this->_reader.matchKeyword(keyword);
-		this->_reader.readNextToken();
-	}
-
-	void A2lParser::parseBlockEnd(const string & keyword)
-	{
-		this->_reader.matchToken(A2lTokenKind::EscapeEnd);
-		this->_reader.readNextToken();
-		this->_reader.matchKeyword(keyword);
-		this->_reader.readNextToken();
-	}
-
 	void A2lParser::parseHeader(McdHeader & header)
 	{
-		this->parseBlockBegin(A2lKeyword::Header);
+		this->_reader.parseBlockBegin(A2lKeyword::Header);
 		this->_reader.parseString(header._comment);
 		unordered_set<string> oneTimeKeywords;
 		while (!this->_reader.tryMatchToken(A2lTokenKind::EscapeEnd))
@@ -80,10 +63,10 @@ namespace OptiScan::Parser::A2l
 			}
 			else
 			{
-				throw FormatException("A2lParser::parseHeader: Unknown keyword '" + keyword + "'");
+				this->_reader.throwFormatError("A2lParser::parseHeader", "Unknown keyword '" + keyword + "'");
 			}
 		}
-		this->parseBlockEnd(A2lKeyword::Header);
+		this->_reader.parseBlockEnd(A2lKeyword::Header);
 	}
 
 	void A2lParser::parseIdent(McdIdent & ident)
@@ -120,7 +103,7 @@ namespace OptiScan::Parser::A2l
 			}
 			else
 			{
-				throw FormatException("A2lParser:parseIdentPart: Expected identifier or integer literal");
+				this->_reader.throwFormatError("A2lParser::parseIdentPart", "Expected identifier or integer literal");
 			}
 			this->_reader.readNextToken();
 			this->_reader.matchToken(A2lTokenKind::RightSquareBracket);
@@ -128,23 +111,28 @@ namespace OptiScan::Parser::A2l
 		}
 	}
 
-	void A2lParser::parseModule()
+	void A2lParser::parseModule(McdProject & project)
 	{
-		this->parseBlockBegin(A2lKeyword::Module);
-		// todo: MODULE-Inhalt vollständig parsen (COMPU_METHOD, MEASUREMENT, IF_DATA, ...).
-		//       Bis dahin: Inhalt überspringen, damit der Tokenstrom nicht steckenbleibt.
-		// this->_reader.parseUnknownBlockContent();
-		this->parseBlockEnd(A2lKeyword::Module);
-
+		McdModule module;
+		this->_reader.parseBlockBegin(A2lKeyword::Module);
+		this->parseIdent(module._name);
+		this->_reader.parseString(module._longIdentifier);
+		// M1: the module content is skipped as a whole. Starting with M3 this call is
+		//     replaced step by step by the block loop (MOD_COMMON, COMPU_METHOD,
+		//     MEASUREMENT, IF_DATA, ...).
+		this->_reader.parseUnknownBlockContent();
+		this->_reader.parseBlockEnd(A2lKeyword::Module);
+		project._modules.push_back(std::move(module));
 	}
 
 	void A2lParser::parseProject(McdProject & project)
 	{
-		this->parseBlockBegin(A2lKeyword::Project);
+		this->_reader.parseBlockBegin(A2lKeyword::Project);
 		this->parseIdent(project._name);
 		this->_reader.parseString(project._longIdentifier);
 		string keyword;
 		unordered_set<string> oneTimeKeywords;
+		// HEADER is optional and may be absent entirely.
 		while (this->_reader.tryTokenStackBlockBeginAny(keyword))
 		{
 			if (keyword == A2lKeyword::Header)
@@ -153,13 +141,16 @@ namespace OptiScan::Parser::A2l
 				project._header.emplace();
 				this->parseHeader(*project._header);
 			}
+			else if (keyword == A2lKeyword::Module)
+			{
+				this->parseModule(project);
+			}
 			else
 			{
-				this->parseModule();
+				this->_reader.throwFormatError("A2lParser::parseProject", "Unexpected block '" + keyword + "'");
 			}
 		}
-		this->parseBlockEnd(A2lKeyword::Project);
-
+		this->_reader.parseBlockEnd(A2lKeyword::Project);
 	}
 
 	void A2lParser::parseVersion(McdVersion & version)

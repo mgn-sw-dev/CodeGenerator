@@ -2,6 +2,7 @@
 
 #include <OptiScan/Parser/A2l/McdIdent.h>
 #include <OptiScan/Parser/A2l/McdModule.h>
+#include <cstdint>
 #include <string>
 #include <variant>
 #include <vector>

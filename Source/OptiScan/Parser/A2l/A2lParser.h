@@ -22,17 +22,14 @@ namespace OptiScan::Parser::A2l
         /** @throws FormatException. */
         void parseA2mlVersion(std::optional<McdVersion> & version);
         /** @throws FormatException. */
-        void parseBlockBegin(const std::string & keyword);
-        /** @throws FormatException. */
-        void parseBlockEnd(const std::string & keyword);
-        /** @throws FormatException. */
         void parseHeader(McdHeader & header);
         /** @throws FormatException. */
         void parseIdent(McdIdent & ident);
         /** @throws FormatException. */
         void parseIdentPart(McdIdentPart & part);
-        /** */
-        void parseModule();
+        /** Parse a MODULE block and append it to project.
+         *  @throws FormatException. */
+        void parseModule(McdProject & project);
         /** @throws FormatException. */
         void parseProject(McdProject & project);
         /** @throws FormatException. */
