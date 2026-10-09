@@ -46,7 +46,7 @@ namespace
 		std::cout << "  header:        "
 			<< (database._project._header.has_value() ? "yes" : "no") << std::endl;
 		std::cout << "  modules:       " << database._project._modules.size() << std::endl;
-		for (const McdModule & module : database._project._modules)
+		for (const Mcd::McdModule & module : database._project._modules)
 		{
 			std::cout << "    - " << module._name.toString() << std::endl;
 		}

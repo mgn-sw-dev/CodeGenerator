@@ -5,7 +5,7 @@
 #include <variant>
 #include <vector>
 
-namespace OptiScan::Parser::A2l
+namespace OptiScan::Parser::A2l::Mcd
 {
     using McdArrayIndex = std::variant<int64_t, std::string>;
 
@@ -30,6 +30,5 @@ namespace OptiScan::Parser::A2l
         std::string toString() const;
         /** */
         bool operator == (const McdIdent & other) const;
-
     };
 }

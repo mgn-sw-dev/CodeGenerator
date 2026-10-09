@@ -1,42 +1,18 @@
 #pragma once
 
-#include <OptiScan/Parser/A2l/McdIdent.h>
-#include <OptiScan/Parser/A2l/McdModule.h>
-#include <cstdint>
-#include <string>
-#include <variant>
-#include <vector>
+#include <OptiScan/Parser/A2l/Mcd/McdProject.h>
+#include <OptiScan/Parser/A2l/Mcd/McdVersion.h>
 #include <optional>
 
 namespace OptiScan::Parser::A2l
 {
-	struct McdHeader
-	{
-		std::string _comment;
-		McdIdent _projectNo;
-		std::string _version;
-	};
-
-	struct McdProject
-	{
-		std::optional<McdHeader> _header;
-		std::string _longIdentifier;
-		std::vector<McdModule> _modules;
-		McdIdent _name;
-	};
-
-	struct McdVersion
-	{
-		uint16_t _upgradeNo = 0;
-		uint16_t _versionNo = 0;
-	};
-
-
+	/** Move only, because Mcd::McdProject is move only. */
 	class A2lDatabase
 	{
 	public:
-		std::optional<McdVersion> _a2mlVersion;
-		McdVersion _asap2Version;
-		McdProject _project;
+		std::optional<Mcd::McdVersion> _a2mlVersion;
+		Mcd::McdVersion _asap2Version;
+		Mcd::McdProject _project;
 	};
+
 }

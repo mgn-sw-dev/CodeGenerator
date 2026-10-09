@@ -9,8 +9,18 @@ target_link_libraries(OptiScanParser PUBLIC
 target_include_directories(OptiScanParser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../..)
 
 set(OptiScanParser_SOURCES
+    A2l/Mcd/McdEnums.h
+    A2l/Mcd/McdHeader.h
+    A2l/Mcd/McdIdent.cpp
+    A2l/Mcd/McdIdent.h
+    A2l/Mcd/McdIfData.h
+    A2l/Mcd/McdModule.cpp
+    A2l/Mcd/McdModule.h
+    A2l/Mcd/McdProject.h
+    A2l/Mcd/McdVersion.h
     A2l/A2lDatabase.h
     A2l/A2lKeyword.h
+    A2l/A2lOptions.h
     A2l/A2lParser.cpp
     A2l/A2lParser.h
     A2l/A2lScanner.cpp
@@ -18,10 +28,6 @@ set(OptiScanParser_SOURCES
     A2l/A2lTokenReader.cpp
     A2l/A2lTokenReader.h
     A2l/A2lTokenReader.inl.h
-    A2l/McdIdent.cpp
-    A2l/McdIdent.h
-    A2l/McdModule.cpp
-    A2l/McdModule.h
     Dbc/DbcAttribute.h
     Dbc/DbcBitTiming.cpp
     Dbc/DbcBitTiming.h

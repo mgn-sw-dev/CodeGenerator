@@ -1,9 +1,9 @@
 
-#include <OptiScan/Parser/A2l/McdIdent.h>
+#include <OptiScan/Parser/A2l/Mcd/McdIdent.h>
 
 using namespace std;
 
-namespace OptiScan::Parser::A2l
+namespace OptiScan::Parser::A2l::Mcd
 {
 	McdIdent::McdIdent(const vector<McdIdentPart> & parts)
 		: _parts(parts)

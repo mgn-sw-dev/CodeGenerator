@@ -67,6 +67,8 @@ namespace OptiScan::Parser::A2l
         void readNextToken();
         /** */
         const A2lScanner & scanner() const;
+        /** Forwarded to the scanner. Call before reading the first token. */
+        void setCompatStyles(const A2lScannerCompatStyles & compatStyles);
         /** Build a message with the current token position and throw a FormatException.
          *  @param context: "Class::method" of the caller.
          *  @throws FormatException. */

@@ -6,18 +6,26 @@
 #include <unordered_set>
 #include <utility>
 
+using namespace OptiScan::Parser::A2l::Mcd;
 using namespace std;
 
 namespace OptiScan::Parser::A2l
 {
 	A2lParser::A2lParser(std::istream * input)
-		: _reader(input)
+		: _options()
+		, _reader(input)
 	{
+	}
+
+	void A2lParser::getOptions(A2lOptions & options) const
+	{
+		options = this->_options;
 	}
 
 	void A2lParser::parse(A2lDatabase & a2lDatabase)
 	{
 		a2lDatabase = A2lDatabase();
+		this->_reader.setCompatStyles(this->_options._compatStyles);
 		this->_reader.readNextToken();
 		this->parseAsap2Version(a2lDatabase._asap2Version);
 		this->parseA2mlVersion(a2lDatabase._a2mlVersion);
@@ -117,7 +125,7 @@ namespace OptiScan::Parser::A2l
 		this->_reader.parseBlockBegin(A2lKeyword::Module);
 		this->parseIdent(module._name);
 		this->_reader.parseString(module._longIdentifier);
-		// M1: the module content is skipped as a whole. Starting with M3 this call is
+		// M2: the module content is skipped as a whole. Starting with M3 this call is
 		//     replaced step by step by the block loop (MOD_COMMON, COMPU_METHOD,
 		//     MEASUREMENT, IF_DATA, ...).
 		this->_reader.parseUnknownBlockContent();
@@ -157,5 +165,10 @@ namespace OptiScan::Parser::A2l
 	{
 		this->_reader.parseUInt16(version._versionNo);
 		this->_reader.parseUInt16(version._upgradeNo);
+	}
+
+	void A2lParser::setOptions(const A2lOptions & options)
+	{
+		this->_options = options;
 	}
 }

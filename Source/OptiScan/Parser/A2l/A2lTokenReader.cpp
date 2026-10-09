@@ -308,6 +308,11 @@ namespace OptiScan::Parser::A2l
 		return this->_scanner;
 	}
 
+	void A2lTokenReader::setCompatStyles(const A2lScannerCompatStyles & compatStyles)
+	{
+		this->_scanner.setCompatStyles(compatStyles);
+	}
+
 	void A2lTokenReader::throwFormatError(const string & context, const string & message) const
 	{
 		string position;

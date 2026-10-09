@@ -1,8 +1,7 @@
 
+#include <OptiScan/Parser/A2l/Mcd/McdModule.h>
 
-#include <OptiScan/Parser/A2l/McdModule.h>
-
-namespace OptiScan::Parser::A2l
+namespace OptiScan::Parser::A2l::Mcd
 {
 	McdModuleCommon::McdModuleCommon()
 		: _alignmentByte(1)
