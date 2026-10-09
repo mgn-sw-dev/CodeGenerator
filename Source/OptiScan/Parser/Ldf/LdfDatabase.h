@@ -2,6 +2,7 @@
 
 #include <OptiScan/Parser/Ldf/LinSignal.h>
 #include <OptiScan/Parser/Ldf/LinSignalEncodingType.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <variant>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OptiScan/Parser/Ldf/LdfScanner.h>
+#include <cstdint>
 #include <istream>
 
 namespace OptiScan::Parser::Ldf

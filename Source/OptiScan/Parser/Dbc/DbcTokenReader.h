@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OptiScan/Parser/Dbc/DbcScanner.h>
+#include <cstdint>
 #include <istream>
 
 namespace OptiScan::Parser::Dbc

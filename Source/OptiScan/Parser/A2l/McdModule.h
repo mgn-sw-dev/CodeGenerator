@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OptiScan/Parser/A2l/McdIdent.h>
+#include <cstdint>
 #include <string>
 #include <variant>
 #include <vector>

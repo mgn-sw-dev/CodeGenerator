@@ -2,6 +2,7 @@
 
 #include <OptiScan/Parser/Dbc/DbcValue.h>
 #include <OptiScan/Parser/Flags.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 

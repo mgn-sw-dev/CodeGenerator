@@ -3,7 +3,9 @@
 #include <OptiScan/Parser/Ldf/LdfDatabase.h>
 #include <OptiScan/Parser/Ldf/LdfModes.h>
 #include <OptiScan/Parser/Ldf/LdfTokenReader.h>
+#include <cstdint>
 #include <fstream>
+#include <utility>
 
 namespace OptiScan::Parser::Ldf
 {

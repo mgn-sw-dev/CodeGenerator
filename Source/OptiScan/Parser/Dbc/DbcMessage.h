@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OptiScan/Parser/Dbc/DbcSignal.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 
