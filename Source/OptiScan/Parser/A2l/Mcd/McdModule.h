@@ -1,8 +1,10 @@
 #pragma once
 
+#include <OptiScan/Parser/A2l/Mcd/McdCompuMethod.h>
 #include <OptiScan/Parser/A2l/Mcd/McdEnums.h>
 #include <OptiScan/Parser/A2l/Mcd/McdIdent.h>
 #include <OptiScan/Parser/A2l/Mcd/McdIfData.h>
+#include <OptiScan/Parser/A2l/Mcd/McdModuleParameters.h>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -30,15 +32,15 @@ namespace OptiScan::Parser::A2l::Mcd
     struct McdModule 
     {
         McdModuleCommon _common;
-        // M3: std::vector<McdCompuMethod> _compuMethods;
-        // M3: std::vector<McdCompuTab> _compuTabs;
-        // M3: std::vector<McdCompuVTabRange> _compuVTabRanges;
-        // M3: std::vector<McdCompuVTab> _compuVTabs;
+        std::vector<McdCompuMethod> _compuMethods;
+        std::vector<McdCompuTab> _compuTabs;
+        std::vector<McdCompuVTabRange> _compuVTabRanges;
+        std::vector<McdCompuVTab> _compuVTabs;
         std::vector<McdIfDataPtr> _ifDatas;
         std::string _longIdentifier;
         // M4: std::vector<McdMeasurement> _measurements;
         McdIdent _name;
-        // M3: McdModuleParameters _parameters;
+        McdModuleParameters _parameters;
     };
 
 }

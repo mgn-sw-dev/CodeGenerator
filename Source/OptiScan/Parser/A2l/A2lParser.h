@@ -29,12 +29,26 @@ namespace OptiScan::Parser::A2l
         /** @throws FormatException. */
         void parseA2mlVersion(std::optional<Mcd::McdVersion> & version);
         /** @throws FormatException. */
+        void parseCompuMethod(Mcd::McdModule & module);
+        /** @throws FormatException. */
+        void parseCompuTab(Mcd::McdModule & module);
+        /** @throws FormatException. */
+        void parseCompuVTab(Mcd::McdModule & module);
+        /** @throws FormatException. */
+        void parseCompuVTabRange(Mcd::McdModule & module);
+        /** FORMULA block inside a COMPU_METHOD. @throws FormatException. */
+        void parseFormula(std::optional<Mcd::McdFormula> & formula);
+        /** @throws FormatException. */
         void parseHeader(Mcd::McdHeader & header);
         /** @throws FormatException. */
         void parseIdent(Mcd::McdIdent & ident);
         /** @throws FormatException. */
         void parseIdentPart(Mcd::McdIdentPart & part);
-        /** Parse a MODULE block and append it to project.
+        /** @throws FormatException. */
+        void parseModCommon(Mcd::McdModuleCommon & common);
+        /** @throws FormatException. */
+        void parseModPar(Mcd::McdModuleParameters & parameters);
+        /** Parse a MODULE block and append it to @p project.
          *  @throws FormatException. */
         void parseModule(Mcd::McdProject & project);
         /** @throws FormatException. */

@@ -50,6 +50,168 @@ namespace OptiScan::Parser::A2l
 		this->parseVersion(version);
 	}
 
+	void A2lParser::parseCompuMethod(McdModule & module)
+	{
+		McdCompuMethod method;
+		this->_reader.parseBlockBegin(A2lKeyword::CompuMethod);
+		this->parseIdent(method._name);
+		this->_reader.parseString(method._longIdentifier);
+		this->_reader.parseEnumValue(McdEnumText::ConversionType, "conversion type", method._conversionType);
+		this->_reader.parseString(method._format);
+		this->_reader.parseString(method._physicalUnit);
+		unordered_set<string> oneTimeKeywords;
+		while (!this->_reader.tryMatchToken(A2lTokenKind::EscapeEnd))
+		{
+			if (this->_reader.tryMatchToken(A2lTokenKind::Identifier))
+			{
+				string const keyword = this->_reader.token()._text;
+				A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+				this->_reader.readNextToken();
+				if (keyword == A2lKeyword::Coeffs)
+				{
+					McdCoeffs tmp;
+					this->_reader.parseFloat64(tmp._a);
+					this->_reader.parseFloat64(tmp._b);
+					this->_reader.parseFloat64(tmp._c);
+					this->_reader.parseFloat64(tmp._d);
+					this->_reader.parseFloat64(tmp._e);
+					this->_reader.parseFloat64(tmp._f);
+					method._coeffs = tmp;
+				}
+				else if (keyword == A2lKeyword::CoeffsLinear)
+				{
+					McdCoeffsLinear tmp;
+					this->_reader.parseFloat64(tmp._a);
+					this->_reader.parseFloat64(tmp._b);
+					method._coeffsLinear = tmp;
+				}
+				else if (keyword == A2lKeyword::CompuTabRef)
+				{
+					this->parseIdent(method._compuTabRef);
+				}
+				else if (keyword == A2lKeyword::RefUnit)
+				{
+					this->parseIdent(method._refUnit);
+				}
+				else if (keyword == A2lKeyword::StatusStringRef)
+				{
+					this->parseIdent(method._statusStringRef);
+				}
+				else
+				{
+					this->_reader.throwFormatError("A2lParser::parseCompuMethod", "Unknown keyword '" + keyword + "'");
+				}
+			}
+			else
+			{
+				A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, A2lKeyword::Formula);
+				this->parseFormula(method._formula);
+			}
+		}
+		this->_reader.parseBlockEnd(A2lKeyword::CompuMethod);
+		module._compuMethods.push_back(std::move(method));
+	}
+
+	void A2lParser::parseCompuTab(McdModule & module)
+	{
+		McdCompuTab tab;
+		this->_reader.parseBlockBegin(A2lKeyword::CompuTab);
+		this->parseIdent(tab._name);
+		this->_reader.parseString(tab._longIdentifier);
+		this->_reader.parseEnumValue(McdEnumText::ConversionType, "conversion type", tab._conversionType);
+		uint16_t count = 0;
+		this->_reader.parseUInt16(count);
+		tab._valuePairs.reserve(count);
+		for (uint16_t i = 0; i < count; i++)
+		{
+			tuple<double, double> pair;
+			this->_reader.parseFloat64(get<0>(pair));
+			this->_reader.parseFloat64(get<1>(pair));
+			tab._valuePairs.push_back(pair);
+		}
+		if (this->_reader.tryMatchKeyword(A2lKeyword::DefaultValue))
+		{
+			this->_reader.readNextToken();
+			string tmp;
+			this->_reader.parseString(tmp);
+			tab._defaultValue = tmp;
+		}
+		else if (this->_reader.tryMatchKeyword(A2lKeyword::DefaultValueNumeric))
+		{
+			this->_reader.readNextToken();
+			double tmp = 0.0;
+			this->_reader.parseFloat64(tmp);
+			tab._defaultValue = tmp;
+		}
+		this->_reader.parseBlockEnd(A2lKeyword::CompuTab);
+		module._compuTabs.push_back(std::move(tab));
+	}
+
+	void A2lParser::parseCompuVTab(McdModule & module)
+	{
+		McdCompuVTab tab;
+		this->_reader.parseBlockBegin(A2lKeyword::CompuVTab);
+		this->parseIdent(tab._name);
+		this->_reader.parseString(tab._longIdentifier);
+		this->_reader.parseEnumValue(McdEnumText::ConversionType, "conversion type", tab._conversionType);
+		uint16_t count = 0;
+		this->_reader.parseUInt16(count);
+		tab._valuePairs.reserve(count);
+		for (uint16_t i = 0; i < count; i++)
+		{
+			tuple<double, string> pair;
+			this->_reader.parseFloat64(get<0>(pair));
+			this->_reader.parseString(get<1>(pair));
+			tab._valuePairs.push_back(pair);
+		}
+		if (this->_reader.tryMatchKeyword(A2lKeyword::DefaultValue))
+		{
+			this->_reader.readNextToken();
+			this->_reader.parseString(tab._defaultValue);
+		}
+		this->_reader.parseBlockEnd(A2lKeyword::CompuVTab);
+		module._compuVTabs.push_back(std::move(tab));
+	}
+
+	void A2lParser::parseCompuVTabRange(McdModule & module)
+	{
+		McdCompuVTabRange tab;
+		this->_reader.parseBlockBegin(A2lKeyword::CompuVTabRange);
+		this->parseIdent(tab._name);
+		this->_reader.parseString(tab._longIdentifier);
+		uint16_t count = 0;
+		this->_reader.parseUInt16(count);
+		tab._valueTriples.reserve(count);
+		for (uint16_t i = 0; i < count; i++)
+		{
+			tuple<double, double, string> triple;
+			this->_reader.parseFloat64(get<0>(triple));
+			this->_reader.parseFloat64(get<1>(triple));
+			this->_reader.parseString(get<2>(triple));
+			tab._valueTriples.push_back(triple);
+		}
+		if (this->_reader.tryMatchKeyword(A2lKeyword::DefaultValue))
+		{
+			this->_reader.readNextToken();
+			this->_reader.parseString(tab._defaultValue);
+		}
+		this->_reader.parseBlockEnd(A2lKeyword::CompuVTabRange);
+		module._compuVTabRanges.push_back(std::move(tab));
+	}
+
+	void A2lParser::parseFormula(optional<McdFormula> & formula)
+	{
+		McdFormula tmp;
+		this->_reader.parseBlockBegin(A2lKeyword::Formula);
+		this->_reader.parseString(tmp._f);
+		if (this->_reader.tryMatchToken(A2lTokenKind::StringLiteral))
+		{
+			this->_reader.parseString(tmp._g);
+		}
+		this->_reader.parseBlockEnd(A2lKeyword::Formula);
+		formula = std::move(tmp);
+	}
+
 	void A2lParser::parseHeader(McdHeader & header)
 	{
 		this->_reader.parseBlockBegin(A2lKeyword::Header);
@@ -119,16 +281,212 @@ namespace OptiScan::Parser::A2l
 		}
 	}
 
+	void A2lParser::parseModCommon(McdModuleCommon & common)
+	{
+		this->_reader.parseBlockBegin(A2lKeyword::ModCommon);
+		this->_reader.parseString(common._comment);
+		unordered_set<string> oneTimeKeywords;
+		while (this->_reader.tryMatchToken(A2lTokenKind::Identifier))
+		{
+			string const keyword = this->_reader.token()._text;
+			A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+			this->_reader.readNextToken();
+			if (keyword == A2lKeyword::AlignmentByte)
+			{
+				this->_reader.parseUInt16(common._alignmentByte);
+			}
+			else if (keyword == A2lKeyword::AlignmentFloat16Ieee)
+			{
+				this->_reader.parseUInt16(common._alignmentFloat16Ieee);
+			}
+			else if (keyword == A2lKeyword::AlignmentFloat32Ieee)
+			{
+				this->_reader.parseUInt16(common._alignmentFloat32Ieee);
+			}
+			else if (keyword == A2lKeyword::AlignmentFloat64Ieee)
+			{
+				this->_reader.parseUInt16(common._alignmentFloat64Ieee);
+			}
+			else if (keyword == A2lKeyword::AlignmentInt64)
+			{
+				this->_reader.parseUInt16(common._alignmentInt64);
+			}
+			else if (keyword == A2lKeyword::AlignmentLong)
+			{
+				this->_reader.parseUInt16(common._alignmentLong);
+			}
+			else if (keyword == A2lKeyword::AlignmentWord)
+			{
+				this->_reader.parseUInt16(common._alignmentWord);
+			}
+			else if (keyword == A2lKeyword::ByteOrder)
+			{
+				this->_reader.parseEnumValue(McdEnumText::ByteOrder, "byte order", common._byteOrder);
+			}
+			else if (keyword == A2lKeyword::DataSize)
+			{
+				this->_reader.parseUInt16(common._dataSize);
+			}
+			else if (keyword == A2lKeyword::Deposit)
+			{
+				this->_reader.parseEnumValue(McdEnumText::Deposit, "deposit", common._deposit);
+			}
+			else
+			{
+				this->_reader.throwFormatError("A2lParser::parseModCommon", "Unknown keyword '" + keyword + "'");
+			}
+		}
+		this->_reader.parseBlockEnd(A2lKeyword::ModCommon);
+	}
+
+	void A2lParser::parseModPar(McdModuleParameters & parameters)
+	{
+		this->_reader.parseBlockBegin(A2lKeyword::ModPar);
+		this->_reader.parseString(parameters._comment);
+		unordered_set<string> oneTimeKeywords;
+		while (!this->_reader.tryMatchToken(A2lTokenKind::EscapeEnd))
+		{
+			if (this->_reader.tryMatchToken(A2lTokenKind::Identifier))
+			{
+				string const keyword = this->_reader.token()._text;
+				this->_reader.readNextToken();
+				// ADDR_EPK and SYSTEM_CONSTANT may occur more than once.
+				if (keyword == A2lKeyword::AddrEpk)
+				{
+					uint32_t tmp = 0;
+					this->_reader.parseUInt32(tmp);
+					parameters._addrEpks.push_back(tmp);
+				}
+				else if (keyword == A2lKeyword::SystemConstant)
+				{
+					McdSystemConstant tmp;
+					this->_reader.parseString(tmp._name);
+					this->_reader.parseString(tmp._value);
+					parameters._systemConstants.push_back(std::move(tmp));
+				}
+				else if (keyword == A2lKeyword::CpuType)
+				{
+					A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+					this->_reader.parseString(parameters._cpuType);
+				}
+				else if (keyword == A2lKeyword::Customer)
+				{
+					A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+					this->_reader.parseString(parameters._customer);
+				}
+				else if (keyword == A2lKeyword::CustomerNo)
+				{
+					A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+					this->_reader.parseString(parameters._customerNumber);
+				}
+				else if (keyword == A2lKeyword::Ecu)
+				{
+					A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+					this->_reader.parseString(parameters._ecu);
+				}
+				else if (keyword == A2lKeyword::EcuCalibrationOffset)
+				{
+					A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+					this->_reader.parseInt32(parameters._ecuCalibrationOffset);
+				}
+				else if (keyword == A2lKeyword::Epk)
+				{
+					A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+					this->_reader.parseString(parameters._epk);
+				}
+				else if (keyword == A2lKeyword::NoOfInterfaces)
+				{
+					A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+					this->_reader.parseUInt16(parameters._numberOfInterfaces);
+				}
+				else if (keyword == A2lKeyword::PhoneNo)
+				{
+					A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+					this->_reader.parseString(parameters._phoneNumber);
+				}
+				else if (keyword == A2lKeyword::Supplier)
+				{
+					A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+					this->_reader.parseString(parameters._supplier);
+				}
+				else if (keyword == A2lKeyword::User)
+				{
+					A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+					this->_reader.parseString(parameters._user);
+				}
+				else if (keyword == A2lKeyword::Version)
+				{
+					A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+					this->_reader.parseString(parameters._version);
+				}
+				else
+				{
+					this->_reader.throwFormatError("A2lParser::parseModPar", "Unknown keyword '" + keyword + "'");
+				}
+			}
+			else
+			{
+				// CALIBRATION_METHOD, MEMORY_LAYOUT, MEMORY_SEGMENT and anything else
+				// are not part of the parsed scope.
+				this->_reader.parseUnknownBlock();
+			}
+		}
+		this->_reader.parseBlockEnd(A2lKeyword::ModPar);
+	}
+
 	void A2lParser::parseModule(McdProject & project)
 	{
 		McdModule module;
 		this->_reader.parseBlockBegin(A2lKeyword::Module);
 		this->parseIdent(module._name);
 		this->_reader.parseString(module._longIdentifier);
-		// M2: the module content is skipped as a whole. Starting with M3 this call is
-		//     replaced step by step by the block loop (MOD_COMMON, COMPU_METHOD,
-		//     MEASUREMENT, IF_DATA, ...).
-		this->_reader.parseUnknownBlockContent();
+		unordered_set<string> oneTimeKeywords;
+		string keyword;
+		while (this->_reader.tryTokenStackBlockBeginAny(keyword))
+		{
+			if (keyword == A2lKeyword::A2ml)
+			{
+				A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+				this->_reader.parseUnknownBlock();
+			}
+			else if (keyword == A2lKeyword::CompuMethod)
+			{
+				this->parseCompuMethod(module);
+			}
+			else if (keyword == A2lKeyword::CompuTab)
+			{
+				this->parseCompuTab(module);
+			}
+			else if (keyword == A2lKeyword::CompuVTab)
+			{
+				this->parseCompuVTab(module);
+			}
+			else if (keyword == A2lKeyword::CompuVTabRange)
+			{
+				this->parseCompuVTabRange(module);
+			}
+			else if (keyword == A2lKeyword::ModCommon)
+			{
+				A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+				this->parseModCommon(module._common);
+			}
+			else if (keyword == A2lKeyword::ModPar)
+			{
+				A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+				this->parseModPar(module._parameters);
+			}
+			else if (keyword == A2lKeyword::VariantCoding)
+			{
+				A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+				this->_reader.parseUnknownBlock();
+			}
+			else
+			{
+				// M4: MEASUREMENT, M5: IF_DATA. Everything else stays out of scope
+				// (CHARACTERISTIC, RECORD_LAYOUT, AXIS_PTS, FUNCTION, GROUP, ...).
+				this->_reader.parseUnknownBlock();
+			}
+		}
 		this->_reader.parseBlockEnd(A2lKeyword::Module);
 		project._modules.push_back(std::move(module));
 	}

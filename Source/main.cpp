@@ -49,6 +49,14 @@ namespace
 		for (const Mcd::McdModule & module : database._project._modules)
 		{
 			std::cout << "    - " << module._name.toString() << std::endl;
+			std::cout << "      modCommon comment:  \"" << module._common._comment << "\"" << std::endl;
+			std::cout << "      modPar epk:         \"" << module._parameters._epk << "\"" << std::endl;
+			std::cout << "      modPar addrEpks:    " << module._parameters._addrEpks.size() << std::endl;
+			std::cout << "      modPar sysConsts:   " << module._parameters._systemConstants.size() << std::endl;
+			std::cout << "      compuMethods:       " << module._compuMethods.size() << std::endl;
+			std::cout << "      compuTabs:          " << module._compuTabs.size() << std::endl;
+			std::cout << "      compuVTabs:         " << module._compuVTabs.size() << std::endl;
+			std::cout << "      compuVTabRanges:    " << module._compuVTabRanges.size() << std::endl;
 		}
 		std::cout << "  duration:      " << duration_ms << " ms" << std::endl;
 		return true;

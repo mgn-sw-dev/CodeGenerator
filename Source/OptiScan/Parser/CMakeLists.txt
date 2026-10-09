@@ -9,6 +9,8 @@ target_link_libraries(OptiScanParser PUBLIC
 target_include_directories(OptiScanParser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../..)
 
 set(OptiScanParser_SOURCES
+    A2l/Mcd/McdCompuMethod.cpp
+    A2l/Mcd/McdCompuMethod.h
     A2l/Mcd/McdEnums.h
     A2l/Mcd/McdHeader.h
     A2l/Mcd/McdIdent.cpp
@@ -16,6 +18,8 @@ set(OptiScanParser_SOURCES
     A2l/Mcd/McdIfData.h
     A2l/Mcd/McdModule.cpp
     A2l/Mcd/McdModule.h
+    A2l/Mcd/McdModuleParameters.cpp
+    A2l/Mcd/McdModuleParameters.h
     A2l/Mcd/McdProject.h
     A2l/Mcd/McdVersion.h
     A2l/A2lDatabase.h
