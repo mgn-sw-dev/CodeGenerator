@@ -1,9 +1,11 @@
 #include <OptiScan/Parser/A2l/A2lParser.h>
+#include <OptiScan/Parser/A2l/IfData/Xcp/XcpIfDataParser.h>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,6 +26,7 @@ namespace
 		}
 
 		A2lParser parser(&file);
+		parser.addIfDataParser(std::make_shared<IfData::Xcp::XcpPlusIfDataParser>());
 		A2lDatabase database;
 		const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 		try
@@ -85,6 +88,70 @@ namespace
 			std::cout << "        symbolLink:       " << withSymbolLink << std::endl;
 			std::cout << "        maxRefresh:       " << withMaxRefresh << std::endl;
 			std::cout << "        modelLink:        " << withModelLink << std::endl;
+			std::cout << "      ifDatas (module):   " << module._ifDatas.size() << std::endl;
+			size_t measurementsWithIfData = 0;
+			for (const Mcd::McdMeasurement & measurement : module._measurements)
+			{
+				measurementsWithIfData += measurement._ifDatas.empty() ? 0 : 1;
+			}
+			std::cout << "      measurements with:  " << measurementsWithIfData << std::endl;
+			for (const Mcd::McdIfDataPtr & ifData : module._ifDatas)
+			{
+				using namespace OptiScan::Parser::A2l::IfData::Xcp;
+				const XcpPlusIfData * xcpPlus = dynamic_cast<const XcpPlusIfData *>(ifData.get());
+				if (xcpPlus == nullptr)
+				{
+					continue;
+				}
+				std::cout << "        " << xcpPlus->name().toString()
+					<< ", xcpOnCans " << xcpPlus->_xcpOnCans.size() << std::endl;
+				size_t withProtocolLayer = 0;
+				size_t withDaq = 0;
+				size_t withPag = 0;
+				size_t events = 0;
+				size_t daqListCanIds = 0;
+				for (const XcpPlusXcpOnCan & onCan : xcpPlus->_xcpOnCans)
+				{
+					withProtocolLayer += onCan._parameters._protocolLayer.has_value() ? 1 : 0;
+					withPag += onCan._parameters._pag.has_value() ? 1 : 0;
+					if (onCan._parameters._daq.has_value())
+					{
+						withDaq++;
+						events += onCan._parameters._daq->_events.size();
+					}
+					daqListCanIds += onCan._daqListCanIds.size();
+				}
+				std::cout << "          protocolLayer:  " << withProtocolLayer << std::endl;
+				std::cout << "          daq:            " << withDaq << std::endl;
+				std::cout << "          pag:            " << withPag << std::endl;
+				std::cout << "          events:         " << events << std::endl;
+				std::cout << "          daqListCanIds:  " << daqListCanIds << std::endl;
+				if (!xcpPlus->_xcpOnCans.empty())
+				{
+					const XcpPlusXcpOnCan & onCan = xcpPlus->_xcpOnCans.front();
+					std::cout << "          first onCan:    ";
+					if (onCan._canIdMaster.has_value())
+					{
+						std::cout << "master " << std::hex << std::showbase
+							<< onCan._canIdMaster->extendedId() << std::dec << std::noshowbase
+							<< (onCan._canIdMaster->isExtended() ? " (ext)" : " (std)");
+					}
+					if (onCan._canIdSlave.has_value())
+					{
+						std::cout << ", slave " << std::hex << std::showbase
+							<< onCan._canIdSlave->extendedId() << std::dec << std::noshowbase;
+					}
+					if (onCan._baudrate_Hz.has_value())
+					{
+						std::cout << ", baudrate " << *onCan._baudrate_Hz;
+					}
+					if (onCan._transportLayerInstance.has_value())
+					{
+						std::cout << ", instance \"" << *onCan._transportLayerInstance << "\"";
+					}
+					std::cout << std::endl;
+				}
+			}
 			if (!module._measurements.empty())
 			{
 				const Mcd::McdMeasurement & first = module._measurements.front();

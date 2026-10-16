@@ -12,9 +12,18 @@ using namespace std;
 namespace OptiScan::Parser::A2l
 {
 	A2lParser::A2lParser(std::istream * input)
-		: _options()
+		: _ifDataParsers()
+		, _options()
 		, _reader(input)
 	{
+	}
+
+	void A2lParser::addIfDataParser(std::shared_ptr<IfData::IA2lIfDataParser> parser)
+	{
+		if (parser)
+		{
+			this->_ifDataParsers.push_back(std::move(parser));
+		}
 	}
 
 	void A2lParser::getOptions(A2lOptions & options) const
@@ -281,6 +290,37 @@ namespace OptiScan::Parser::A2l
 		}
 	}
 
+	void A2lParser::parseIfData(std::vector<McdIfDataPtr> & ifDatas)
+	{
+		this->_reader.parseBlockBegin(A2lKeyword::IfData);
+		McdIdent name;
+		this->parseIdent(name);
+		IfData::IA2lIfDataParser * handler = nullptr;
+		for (const std::shared_ptr<IfData::IA2lIfDataParser> & candidate : this->_ifDataParsers)
+		{
+			if (candidate->canParse(name))
+			{
+				handler = candidate.get();
+				break;
+			}
+		}
+		if (handler == nullptr)
+		{
+			// No registered parser, for example CANAPE_EXT. The content is skipped and
+			// nothing is added to the model.
+			this->_reader.parseUnknownBlockContent();
+		}
+		else
+		{
+			McdIfDataPtr content = handler->parseContent(this->_reader);
+			if (content)
+			{
+				ifDatas.push_back(std::move(content));
+			}
+		}
+		this->_reader.parseBlockEnd(A2lKeyword::IfData);
+	}
+
 	void A2lParser::parseMeasurement(McdModule & module)
 	{
 		McdMeasurement measurement;
@@ -398,9 +438,18 @@ namespace OptiScan::Parser::A2l
 			}
 			else
 			{
-				// M5: IF_DATA. ANNOTATION, BIT_OPERATION, FUNCTION_LIST and VIRTUAL stay
-				// out of scope, as does anything else.
-				this->_reader.parseUnknownBlock();
+				string blockKeyword;
+				if (this->_reader.tryTokenStackBlockBeginAny(blockKeyword)
+					&& blockKeyword == A2lKeyword::IfData)
+				{
+					this->parseIfData(measurement._ifDatas);
+				}
+				else
+				{
+					// ANNOTATION, BIT_OPERATION, FUNCTION_LIST and VIRTUAL stay out of
+					// scope, as does anything else.
+					this->_reader.parseUnknownBlock();
+				}
 			}
 		}
 		this->_reader.parseBlockEnd(A2lKeyword::Measurement);
@@ -591,6 +640,10 @@ namespace OptiScan::Parser::A2l
 			{
 				this->parseCompuVTabRange(module);
 			}
+			else if (keyword == A2lKeyword::IfData)
+			{
+				this->parseIfData(module._ifDatas);
+			}
 			else if (keyword == A2lKeyword::Measurement)
 			{
 				this->parseMeasurement(module);
@@ -612,8 +665,8 @@ namespace OptiScan::Parser::A2l
 			}
 			else
 			{
-				// M5: IF_DATA. Everything else stays out of scope
-				// (CHARACTERISTIC, RECORD_LAYOUT, AXIS_PTS, FUNCTION, GROUP, ...).
+				// Out of scope: CHARACTERISTIC, RECORD_LAYOUT, AXIS_PTS, FUNCTION,
+				// GROUP and anything else.
 				this->_reader.parseUnknownBlock();
 			}
 		}

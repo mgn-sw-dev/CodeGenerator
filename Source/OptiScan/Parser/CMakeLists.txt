@@ -9,6 +9,17 @@ target_link_libraries(OptiScanParser PUBLIC
 target_include_directories(OptiScanParser PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../..)
 
 set(OptiScanParser_SOURCES
+    A2l/IfData/Xcp/XcpCommonParser.cpp
+    A2l/IfData/Xcp/XcpCommonParser.h
+    A2l/IfData/Xcp/XcpEnums.h
+    A2l/IfData/Xcp/XcpIfData.cpp
+    A2l/IfData/Xcp/XcpIfData.h
+    A2l/IfData/Xcp/XcpIfDataParser.cpp
+    A2l/IfData/Xcp/XcpIfDataParser.h
+    A2l/IfData/Xcp/XcpKeyword.h
+    A2l/IfData/Xcp/XcpTimeUnit.cpp
+    A2l/IfData/Xcp/XcpTimeUnit.h
+    A2l/IfData/A2lIfDataParser.h
     A2l/Mcd/McdCompuMethod.cpp
     A2l/Mcd/McdCompuMethod.h
     A2l/Mcd/McdEnums.h

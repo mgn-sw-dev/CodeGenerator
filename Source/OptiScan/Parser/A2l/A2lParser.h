@@ -3,8 +3,11 @@
 #include <OptiScan/Parser/A2l/A2lDatabase.h>
 #include <OptiScan/Parser/A2l/A2lOptions.h>
 #include <OptiScan/Parser/A2l/A2lTokenReader.h>
+#include <OptiScan/Parser/A2l/IfData/A2lIfDataParser.h>
 #include <fstream>
+#include <memory>
 #include <optional>
+#include <vector>
 
 namespace OptiScan::Parser::A2l
 {
@@ -13,6 +16,9 @@ namespace OptiScan::Parser::A2l
     {
     public:
         A2lParser(std::istream * input);
+        /** Registers a parser for one IF_DATA interface. Without a matching parser an
+         *  IF_DATA block is skipped. */
+        void addIfDataParser(std::shared_ptr<IfData::IA2lIfDataParser> parser);
         /** */
         void getOptions(A2lOptions & options) const;
         /** @throws FormatException. */
@@ -21,6 +27,7 @@ namespace OptiScan::Parser::A2l
         void setOptions(const A2lOptions & options);
 
     private:
+        std::vector<std::shared_ptr<IfData::IA2lIfDataParser>> _ifDataParsers;
         A2lOptions _options;
         A2lTokenReader _reader;
 
@@ -44,6 +51,10 @@ namespace OptiScan::Parser::A2l
         void parseIdent(Mcd::McdIdent & ident);
         /** @throws FormatException. */
         void parseIdentPart(Mcd::McdIdentPart & part);
+        /** Parses an IF_DATA block and appends its content to @p ifDatas when a
+         *  registered parser handles the interface.
+         *  @throws FormatException. */
+        void parseIfData(std::vector<Mcd::McdIfDataPtr> & ifDatas);
         /** @throws FormatException. */
         void parseMeasurement(Mcd::McdModule & module);
         /** @throws FormatException. */
