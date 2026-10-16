@@ -57,6 +57,47 @@ namespace
 			std::cout << "      compuTabs:          " << module._compuTabs.size() << std::endl;
 			std::cout << "      compuVTabs:         " << module._compuVTabs.size() << std::endl;
 			std::cout << "      compuVTabRanges:    " << module._compuVTabRanges.size() << std::endl;
+			std::cout << "      measurements:       " << module._measurements.size() << std::endl;
+			size_t withAddress = 0;
+			size_t withAddressExtension = 0;
+			size_t withMatrixDim = 0;
+			size_t writeable = 0;
+			size_t withByteOrder = 0;
+			size_t withSymbolLink = 0;
+			size_t withMaxRefresh = 0;
+			size_t withModelLink = 0;
+			for (const Mcd::McdMeasurement & measurement : module._measurements)
+			{
+				withAddress += measurement._ecuAddress.has_value() ? 1 : 0;
+				withAddressExtension += measurement._ecuAddressExtension.has_value() ? 1 : 0;
+				withMatrixDim += measurement._matrixDim.empty() ? 0 : 1;
+				writeable += measurement._isWriteable ? 1 : 0;
+				withByteOrder += measurement._byteOrder == Mcd::McdByteOrder::None ? 0 : 1;
+				withSymbolLink += measurement._symbolLink.has_value() ? 1 : 0;
+				withMaxRefresh += measurement._maxRefresh.has_value() ? 1 : 0;
+				withModelLink += measurement._modelLink.has_value() ? 1 : 0;
+			}
+			std::cout << "        ecuAddress:       " << withAddress << std::endl;
+			std::cout << "        ecuAddressExt:    " << withAddressExtension << std::endl;
+			std::cout << "        byteOrder:        " << withByteOrder << std::endl;
+			std::cout << "        matrixDim:        " << withMatrixDim << std::endl;
+			std::cout << "        readWrite:        " << writeable << std::endl;
+			std::cout << "        symbolLink:       " << withSymbolLink << std::endl;
+			std::cout << "        maxRefresh:       " << withMaxRefresh << std::endl;
+			std::cout << "        modelLink:        " << withModelLink << std::endl;
+			if (!module._measurements.empty())
+			{
+				const Mcd::McdMeasurement & first = module._measurements.front();
+				std::cout << "        first:            " << first._name.toString()
+					<< ", dataType " << static_cast<int>(first._dataType)
+					<< ", conversion " << first._conversion.toString();
+				if (first._ecuAddress.has_value())
+				{
+					std::cout << std::hex << std::showbase << ", ecuAddress " << *first._ecuAddress
+						<< std::dec << std::noshowbase;
+				}
+				std::cout << std::endl;
+			}
 		}
 		std::cout << "  duration:      " << duration_ms << " ms" << std::endl;
 		return true;

@@ -4,6 +4,7 @@
 #include <OptiScan/Parser/A2l/Mcd/McdEnums.h>
 #include <OptiScan/Parser/A2l/Mcd/McdIdent.h>
 #include <OptiScan/Parser/A2l/Mcd/McdIfData.h>
+#include <OptiScan/Parser/A2l/Mcd/McdMeasurement.h>
 #include <OptiScan/Parser/A2l/Mcd/McdModuleParameters.h>
 #include <cstdint>
 #include <string>
@@ -38,7 +39,7 @@ namespace OptiScan::Parser::A2l::Mcd
         std::vector<McdCompuVTab> _compuVTabs;
         std::vector<McdIfDataPtr> _ifDatas;
         std::string _longIdentifier;
-        // M4: std::vector<McdMeasurement> _measurements;
+        std::vector<McdMeasurement> _measurements;
         McdIdent _name;
         McdModuleParameters _parameters;
     };

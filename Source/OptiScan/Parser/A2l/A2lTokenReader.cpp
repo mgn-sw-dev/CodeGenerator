@@ -442,7 +442,10 @@ namespace OptiScan::Parser::A2l
 		{
 			throw InvalidOperationException("Token stack commit error: no token stack");
 		}
-		for (int64_t i = 0; i < this->_tokenStackCount; i++)
+		// tokenStackBegin set the count to 1 when a token was present, so the current
+		// token sits at index count - 1. Only the consumed tokens before it are dropped;
+		// the current token has to stay and becomes _tokenStack[0] again.
+		for (int64_t i = 1; i < this->_tokenStackCount; i++)
 		{
 			this->_tokenStack.pop_front();
 		}

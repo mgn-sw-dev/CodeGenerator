@@ -281,6 +281,132 @@ namespace OptiScan::Parser::A2l
 		}
 	}
 
+	void A2lParser::parseMeasurement(McdModule & module)
+	{
+		McdMeasurement measurement;
+		this->_reader.parseBlockBegin(A2lKeyword::Measurement);
+		this->parseIdent(measurement._name);
+		this->_reader.parseString(measurement._longIdentifier);
+		this->_reader.parseEnumValue(McdEnumText::DataType, "data type", measurement._dataType);
+		this->parseIdent(measurement._conversion);
+		this->_reader.parseUInt16(measurement._resolution);
+		this->_reader.parseFloat64(measurement._accuracy);
+		this->_reader.parseFloat64(measurement._lowerLimit);
+		this->_reader.parseFloat64(measurement._upperLimit);
+		unordered_set<string> oneTimeKeywords;
+		while (!this->_reader.tryMatchToken(A2lTokenKind::EscapeEnd))
+		{
+			if (this->_reader.tryMatchToken(A2lTokenKind::Identifier))
+			{
+				string const keyword = this->_reader.token()._text;
+				A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+				this->_reader.readNextToken();
+				if (keyword == A2lKeyword::AddressType)
+				{
+					this->_reader.parseEnumValue(McdEnumText::AddressType, "address type", measurement._addressType);
+				}
+				else if (keyword == A2lKeyword::ArraySize)
+				{
+					uint16_t tmp = 0;
+					this->_reader.parseUInt16(tmp);
+					measurement._arraySize = tmp;
+				}
+				else if (keyword == A2lKeyword::BitMask)
+				{
+					this->_reader.parseUInt64(measurement._bitMask);
+				}
+				else if (keyword == A2lKeyword::ByteOrder)
+				{
+					this->_reader.parseEnumValue(McdEnumText::ByteOrder, "byte order", measurement._byteOrder);
+				}
+				else if (keyword == A2lKeyword::Discrete)
+				{
+					measurement._isDiscrete = true;
+				}
+				else if (keyword == A2lKeyword::DisplayIdentifier)
+				{
+					this->parseIdent(measurement._displayIdentifier);
+				}
+				else if (keyword == A2lKeyword::EcuAddress)
+				{
+					uint32_t tmp = 0;
+					this->_reader.parseUInt32(tmp);
+					measurement._ecuAddress = tmp;
+				}
+				else if (keyword == A2lKeyword::EcuAddressExtension)
+				{
+					int16_t tmp = 0;
+					this->_reader.parseInt16(tmp);
+					measurement._ecuAddressExtension = tmp;
+				}
+				else if (keyword == A2lKeyword::ErrorMask)
+				{
+					this->_reader.parseUInt64(measurement._errorMask);
+				}
+				else if (keyword == A2lKeyword::Format)
+				{
+					this->_reader.parseString(measurement._format);
+				}
+				else if (keyword == A2lKeyword::Layout)
+				{
+					this->_reader.parseEnumValue(McdEnumText::IndexMode, "index mode", measurement._indexMode);
+				}
+				else if (keyword == A2lKeyword::MatrixDim)
+				{
+					// At least one dimension, further ones until the next keyword starts.
+					uint16_t tmp = 0;
+					this->_reader.parseUInt16(tmp);
+					measurement._matrixDim.push_back(tmp);
+					exception_ptr error;
+					while (this->_reader.tryParseUInt16(tmp, error))
+					{
+						measurement._matrixDim.push_back(tmp);
+					}
+				}
+				else if (keyword == A2lKeyword::MaxRefresh)
+				{
+					McdMaxRefresh tmp;
+					this->_reader.parseUInt16(tmp._scalingUnit);
+					this->_reader.parseUInt32(tmp._rate);
+					measurement._maxRefresh = tmp;
+				}
+				else if (keyword == A2lKeyword::ModelLink)
+				{
+					string tmp;
+					this->_reader.parseString(tmp);
+					measurement._modelLink = std::move(tmp);
+				}
+				else if (keyword == A2lKeyword::PhysUnit)
+				{
+					this->_reader.parseString(measurement._physicalUnit);
+				}
+				else if (keyword == A2lKeyword::ReadWrite)
+				{
+					measurement._isWriteable = true;
+				}
+				else if (keyword == A2lKeyword::SymbolLink)
+				{
+					McdSymbolLink tmp;
+					this->_reader.parseString(tmp._symbolName);
+					this->_reader.parseInt32(tmp._offset);
+					measurement._symbolLink = std::move(tmp);
+				}
+				else
+				{
+					this->_reader.throwFormatError("A2lParser::parseMeasurement", "Unknown keyword '" + keyword + "'");
+				}
+			}
+			else
+			{
+				// M5: IF_DATA. ANNOTATION, BIT_OPERATION, FUNCTION_LIST and VIRTUAL stay
+				// out of scope, as does anything else.
+				this->_reader.parseUnknownBlock();
+			}
+		}
+		this->_reader.parseBlockEnd(A2lKeyword::Measurement);
+		module._measurements.push_back(std::move(measurement));
+	}
+
 	void A2lParser::parseModCommon(McdModuleCommon & common)
 	{
 		this->_reader.parseBlockBegin(A2lKeyword::ModCommon);
@@ -465,6 +591,10 @@ namespace OptiScan::Parser::A2l
 			{
 				this->parseCompuVTabRange(module);
 			}
+			else if (keyword == A2lKeyword::Measurement)
+			{
+				this->parseMeasurement(module);
+			}
 			else if (keyword == A2lKeyword::ModCommon)
 			{
 				A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
@@ -482,7 +612,7 @@ namespace OptiScan::Parser::A2l
 			}
 			else
 			{
-				// M4: MEASUREMENT, M5: IF_DATA. Everything else stays out of scope
+				// M5: IF_DATA. Everything else stays out of scope
 				// (CHARACTERISTIC, RECORD_LAYOUT, AXIS_PTS, FUNCTION, GROUP, ...).
 				this->_reader.parseUnknownBlock();
 			}

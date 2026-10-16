@@ -45,6 +45,8 @@ namespace OptiScan::Parser::A2l
         /** @throws FormatException. */
         void parseIdentPart(Mcd::McdIdentPart & part);
         /** @throws FormatException. */
+        void parseMeasurement(Mcd::McdModule & module);
+        /** @throws FormatException. */
         void parseModCommon(Mcd::McdModuleCommon & common);
         /** @throws FormatException. */
         void parseModPar(Mcd::McdModuleParameters & parameters);

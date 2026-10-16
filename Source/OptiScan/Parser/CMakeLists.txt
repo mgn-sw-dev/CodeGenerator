@@ -16,6 +16,8 @@ set(OptiScanParser_SOURCES
     A2l/Mcd/McdIdent.cpp
     A2l/Mcd/McdIdent.h
     A2l/Mcd/McdIfData.h
+    A2l/Mcd/McdMeasurement.cpp
+    A2l/Mcd/McdMeasurement.h
     A2l/Mcd/McdModule.cpp
     A2l/Mcd/McdModule.h
     A2l/Mcd/McdModuleParameters.cpp
