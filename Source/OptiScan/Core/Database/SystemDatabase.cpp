@@ -20,6 +20,7 @@ namespace OptiScan::Core::Database
 		, _mapping()
 		, _systemConfig()
 		, _systemPath()
+		, _xcpDatabases()
 		, _xcpSelectionTable()
 	{
 	}
@@ -27,7 +28,20 @@ namespace OptiScan::Core::Database
 	void SystemDatabase::loadA2lDatabase(const CanBusObject & canBus)
 	{
 		this->logInfo("Load XCPBus " + to_string(canBus._hardwareId));
-		this->logInfo("Not supported at the moment");
+		this->log("\t- A2l: " + canBus._a2lName);
+		XcpDatabase xcpDatabase = XcpDatabase();
+		xcpDatabase._name = canBus._a2lName;
+		filesystem::path a2lPath = this->_systemPath / canBus._a2lName += ".a2l";
+		try
+		{
+			xcpDatabase.loadA2lDatabase(a2lPath);
+		}
+		catch (const exception & error)
+		{
+			this->logError(string(error.what()));
+			throw;
+		}
+		this->_xcpDatabases.push_back(std::move(xcpDatabase));
 	}
 
 	void SystemDatabase::loadDbcDatabase(const CanBusObject & canBus)

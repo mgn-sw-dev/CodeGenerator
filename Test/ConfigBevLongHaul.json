@@ -95,14 +95,13 @@
         ]
       },
       {
+        "Type": "XcpPlus",
+        "A2lName": "ACM_FS_DTA30_0d1_S10_52_01_000",
+        "BaudRate": 500e3,
         "Hardware": 11,
-        "Id": "Chassis",
-        "Type": "Standard",
-        "BaudRate": 666666,
-        "DbcNames": [
-          "CHASSIS_667kB_dbc_2023_31a_patched",
-          "CGW_MBT_667kB_CHASSIS_667kB_Routing_dbc_2023_07a1"
-        ]
+        "Id": "AcmXcp",
+        "TransportLayerInstance": "DevelopmentMaster_ObdCan",
+        "Transmitting": true
       },
       {
         "Hardware": 12,

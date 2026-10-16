@@ -36,6 +36,8 @@ set(OptiScanCore_SOURCES
     Database/SystemDatabase.h
     Database/SystemMapping.cpp
     Database/SystemMapping.h
+    Database/XcpDatabase.cpp
+    Database/XcpDatabase.h
     Config/SystemConfig.cpp
     Config/SystemConfig.h
     Config/SystemConfig.inl.h

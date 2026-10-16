@@ -5,6 +5,7 @@
 #include <OptiScan/Core/Database/LinDatabase.h>
 #include <OptiScan/Core/Database/SelectionTable.h>
 #include <OptiScan/Core/Database/SystemMapping.h>
+#include <OptiScan/Core/Database/XcpDatabase.h>
 #include <filesystem>
 
 namespace OptiScan::Core::Database
@@ -18,6 +19,7 @@ namespace OptiScan::Core::Database
         std::vector<LinDatabase> _linDatabases;
         LinSelectionTable _linSelectionTable;
         SystemMapping _mapping;
+        std::vector<XcpDatabase> _xcpDatabases;
         XcpSelectionTable _xcpSelectionTable;
 
         SystemDatabase();
