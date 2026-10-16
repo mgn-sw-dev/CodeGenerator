@@ -80,6 +80,19 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
         XcpDaq();
     };
 
+    /** DAQ_EVENT of a MEASUREMENT: which event channels may carry this value. The
+     *  channels themselves are defined in the DAQ block of the module. */
+    struct XcpDaqEvent
+    {
+        std::vector<uint16_t> _availableEventList;
+        std::vector<uint16_t> _defaultEventList;
+        /** Set for "DAQ_EVENT FIXED <number>". */
+        std::optional<uint16_t> _fixedEventNumber;
+        bool _isFixed;
+        /** */
+        XcpDaqEvent();
+    };
+
     struct XcpDaqListCanId
     {
         uint16_t _daqListNumber;
@@ -97,6 +110,18 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
         uint8_t _maxSegments;
         /** */
         XcpPag();
+    };
+
+    /** PGM block: flash programming.
+     *  Parsed in addition to the old parser, which skipped the content. */
+    struct XcpPgm
+    {
+        std::optional<XcpCommunicationMode> _communicationModeSupported;
+        uint8_t _maxCtoPgm;
+        uint8_t _maxSectors;
+        XcpPgmMode _mode;
+        /** */
+        XcpPgm();
     };
 
     struct XcpProtocolLayer
@@ -125,7 +150,9 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
     struct XcpCommonParameters
     {
         std::optional<XcpDaq> _daq;
+        std::optional<XcpDaqEvent> _daqEvent;
         std::optional<XcpPag> _pag;
+        std::optional<XcpPgm> _pgm;
         std::optional<XcpProtocolLayer> _protocolLayer;
         /** */
         XcpCommonParameters();
@@ -164,6 +191,17 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
     {
     public:
         XcpCommonParameters _parameters;
+    };
+
+    /** Content of an "IF_DATA XCP" block, the classic variant. Unlike XCPplus it has
+     *  no marker and holds at most one transport layer. */
+    class XcpIfData : public XcpIfDataBase
+    {
+    public:
+        static const Mcd::McdIdent Name;
+        std::optional<XcpXcpOnCan> _xcpOnCan;
+        /** */
+        const Mcd::McdIdent & name() const override;
     };
 
     struct XcpPlusXcpOnCan : public XcpXcpOnCan

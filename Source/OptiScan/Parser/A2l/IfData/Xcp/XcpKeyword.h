@@ -9,6 +9,7 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 	class XcpKeyword
 	{
 	public:
+		static inline const std::string AvailableEventList = "AVAILABLE_EVENT_LIST";
 		static inline const std::string Baudrate = "BAUDRATE";
 		static inline const std::string Block = "BLOCK";
 		static inline const std::string BtlCycles = "BTL_CYCLES";
@@ -20,6 +21,7 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 		static inline const std::string DaqEvent = "DAQ_EVENT";
 		static inline const std::string DaqList = "DAQ_LIST";
 		static inline const std::string DaqListCanId = "DAQ_LIST_CAN_ID";
+		static inline const std::string DefaultEventList = "DEFAULT_EVENT_LIST";
 		static inline const std::string Dynamic = "DYNAMIC";
 		static inline const std::string Event = "EVENT";
 		static inline const std::string Fixed = "FIXED";
@@ -36,6 +38,7 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 		static inline const std::string ResumeSupported = "RESUME_SUPPORTED";
 		static inline const std::string SamplePoint = "SAMPLE_POINT";
 		static inline const std::string SampleRate = "SAMPLE_RATE";
+		static inline const std::string Sector = "SECTOR";
 		static inline const std::string SeedAndKeyExternalFunction = "SEED_AND_KEY_EXTERNAL_FUNCTION";
 		static inline const std::string Segment = "SEGMENT";
 		static inline const std::string Sjw = "SJW";

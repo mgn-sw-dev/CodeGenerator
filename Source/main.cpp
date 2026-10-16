@@ -26,6 +26,7 @@ namespace
 		}
 
 		A2lParser parser(&file);
+		parser.addIfDataParser(std::make_shared<IfData::Xcp::XcpIfDataParser>());
 		parser.addIfDataParser(std::make_shared<IfData::Xcp::XcpPlusIfDataParser>());
 		A2lDatabase database;
 		const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
@@ -90,14 +91,72 @@ namespace
 			std::cout << "        modelLink:        " << withModelLink << std::endl;
 			std::cout << "      ifDatas (module):   " << module._ifDatas.size() << std::endl;
 			size_t measurementsWithIfData = 0;
+			size_t measurementsWithDaqEvent = 0;
+			size_t defaultEventRefs = 0;
 			for (const Mcd::McdMeasurement & measurement : module._measurements)
 			{
 				measurementsWithIfData += measurement._ifDatas.empty() ? 0 : 1;
+				for (const Mcd::McdIfDataPtr & entry : measurement._ifDatas)
+				{
+					using namespace OptiScan::Parser::A2l::IfData::Xcp;
+					const XcpIfDataBase * base = dynamic_cast<const XcpIfDataBase *>(entry.get());
+					if (base != nullptr && base->_parameters._daqEvent.has_value())
+					{
+						measurementsWithDaqEvent++;
+						defaultEventRefs += base->_parameters._daqEvent->_defaultEventList.size();
+					}
+				}
 			}
 			std::cout << "      measurements with:  " << measurementsWithIfData << std::endl;
+			std::cout << "        daqEvent:         " << measurementsWithDaqEvent << std::endl;
+			std::cout << "        eventRefs:        " << defaultEventRefs << std::endl;
 			for (const Mcd::McdIfDataPtr & ifData : module._ifDatas)
 			{
 				using namespace OptiScan::Parser::A2l::IfData::Xcp;
+				const XcpIfData * xcp = dynamic_cast<const XcpIfData *>(ifData.get());
+				if (xcp != nullptr)
+				{
+					std::cout << "        " << xcp->name().toString()
+						<< ", xcpOnCan " << (xcp->_xcpOnCan.has_value() ? "yes" : "no") << std::endl;
+					std::cout << "          ifData level:   "
+						<< "protocolLayer " << (xcp->_parameters._protocolLayer.has_value() ? "yes" : "no")
+						<< ", daq " << (xcp->_parameters._daq.has_value() ? "yes" : "no")
+						<< ", pag " << (xcp->_parameters._pag.has_value() ? "yes" : "no")
+						<< ", pgm " << (xcp->_parameters._pgm.has_value() ? "yes" : "no") << std::endl;
+					if (xcp->_parameters._daq.has_value())
+					{
+						std::cout << "          events:         "
+							<< xcp->_parameters._daq->_events.size() << std::endl;
+					}
+					if (xcp->_parameters._pgm.has_value())
+					{
+						std::cout << "          pgm mode:       "
+							<< static_cast<int>(xcp->_parameters._pgm->_mode)
+							<< ", maxSectors " << static_cast<int>(xcp->_parameters._pgm->_maxSectors)
+							<< ", maxCtoPgm " << static_cast<int>(xcp->_parameters._pgm->_maxCtoPgm) << std::endl;
+					}
+					if (xcp->_xcpOnCan.has_value())
+					{
+						const XcpXcpOnCan & onCan = *xcp->_xcpOnCan;
+						std::cout << "          onCan level:    "
+							<< "protocolLayer " << (onCan._parameters._protocolLayer.has_value() ? "yes" : "no")
+							<< ", daq " << (onCan._parameters._daq.has_value() ? "yes" : "no")
+							<< ", daqListCanIds " << onCan._daqListCanIds.size() << std::endl;
+						std::cout << "          canIds:         ";
+						if (onCan._canIdMaster.has_value())
+						{
+							std::cout << "master " << std::hex << std::showbase
+								<< onCan._canIdMaster->extendedId() << std::dec << std::noshowbase;
+						}
+						if (onCan._canIdSlave.has_value())
+						{
+							std::cout << ", slave " << std::hex << std::showbase
+								<< onCan._canIdSlave->extendedId() << std::dec << std::noshowbase;
+						}
+						std::cout << std::endl;
+					}
+					continue;
+				}
 				const XcpPlusIfData * xcpPlus = dynamic_cast<const XcpPlusIfData *>(ifData.get());
 				if (xcpPlus == nullptr)
 				{

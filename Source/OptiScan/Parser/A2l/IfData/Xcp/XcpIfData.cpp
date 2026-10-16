@@ -60,6 +60,14 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 	{
 	}
 
+	XcpDaqEvent::XcpDaqEvent()
+		: _availableEventList()
+		, _defaultEventList()
+		, _fixedEventNumber()
+		, _isFixed(false)
+	{
+	}
+
 	XcpDaqListCanId::XcpDaqListCanId()
 		: _daqListNumber(0)
 		, _fixedTo()
@@ -70,6 +78,14 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 	XcpPag::XcpPag()
 		: _isFreezeSupported(false)
 		, _maxSegments(0)
+	{
+	}
+
+	XcpPgm::XcpPgm()
+		: _communicationModeSupported()
+		, _maxCtoPgm(0)
+		, _maxSectors(0)
+		, _mode(XcpPgmMode::Absolute)
 	{
 	}
 
@@ -94,7 +110,9 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 
 	XcpCommonParameters::XcpCommonParameters()
 		: _daq()
+		, _daqEvent()
 		, _pag()
+		, _pgm()
 		, _protocolLayer()
 	{
 	}
@@ -106,9 +124,17 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 		{
 			result._daq = source._daq;
 		}
+		if (source._daqEvent.has_value())
+		{
+			result._daqEvent = source._daqEvent;
+		}
 		if (source._pag.has_value())
 		{
 			result._pag = source._pag;
+		}
+		if (source._pgm.has_value())
+		{
+			result._pgm = source._pgm;
 		}
 		if (source._protocolLayer.has_value())
 		{
@@ -137,6 +163,13 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 		: XcpCanParameters()
 		, _parameters()
 	{
+	}
+
+	McdIdent const XcpIfData::Name({ McdIdentPart("XCP") });
+
+	const McdIdent & XcpIfData::name() const
+	{
+		return XcpIfData::Name;
 	}
 
 	McdIdent const XcpPlusIfData::Name({ McdIdentPart("XCPplus") });

@@ -137,6 +137,13 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
         Event = 2,
     };
 
+    enum class XcpPgmMode
+    {
+        Absolute,
+        Functional,
+        AbsoluteAndFunctional,
+    };
+
     /** Text to value maps used with A2lTokenReader::parseEnumValue. */
     class XcpEnumText
     {
@@ -267,6 +274,13 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
             { "NO_OVERLOAD_INDICATION",   XcpOverloadIndication::None },
             { "OVERLOAD_INDICATION_EVENT", XcpOverloadIndication::Event },
             { "OVERLOAD_INDICATION_PID",   XcpOverloadIndication::Pid },
+        };
+
+        static inline const std::map<std::string, XcpPgmMode> PgmMode =
+        {
+            { "PGM_MODE_ABSOLUTE",                XcpPgmMode::Absolute },
+            { "PGM_MODE_ABSOLUTE_AND_FUNCTIONAL", XcpPgmMode::AbsoluteAndFunctional },
+            { "PGM_MODE_FUNCTIONAL",              XcpPgmMode::Functional },
         };
 
     private:

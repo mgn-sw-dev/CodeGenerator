@@ -11,6 +11,64 @@ using namespace std;
 
 namespace OptiScan::Parser::A2l::IfData::Xcp
 {
+	bool XcpIfDataParser::canParse(const McdIdent & name) const
+	{
+		return name == XcpIfData::Name;
+	}
+
+	McdIfDataPtr XcpIfDataParser::parseContent(A2lTokenReader & reader)
+	{
+		unique_ptr<XcpIfData> ifData = make_unique<XcpIfData>();
+		unordered_set<string> oneTimeKeywords;
+		while (!reader.tryMatchToken(A2lTokenKind::EscapeEnd))
+		{
+			string keyword;
+			reader.parseBlockBeginAny(keyword);
+			if (XcpCommonParser::parseCommonParameterContent(reader, keyword, oneTimeKeywords, ifData->_parameters))
+			{
+				// handled
+			}
+			else if (keyword == XcpKeyword::XcpOnCan)
+			{
+				A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+				XcpXcpOnCan tmp;
+				XcpIfDataParser::parseXcpOnCanContent(reader, tmp);
+				ifData->_xcpOnCan = std::move(tmp);
+			}
+			else
+			{
+				reader.parseUnknownBlockContent();
+			}
+			reader.parseBlockEnd(keyword);
+		}
+		return ifData;
+	}
+
+	void XcpIfDataParser::parseXcpOnCanContent(A2lTokenReader & reader, XcpXcpOnCan & xcpOnCan)
+	{
+		XcpCommonParser::parseCanParametersWithoutDaqListCanId(reader, xcpOnCan);
+		unordered_set<string> oneTimeKeywords;
+		while (reader.tryMatchToken(A2lTokenKind::EscapeBegin))
+		{
+			string keyword;
+			reader.parseBlockBeginAny(keyword);
+			if (XcpCommonParser::parseDaqListCanIdContent(reader, keyword, xcpOnCan))
+			{
+				// handled
+			}
+			else if (XcpCommonParser::parseCommonParameterContent(reader, keyword, oneTimeKeywords,
+				xcpOnCan._parameters))
+			{
+				// handled
+			}
+			else
+			{
+				reader.parseUnknownBlockContent();
+			}
+			reader.parseBlockEnd(keyword);
+		}
+	}
+
 	bool XcpPlusIfDataParser::canParse(const McdIdent & name) const
 	{
 		return name == XcpPlusIfData::Name;

@@ -112,12 +112,26 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 			XcpCommonParser::parseDaqContent(reader, tmp);
 			parameters._daq = std::move(tmp);
 		}
+		else if (keyword == XcpKeyword::DaqEvent)
+		{
+			A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+			XcpDaqEvent tmp;
+			XcpCommonParser::parseDaqEventContent(reader, tmp);
+			parameters._daqEvent = std::move(tmp);
+		}
 		else if (keyword == XcpKeyword::Pag)
 		{
 			A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
 			XcpPag tmp;
 			XcpCommonParser::parsePagContent(reader, tmp);
 			parameters._pag = tmp;
+		}
+		else if (keyword == XcpKeyword::Pgm)
+		{
+			A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+			XcpPgm tmp;
+			XcpCommonParser::parsePgmContent(reader, tmp);
+			parameters._pgm = std::move(tmp);
 		}
 		else if (keyword == XcpKeyword::ProtocolLayer)
 		{
@@ -126,11 +140,10 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 			XcpCommonParser::parseProtocolLayerContent(reader, tmp);
 			parameters._protocolLayer = std::move(tmp);
 		}
-		else if (keyword == XcpKeyword::DaqEvent
-			|| keyword == XcpKeyword::Pgm
-			|| keyword == XcpKeyword::Segment)
+		else if (keyword == XcpKeyword::Segment)
 		{
-			// Recognised but not modelled, as in the old parser.
+			// Not modelled: the only occurrence in the reference files sits inside a
+			// MEMORY_SEGMENT, which is skipped, so the structure cannot be verified.
 			A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
 			reader.parseUnknownBlockContent();
 		}
@@ -141,7 +154,8 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 		return result;
 	}
 
-	void XcpCommonParser::parseCommunicationModeSupported(A2lTokenReader & reader, XcpProtocolLayer & layer)
+	void XcpCommonParser::parseCommunicationModeSupported(A2lTokenReader & reader,
+		optional<XcpCommunicationMode> & mode)
 	{
 		if (reader.tryMatchKeyword(XcpKeyword::Block))
 		{
@@ -181,7 +195,7 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 					checkNext = false;
 				}
 			}
-			layer._communicationModeSupported = tmp;
+			mode = tmp;
 		}
 		else
 		{
@@ -189,7 +203,7 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 			reader.readNextToken();
 			XcpCommunicationModeInterleaved tmp;
 			reader.parseUInt8(tmp._queueSize);
-			layer._communicationModeSupported = tmp;
+			mode = tmp;
 		}
 	}
 
@@ -262,6 +276,44 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 		}
 	}
 
+	void XcpCommonParser::parseDaqEventContent(A2lTokenReader & reader, XcpDaqEvent & daqEvent)
+	{
+		if (reader.tryMatchKeyword(XcpKeyword::Fixed))
+		{
+			reader.readNextToken();
+			daqEvent._isFixed = true;
+			uint16_t tmp = 0;
+			reader.parseUInt16(tmp);
+			daqEvent._fixedEventNumber = tmp;
+		}
+		else
+		{
+			reader.matchKeyword(XcpKeyword::Variable);
+			reader.readNextToken();
+			daqEvent._isFixed = false;
+		}
+		unordered_set<string> oneTimeKeywords;
+		while (!reader.tryMatchToken(A2lTokenKind::EscapeEnd))
+		{
+			string keyword;
+			reader.parseBlockBeginAny(keyword);
+			A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+			if (keyword == XcpKeyword::DefaultEventList)
+			{
+				XcpCommonParser::parseEventListContent(reader, daqEvent._defaultEventList);
+			}
+			else if (keyword == XcpKeyword::AvailableEventList)
+			{
+				XcpCommonParser::parseEventListContent(reader, daqEvent._availableEventList);
+			}
+			else
+			{
+				reader.parseUnknownBlockContent();
+			}
+			reader.parseBlockEnd(keyword);
+		}
+	}
+
 	bool XcpCommonParser::parseDaqListCanIdContent(A2lTokenReader & reader, const string & keyword,
 		XcpCanParameters & parameters)
 	{
@@ -322,6 +374,17 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 		daq._events.push_back(std::move(tmp));
 	}
 
+	void XcpCommonParser::parseEventListContent(A2lTokenReader & reader, vector<uint16_t> & eventList)
+	{
+		while (reader.tryMatchKeyword(XcpKeyword::Event))
+		{
+			reader.readNextToken();
+			uint16_t tmp = 0;
+			reader.parseUInt16(tmp);
+			eventList.push_back(tmp);
+		}
+	}
+
 	void XcpCommonParser::parsePagContent(A2lTokenReader & reader, XcpPag & pag)
 	{
 		reader.parseUInt8(pag._maxSegments);
@@ -329,6 +392,37 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 		{
 			reader.readNextToken();
 			pag._isFreezeSupported = true;
+		}
+	}
+
+	void XcpCommonParser::parsePgmContent(A2lTokenReader & reader, XcpPgm & pgm)
+	{
+		reader.parseEnumValue(XcpEnumText::PgmMode, "xcp pgm mode", pgm._mode);
+		reader.parseUInt8(pgm._maxSectors);
+		reader.parseUInt8(pgm._maxCtoPgm);
+		unordered_set<string> oneTimeKeywords;
+		while (!reader.tryMatchToken(A2lTokenKind::EscapeEnd))
+		{
+			if (reader.tryMatchToken(A2lTokenKind::Identifier))
+			{
+				string const keyword = reader.token()._text;
+				if (keyword == XcpKeyword::CommunicationModeSupported)
+				{
+					A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
+					reader.readNextToken();
+					XcpCommonParser::parseCommunicationModeSupported(reader, pgm._communicationModeSupported);
+				}
+				else
+				{
+					reader.throwFormatError("XcpCommonParser::parsePgmContent",
+						"Unknown keyword '" + keyword + "'");
+				}
+			}
+			else
+			{
+				// SECTOR is not modelled: it does not occur in any reference file.
+				reader.parseUnknownBlock();
+			}
 		}
 	}
 
@@ -364,7 +458,7 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
 			{
 				A2lTokenReader::trackOneTimeKeyword(oneTimeKeywords, keyword);
 				reader.readNextToken();
-				XcpCommonParser::parseCommunicationModeSupported(reader, layer);
+				XcpCommonParser::parseCommunicationModeSupported(reader, layer._communicationModeSupported);
 			}
 			else if (keyword == XcpKeyword::SeedAndKeyExternalFunction)
 			{

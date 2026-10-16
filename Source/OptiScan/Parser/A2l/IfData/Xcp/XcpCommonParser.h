@@ -2,8 +2,10 @@
 
 #include <OptiScan/Parser/A2l/A2lTokenReader.h>
 #include <OptiScan/Parser/A2l/IfData/Xcp/XcpIfData.h>
+#include <optional>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 namespace OptiScan::Parser::A2l::IfData::Xcp
 {
@@ -22,6 +24,8 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
             std::unordered_set<std::string> & oneTimeKeywords, XcpCommonParameters & parameters);
         /** @throws FormatException. */
         static void parseDaqContent(A2lTokenReader & reader, XcpDaq & daq);
+        /** @throws FormatException. */
+        static void parseDaqEventContent(A2lTokenReader & reader, XcpDaqEvent & daqEvent);
         /** The caller has consumed "/begin <keyword>".
          *  @return false if @p keyword is not DAQ_LIST_CAN_ID.
          *  @throws FormatException. */
@@ -30,14 +34,20 @@ namespace OptiScan::Parser::A2l::IfData::Xcp
         /** @throws FormatException. */
         static void parsePagContent(A2lTokenReader & reader, XcpPag & pag);
         /** @throws FormatException. */
+        static void parsePgmContent(A2lTokenReader & reader, XcpPgm & pgm);
+        /** @throws FormatException. */
         static void parseProtocolLayerContent(A2lTokenReader & reader, XcpProtocolLayer & layer);
 
     private:
         XcpCommonParser() = default;
         /** @throws FormatException. */
-        static void parseCommunicationModeSupported(A2lTokenReader & reader, XcpProtocolLayer & layer);
+        static void parseCommunicationModeSupported(A2lTokenReader & reader,
+            std::optional<XcpCommunicationMode> & mode);
         /** @throws FormatException. */
         static void parseEventContent(A2lTokenReader & reader, XcpDaq & daq);
+        /** Reads a sequence of "EVENT <number>" entries.
+         *  @throws FormatException. */
+        static void parseEventListContent(A2lTokenReader & reader, std::vector<uint16_t> & eventList);
     };
 
 }
