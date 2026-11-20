@@ -1,5 +1,11 @@
 #pragma once
 
+#include <OptiScan/Parser/Arxml/Ar/ArCompuMethod.h>
+#include <OptiScan/Parser/Arxml/Ar/ArDataConstr.h>
+#include <OptiScan/Parser/Arxml/Ar/ArISignal.h>
+#include <OptiScan/Parser/Arxml/Ar/ArSwBaseType.h>
+#include <OptiScan/Parser/Arxml/Ar/ArSystemSignal.h>
+#include <OptiScan/Parser/Arxml/Ar/ArUnit.h>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -8,13 +14,16 @@
 namespace OptiScan::Parser::Arxml
 {
     /** One identifiable element of the ARXML, that is one element carrying a
-     *  SHORT-NAME. Its path is the key under which it is held in the database.
-     *
-     *  Starting with N3 the entry will also point at the parsed model object; for now
-     *  it records what kind of element sits at that path, which is enough to check a
-     *  reference against the DEST attribute it carries. */
+     *  SHORT-NAME. Its path is the key under which it is held in the database. */
     struct ArxmlIdentifiable
     {
+        /** Value of _elementIndex for an element that is indexed but not modelled. */
+        static inline const size_t NoIndex = static_cast<size_t>(-1);
+
+        /** Position inside the list of ArxmlDatabase that matches _elementType, or
+         *  NoIndex. An index is used instead of a pointer because the lists grow
+         *  while parsing and a pointer would not survive that. */
+        size_t _elementIndex = ArxmlIdentifiable::NoIndex;
         /** Name of the XML element, for example "I-SIGNAL". */
         std::string _elementType;
         uint64_t _lineNumber = 0;
@@ -29,11 +38,17 @@ namespace OptiScan::Parser::Arxml
     class ArxmlDatabase
     {
     public:
+        std::vector<Ar::ArCompuMethod> _compuMethods;
+        std::vector<Ar::ArDataConstr> _dataConstrs;
         /** Paths that occur more than once. AUTOSAR requires them to be unique, so a
          *  non empty list points at a broken file or at a gap in the parser. */
         std::vector<std::string> _duplicatePaths;
+        std::vector<Ar::ArISignal> _iSignals;
         /** AUTOSAR path, for example "/Signals/BACKBONE/EngSpd", to element. */
         std::map<std::string, ArxmlIdentifiable> _pathIndex;
+        std::vector<Ar::ArSwBaseType> _swBaseTypes;
+        std::vector<Ar::ArSystemSignal> _systemSignals;
+        std::vector<Ar::ArUnit> _units;
     };
 
 }

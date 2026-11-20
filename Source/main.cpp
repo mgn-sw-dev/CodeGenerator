@@ -138,6 +138,71 @@ namespace
 		std::cout << "  duration:       "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
 			<< " ms" << std::endl;
+		std::cout << "--- model" << std::endl;
+		std::cout << "  iSignals:       " << database._iSignals.size() << std::endl;
+		std::cout << "  systemSignals:  " << database._systemSignals.size() << std::endl;
+		std::cout << "  compuMethods:   " << database._compuMethods.size() << std::endl;
+		std::cout << "  dataConstrs:    " << database._dataConstrs.size() << std::endl;
+		std::cout << "  swBaseTypes:    " << database._swBaseTypes.size() << std::endl;
+		std::cout << "  units:          " << database._units.size() << std::endl;
+		size_t scales = 0;
+		size_t linearScales = 0;
+		size_t textScales = 0;
+		std::map<std::string, uint64_t> categories;
+		for (const Ar::ArCompuMethod & compuMethod : database._compuMethods)
+		{
+			categories[compuMethod._category]++;
+			for (const Ar::ArCompuScale & scale : compuMethod._scales)
+			{
+				scales++;
+				if (!scale._numerator.empty())
+				{
+					linearScales++;
+				}
+				if (scale._textValue.has_value())
+				{
+					textScales++;
+				}
+			}
+		}
+		std::cout << "  compuScales:    " << scales
+			<< " (linear " << linearScales << ", text " << textScales << ")" << std::endl;
+		std::cout << "--- compuMethod categories" << std::endl;
+		for (const std::pair<const std::string, uint64_t> & entry : categories)
+		{
+			std::cout << "  " << entry.second << "\t" << entry.first << std::endl;
+		}
+		size_t withoutCompuMethod = 0;
+		size_t withoutDataConstr = 0;
+		for (const Ar::ArSystemSignal & systemSignal : database._systemSignals)
+		{
+			if (systemSignal._compuMethodRef._path.empty())
+			{
+				withoutCompuMethod++;
+			}
+			if (systemSignal._dataConstrRef._path.empty())
+			{
+				withoutDataConstr++;
+			}
+		}
+		size_t withoutSystemSignal = 0;
+		size_t withoutBaseType = 0;
+		for (const Ar::ArISignal & iSignal : database._iSignals)
+		{
+			if (iSignal._systemSignalRef._path.empty())
+			{
+				withoutSystemSignal++;
+			}
+			if (iSignal._baseTypeRef._path.empty())
+			{
+				withoutBaseType++;
+			}
+		}
+		std::cout << "--- unresolvable references" << std::endl;
+		std::cout << "  systemSignal without compuMethod: " << withoutCompuMethod << std::endl;
+		std::cout << "  systemSignal without dataConstr:  " << withoutDataConstr << std::endl;
+		std::cout << "  iSignal without systemSignal:     " << withoutSystemSignal << std::endl;
+		std::cout << "  iSignal without baseType:         " << withoutBaseType << std::endl;
 		for (size_t i = 0; i < database._duplicatePaths.size() && i < 10; i++)
 		{
 			std::cout << "    duplicate: " << database._duplicatePaths[i] << std::endl;
@@ -145,17 +210,28 @@ namespace
 		std::cout << "--- indexed elements by type" << std::endl;
 		for (const std::pair<std::string, uint64_t> & entry : sorted)
 		{
-			std::cout << "  " << entry.second << "\t" << entry.first << std::endl;
-		}
-		std::cout << "--- sample paths" << std::endl;
-		size_t shown = 0;
-		for (const std::pair<const std::string, ArxmlIdentifiable> & entry : database._pathIndex)
-		{
-			if (shown < 5 && (entry.second._elementType == "CAN-FRAME" || entry.second._elementType == "I-SIGNAL"))
+			if (100 <= entry.second)
 			{
-				std::cout << "  " << entry.second._elementType << "\t" << entry.first << std::endl;
+				std::cout << "  " << entry.second << "\t" << entry.first << std::endl;
+			}
+		}
+		std::cout << "--- sample signals" << std::endl;
+		size_t shown = 0;
+		for (const Ar::ArISignal & iSignal : database._iSignals)
+		{
+			if (shown < 3)
+			{
+				std::cout << "  " << iSignal._path << ", length " << iSignal._length
+					<< ", systemSignal " << iSignal._systemSignalRef._path
+					<< ", baseType " << iSignal._baseTypeRef._path << std::endl;
 				shown++;
 			}
+		}
+		for (const Ar::ArSwBaseType & swBaseType : database._swBaseTypes)
+		{
+			std::cout << "  baseType " << swBaseType._shortName
+				<< ", size " << swBaseType._baseTypeSize
+				<< ", encoding '" << swBaseType._baseTypeEncoding << "'" << std::endl;
 		}
 		return 0;
 	}
