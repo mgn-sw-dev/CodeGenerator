@@ -2,6 +2,7 @@
 
 #include <OptiScan/Parser/Arxml/Ar/ArDescription.h>
 #include <OptiScan/Parser/Arxml/Ar/ArRef.h>
+#include <optional>
 #include <string>
 
 namespace OptiScan::Parser::Arxml::Ar

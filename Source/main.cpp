@@ -95,6 +95,61 @@ namespace
 		return 0;
 	}
 
+	/** Locates every COMPU-RATIONAL-COEFFS and reports the elements enclosing it.
+	 *  Answers why the model holds fewer linear scales than the file has coefficient
+	 *  blocks. Temporary, remove once the question is settled. */
+	int reportRationalCoeffParents()
+	{
+		int result = 0;
+		std::ifstream file(ArxmlPath, std::ios::binary);
+		if (!file.is_open())
+		{
+			std::cerr << "file not found" << std::endl;
+			result = 1;
+		}
+		else
+		{
+			ArxmlTokenReader reader(&file);
+			std::vector<std::string> stack;
+			std::map<std::string, uint64_t> chains;
+			while (reader.readNext())
+			{
+				if (reader.getKind() == ArxmlNodeKind::ElementBegin)
+				{
+					if (reader.getName() == "COMPU-RATIONAL-COEFFS")
+					{
+						std::string chain;
+						size_t from = 0;
+						if (4 < stack.size())
+						{
+							from = stack.size() - 4;
+						}
+						for (size_t i = from; i < stack.size(); i++)
+						{
+							chain += "/";
+							chain += stack[i];
+						}
+						chains[chain]++;
+					}
+					stack.push_back(reader.getName());
+				}
+				else if (reader.getKind() == ArxmlNodeKind::ElementEnd)
+				{
+					if (!stack.empty())
+					{
+						stack.pop_back();
+					}
+				}
+			}
+			std::cout << "--- COMPU-RATIONAL-COEFFS by enclosing elements" << std::endl;
+			for (const std::pair<const std::string, uint64_t> & entry : chains)
+			{
+				std::cout << "  " << entry.second << "\t" << entry.first << std::endl;
+			}
+		}
+		return result;
+	}
+
 	/** Check path for the path index (plan 20-parser-arxml.md, N2). */
 	int runArxmlIndexCheck()
 	{
@@ -233,7 +288,16 @@ namespace
 				<< ", size " << swBaseType._baseTypeSize
 				<< ", encoding '" << swBaseType._baseTypeEncoding << "'" << std::endl;
 		}
-		return 0;
+		size_t withDescription = 0;
+		for (const Ar::ArISignal & iSignal : database._iSignals)
+		{
+			if (iSignal._description.has_value())
+			{
+				withDescription++;
+			}
+		}
+		std::cout << "  iSignals with description: " << withDescription << std::endl;
+		return reportRationalCoeffParents();
 	}
 
 	/** */

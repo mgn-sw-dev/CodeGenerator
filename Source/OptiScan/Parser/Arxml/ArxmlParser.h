@@ -36,7 +36,7 @@ namespace OptiScan::Parser::Arxml
         void parseDataConstr(ArxmlDatabase & arxmlDatabase, const std::string & path,
             const std::string & shortName, size_t & elementIndex);
         /** */
-        void parseDescription(Ar::ArDescription & description);
+        void parseDescription(std::optional<Ar::ArDescription> & description);
         /** Walk one element and everything below it.
          *
          *  An element that carries a SHORT-NAME as its first child is identifiable in

@@ -321,19 +321,27 @@ namespace OptiScan::Parser::Arxml
 		arxmlDatabase._dataConstrs.push_back(std::move(dataConstr));
 	}
 
-	void ArxmlParser::parseDescription(ArDescription & description)
+	void ArxmlParser::parseDescription(optional<ArDescription> & description)
 	{
+		ArDescription parsed;
 		this->_reader.parseElementBegin(ArxmlKeyword::Desc);
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::Desc))
 		{
-			string const language = this->_reader.attributeOrEmpty(ArxmlKeyword::L);
-			if (language == "DE")
+			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::L2))
 			{
-				this->_reader.parseElementText("L-2", description._german);
-			}
-			else if (language == "EN")
-			{
-				this->_reader.parseElementText("L-2", description._english);
+				// The language attribute belongs to the opening node, so it has to be
+				// read before parseElementText moves on.
+				string const language = this->_reader.attributeOrEmpty(ArxmlKeyword::L);
+				string text;
+				this->_reader.parseElementText(ArxmlKeyword::L2, text);
+				if (language == "DE")
+				{
+					parsed._german = std::move(text);
+				}
+				else if (language == "EN")
+				{
+					parsed._english = std::move(text);
+				}
 			}
 			else if (this->_reader.getKind() == ArxmlNodeKind::ElementBegin)
 			{
@@ -343,6 +351,11 @@ namespace OptiScan::Parser::Arxml
 			{
 				this->_reader.readNext();
 			}
+		}
+		this->_reader.parseElementEnd(ArxmlKeyword::Desc);
+		if (!parsed._english.empty() || !parsed._german.empty())
+		{
+			description = std::move(parsed);
 		}
 	}
 
@@ -432,7 +445,7 @@ namespace OptiScan::Parser::Arxml
 			}
 			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Desc))
 			{
-				this->parseDescription(iSignal._description.emplace());
+				this->parseDescription(iSignal._description);
 			}
 			else if (this->_reader.getKind() == ArxmlNodeKind::ElementBegin)
 			{
@@ -602,7 +615,7 @@ namespace OptiScan::Parser::Arxml
 			}
 			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Desc))
 			{
-				this->parseDescription(systemSignal._description.emplace());
+				this->parseDescription(systemSignal._description);
 			}
 			else if (this->_reader.getKind() == ArxmlNodeKind::ElementBegin)
 			{

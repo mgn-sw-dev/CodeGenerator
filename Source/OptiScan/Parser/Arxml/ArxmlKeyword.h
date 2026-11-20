@@ -40,6 +40,7 @@ namespace OptiScan::Parser::Arxml
 		static inline const std::string InvalidValue = "INVALID-VALUE";
 		static inline const std::string ISignal = "I-SIGNAL";
 		static inline const std::string L = "L";
+		static inline const std::string L2 = "L-2";
 		static inline const std::string Length = "LENGTH";
 		static inline const std::string LowerLimit = "LOWER-LIMIT";
 		static inline const std::string NetworkRepresentationProps = "NETWORK-REPRESENTATION-PROPS";
