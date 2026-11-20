@@ -45,6 +45,10 @@ set(OptiScanParser_SOURCES
     A2l/A2lTokenReader.cpp
     A2l/A2lTokenReader.h
     A2l/A2lTokenReader.inl.h
+    Arxml/ArxmlReader.cpp
+    Arxml/ArxmlReader.h
+    Arxml/ArxmlTokenReader.cpp
+    Arxml/ArxmlTokenReader.h
     Dbc/DbcAttribute.h
     Dbc/DbcBitTiming.cpp
     Dbc/DbcBitTiming.h

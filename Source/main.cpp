@@ -1,28 +1,122 @@
 #include <OptiScan/Core/Database/SystemDatabase.h>
+#include <OptiScan/Parser/Arxml/ArxmlTokenReader.h>
 #include <OptiScan/View/Console/ConsoleLogHandler.h>
+#include <algorithm>
+#include <chrono>
+#include <cstdint>
 #include <exception>
+#include <fstream>
 #include <iostream>
+#include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
 using namespace OptiScan::Core::Database;
+using namespace OptiScan::Parser::Arxml;
 using namespace OptiScan::View::Console;
 
-int main(int argc, char * argv[])
+namespace
 {
-	ConsoleLogHandler logHandler;
-	SystemDatabase systemDatabase;
-	systemDatabase.setLogHandler(&logHandler);
-	try
+	// ----------------------------------------------------------------------------
+	// Temporary wiring while the parsers are being built. Paths are hard coded so
+	// the program runs straight from the IDE without arguments. To be replaced by a
+	// proper command line and by the test project in P7.
+	// ----------------------------------------------------------------------------
+
+	/** Set to false to run the CodeGenerator itself instead of the current check. */
+	const bool RunArxmlCheck = true;
+
+	const std::string ArxmlPath = "C:/CodeGenerator/Test/BACKBONE_EXT_CAN_2025_31a.arxml";
+	const std::string ConfigPath = "C:/CodeGenerator/Test/ConfigTest.json";
+
+	/** Check path for the ARXML reader (plan 20-parser-arxml.md, N1).
+	 *  Counts the opening tags per element name so the result can be held against an
+	 *  independently produced count. */
+	int runArxmlCheck()
 	{
-		systemDatabase.loadFromConfigFile("C:/CodeGenerator/Test/ConfigBevLongHaul.json");
-		systemDatabase.loadSelectionTables();
-		systemDatabase.loadVmms();
-		systemDatabase.loadMapping();
+		std::cout << "=== " << ArxmlPath << std::endl;
+		std::ifstream file(ArxmlPath, std::ios::binary);
+		if (!file.is_open())
+		{
+			std::cerr << "file not found" << std::endl;
+			return 1;
+		}
+
+		ArxmlTokenReader reader(&file);
+		std::map<std::string, uint64_t> counts;
+		uint64_t nodes = 0;
+		uint64_t texts = 0;
+		uint64_t maxDepth = 0;
+		const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+		try
+		{
+			while (reader.readNext())
+			{
+				nodes++;
+				if (reader.kind() == ArxmlNodeKind::ElementBegin)
+				{
+					counts[reader.name()]++;
+					maxDepth = std::max(maxDepth, reader.depth());
+				}
+				else if (reader.kind() == ArxmlNodeKind::Text)
+				{
+					texts++;
+				}
+			}
+		}
+		catch (const std::exception & error)
+		{
+			std::cerr << "FAILED: " << error.what() << std::endl;
+			return 1;
+		}
+		const std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+		std::vector<std::pair<std::string, uint64_t>> sorted(counts.begin(), counts.end());
+		std::sort(sorted.begin(), sorted.end(),
+			[](const std::pair<std::string, uint64_t> & left, const std::pair<std::string, uint64_t> & right)
+			{
+				return left.second != right.second ? right.second < left.second : left.first < right.first;
+			});
+
+		std::cout << "  nodes:          " << nodes << std::endl;
+		std::cout << "  text nodes:     " << texts << std::endl;
+		std::cout << "  distinct names: " << counts.size() << std::endl;
+		std::cout << "  max depth:      " << maxDepth << std::endl;
+		std::cout << "  duration:       "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+			<< " ms" << std::endl;
+		std::cout << "--- elements by count" << std::endl;
+		for (const std::pair<std::string, uint64_t> & entry : sorted)
+		{
+			std::cout << "  " << entry.second << "\t" << entry.first << std::endl;
+		}
+		return 0;
 	}
-	catch (const std::exception & error)
+
+	/** */
+	int runCodeGenerator()
 	{
-		logHandler.logError(std::string("CodeGenerator: ") + error.what());
-		return 1;
+		ConsoleLogHandler logHandler;
+		SystemDatabase systemDatabase;
+		systemDatabase.setLogHandler(&logHandler);
+		try
+		{
+			systemDatabase.loadFromConfigFile(ConfigPath);
+			systemDatabase.loadSelectionTables();
+			systemDatabase.loadVmms();
+			systemDatabase.loadMapping();
+		}
+		catch (const std::exception & error)
+		{
+			logHandler.logError(std::string("CodeGenerator: ") + error.what());
+			return 1;
+		}
+		return 0;
 	}
-	return 0;
+}
+
+int main()
+{
+	return RunArxmlCheck ? runArxmlCheck() : runCodeGenerator();
 }
