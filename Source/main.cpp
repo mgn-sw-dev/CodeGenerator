@@ -1,4 +1,5 @@
 #include <OptiScan/Core/Database/SystemDatabase.h>
+#include <OptiScan/Parser/Arxml/ArxmlParser.h>
 #include <OptiScan/Parser/Arxml/ArxmlTokenReader.h>
 #include <OptiScan/View/Console/ConsoleLogHandler.h>
 #include <algorithm>
@@ -54,12 +55,12 @@ namespace
 			while (reader.readNext())
 			{
 				nodes++;
-				if (reader.kind() == ArxmlNodeKind::ElementBegin)
+				if (reader.getKind() == ArxmlNodeKind::ElementBegin)
 				{
-					counts[reader.name()]++;
-					maxDepth = std::max(maxDepth, reader.depth());
+					counts[reader.getName()]++;
+					maxDepth = std::max(maxDepth, reader.getDepth());
 				}
-				else if (reader.kind() == ArxmlNodeKind::Text)
+				else if (reader.getKind() == ArxmlNodeKind::Text)
 				{
 					texts++;
 				}
@@ -94,6 +95,71 @@ namespace
 		return 0;
 	}
 
+	/** Check path for the path index (plan 20-parser-arxml.md, N2). */
+	int runArxmlIndexCheck()
+	{
+		std::cout << "=== " << ArxmlPath << std::endl;
+		std::ifstream file(ArxmlPath, std::ios::binary);
+		if (!file.is_open())
+		{
+			std::cerr << "file not found" << std::endl;
+			return 1;
+		}
+
+		ArxmlParser parser(&file);
+		ArxmlDatabase database;
+		const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+		try
+		{
+			parser.parse(database);
+		}
+		catch (const std::exception & error)
+		{
+			std::cerr << "FAILED: " << error.what() << std::endl;
+			return 1;
+		}
+		const std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+		std::map<std::string, uint64_t> counts;
+		for (const std::pair<const std::string, ArxmlIdentifiable> & entry : database._pathIndex)
+		{
+			counts[entry.second._elementType]++;
+		}
+		std::vector<std::pair<std::string, uint64_t>> sorted(counts.begin(), counts.end());
+		std::sort(sorted.begin(), sorted.end(),
+			[](const std::pair<std::string, uint64_t> & left, const std::pair<std::string, uint64_t> & right)
+			{
+				return left.second != right.second ? right.second < left.second : left.first < right.first;
+			});
+
+		std::cout << "  indexed paths:  " << database._pathIndex.size() << std::endl;
+		std::cout << "  duplicates:     " << database._duplicatePaths.size() << std::endl;
+		std::cout << "  element types:  " << counts.size() << std::endl;
+		std::cout << "  duration:       "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+			<< " ms" << std::endl;
+		for (size_t i = 0; i < database._duplicatePaths.size() && i < 10; i++)
+		{
+			std::cout << "    duplicate: " << database._duplicatePaths[i] << std::endl;
+		}
+		std::cout << "--- indexed elements by type" << std::endl;
+		for (const std::pair<std::string, uint64_t> & entry : sorted)
+		{
+			std::cout << "  " << entry.second << "\t" << entry.first << std::endl;
+		}
+		std::cout << "--- sample paths" << std::endl;
+		size_t shown = 0;
+		for (const std::pair<const std::string, ArxmlIdentifiable> & entry : database._pathIndex)
+		{
+			if (shown < 5 && (entry.second._elementType == "CAN-FRAME" || entry.second._elementType == "I-SIGNAL"))
+			{
+				std::cout << "  " << entry.second._elementType << "\t" << entry.first << std::endl;
+				shown++;
+			}
+		}
+		return 0;
+	}
+
 	/** */
 	int runCodeGenerator()
 	{
@@ -118,5 +184,14 @@ namespace
 
 int main()
 {
-	return RunArxmlCheck ? runArxmlCheck() : runCodeGenerator();
+	int result = 0;
+	if (RunArxmlCheck)
+	{
+		result = runArxmlIndexCheck();
+	}
+	else
+	{
+		result = runCodeGenerator();
+	}
+	return result;
 }

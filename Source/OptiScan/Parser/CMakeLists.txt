@@ -45,6 +45,10 @@ set(OptiScanParser_SOURCES
     A2l/A2lTokenReader.cpp
     A2l/A2lTokenReader.h
     A2l/A2lTokenReader.inl.h
+    Arxml/ArxmlDatabase.h
+    Arxml/ArxmlKeyword.h
+    Arxml/ArxmlParser.cpp
+    Arxml/ArxmlParser.h
     Arxml/ArxmlReader.cpp
     Arxml/ArxmlReader.h
     Arxml/ArxmlTokenReader.cpp

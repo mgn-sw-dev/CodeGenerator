@@ -30,7 +30,7 @@ namespace OptiScan::Parser::Arxml
         std::string _name;
         /** Character data, for Text. */
         std::string _text;
-        uint64_t _line = 0;
+        uint64_t _lineNumber = 0;
     };
 
     /** Pull adapter over Expat.
@@ -54,17 +54,17 @@ namespace OptiScan::Parser::Arxml
         /** Value of the attribute named @p name of the current node, or nullptr. */
         const std::string * attribute(const std::string & name) const;
         /** */
-        ArxmlNodeKind kind() const;
-        /** Line of the current node, 1 based. */
-        uint64_t line() const;
+        ArxmlNodeKind getKind() const;
+        /** Line number of the current node, 1 based. */
+        uint64_t getLineNumber() const;
         /** */
-        const std::string & name() const;
+        const std::string & getName() const;
+        /** */
+        const std::string & getText() const;
         /** Advance to the next node.
          *  @return false at the end of the document.
          *  @throws FormatException on malformed input. */
         bool readNext();
-        /** */
-        const std::string & text() const;
 
     private:
         /** Size of one input chunk handed to Expat. */

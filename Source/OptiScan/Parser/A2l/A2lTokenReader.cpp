@@ -58,9 +58,11 @@ namespace OptiScan::Parser::A2l
 	{
 		if (!this->tryMatchToken(kind))
 		{
-			string const found = this->hasToken()
-				? A2lTokenReader::tokenKindToText(this->token()._kind)
-				: string("no token");
+			string found = "no token";
+			if (this->hasToken())
+			{
+				found = A2lTokenReader::tokenKindToText(this->token()._kind);
+			}
 			this->throwFormatError("A2lTokenReader::matchToken",
 				"Expected " + A2lTokenReader::tokenKindToText(kind) + ", found " + found);
 		}

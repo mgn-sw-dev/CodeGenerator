@@ -46,13 +46,48 @@ namespace OptiScan::Parser::Arxml
 
 	const string & ArxmlTokenReader::attributeOrEmpty(const string & name) const
 	{
-		const string * const result = this->_reader.attribute(name);
-		return result == nullptr ? EmptyString : *result;
+		const string * const found = this->_reader.attribute(name);
+		const string * result = &EmptyString;
+		if (found != nullptr)
+		{
+			result = found;
+		}
+		return *result;
 	}
 
-	uint64_t ArxmlTokenReader::depth() const
+	string ArxmlTokenReader::describeCurrent() const
+	{
+		string result = ArxmlTokenReader::nodeKindToText(this->getKind());
+		if (this->_hasNode && !this->_reader.getName().empty())
+		{
+			result += " '" + this->_reader.getName() + "'";
+		}
+		return result;
+	}
+
+	uint64_t ArxmlTokenReader::getDepth() const
 	{
 		return this->_depth;
+	}
+
+	ArxmlNodeKind ArxmlTokenReader::getKind() const
+	{
+		return this->_reader.getKind();
+	}
+
+	uint64_t ArxmlTokenReader::getLineNumber() const
+	{
+		return this->_reader.getLineNumber();
+	}
+
+	const string & ArxmlTokenReader::getName() const
+	{
+		return this->_reader.getName();
+	}
+
+	const string & ArxmlTokenReader::getText() const
+	{
+		return this->_reader.getText();
 	}
 
 	bool ArxmlTokenReader::hasNode() const
@@ -60,23 +95,12 @@ namespace OptiScan::Parser::Arxml
 		return this->_hasNode;
 	}
 
-	ArxmlNodeKind ArxmlTokenReader::kind() const
-	{
-		return this->_reader.kind();
-	}
-
-	uint64_t ArxmlTokenReader::line() const
-	{
-		return this->_reader.line();
-	}
-
 	void ArxmlTokenReader::matchElementBegin(const string & name) const
 	{
 		if (!this->tryMatchElementBegin(name))
 		{
 			this->throwFormatError("ArxmlTokenReader::matchElementBegin",
-				"Expected <" + name + ">, found " + ArxmlTokenReader::nodeKindToText(this->kind())
-				+ (this->_hasNode && !this->_reader.name().empty() ? " '" + this->_reader.name() + "'" : ""));
+				"Expected <" + name + ">, found " + this->describeCurrent());
 		}
 	}
 
@@ -85,24 +109,18 @@ namespace OptiScan::Parser::Arxml
 		if (!this->tryMatchElementEnd(name))
 		{
 			this->throwFormatError("ArxmlTokenReader::matchElementEnd",
-				"Expected </" + name + ">, found " + ArxmlTokenReader::nodeKindToText(this->kind())
-				+ (this->_hasNode && !this->_reader.name().empty() ? " '" + this->_reader.name() + "'" : ""));
+				"Expected </" + name + ">, found " + this->describeCurrent());
 		}
 	}
 
 	void ArxmlTokenReader::matchKind(ArxmlNodeKind kind) const
 	{
-		if (!this->_hasNode || this->_reader.kind() != kind)
+		if (!this->_hasNode || this->_reader.getKind() != kind)
 		{
 			this->throwFormatError("ArxmlTokenReader::matchKind",
 				"Expected " + ArxmlTokenReader::nodeKindToText(kind)
-				+ ", found " + ArxmlTokenReader::nodeKindToText(this->kind()));
+				+ ", found " + ArxmlTokenReader::nodeKindToText(this->getKind()));
 		}
-	}
-
-	const string & ArxmlTokenReader::name() const
-	{
-		return this->_reader.name();
 	}
 
 	string ArxmlTokenReader::nodeKindToText(ArxmlNodeKind kind)
@@ -173,17 +191,16 @@ namespace OptiScan::Parser::Arxml
 		this->matchElementBegin(name);
 		this->readNext();
 		value.clear();
-		if (this->_hasNode && this->_reader.kind() == ArxmlNodeKind::Text)
+		if (this->_hasNode && this->_reader.getKind() == ArxmlNodeKind::Text)
 		{
-			value = trimmed(this->_reader.text());
+			value = trimmed(this->_reader.getText());
 			this->readNext();
 		}
 		if (!this->tryMatchElementEnd(name))
 		{
 			this->throwFormatError(context,
 				"<" + name + "> was expected to have text content only, found "
-				+ ArxmlTokenReader::nodeKindToText(this->kind())
-				+ (this->_hasNode && !this->_reader.name().empty() ? " '" + this->_reader.name() + "'" : ""));
+				+ this->describeCurrent());
 		}
 		this->readNext();
 	}
@@ -236,12 +253,12 @@ namespace OptiScan::Parser::Arxml
 		// The depth is tracked before the node is handed out, so depth() reports the
 		// level the current node sits on: an ElementBegin raises it, the matching
 		// ElementEnd lowers it again.
-		if (this->_hasNode && this->_reader.kind() == ArxmlNodeKind::ElementEnd && 0 < this->_depth)
+		if (this->_hasNode && this->_reader.getKind() == ArxmlNodeKind::ElementEnd && 0 < this->_depth)
 		{
 			this->_depth--;
 		}
 		this->_hasNode = this->_reader.readNext();
-		if (this->_hasNode && this->_reader.kind() == ArxmlNodeKind::ElementBegin)
+		if (this->_hasNode && this->_reader.getKind() == ArxmlNodeKind::ElementBegin)
 		{
 			this->_depth++;
 		}
@@ -251,14 +268,14 @@ namespace OptiScan::Parser::Arxml
 	void ArxmlTokenReader::skipElement()
 	{
 		this->matchKind(ArxmlNodeKind::ElementBegin);
-		string const name = this->_reader.name();
+		string const name = this->_reader.getName();
 		// The closing node of this element is reported at the same depth as the opening
 		// one, because readNext lowers the depth only when it moves past the closing
 		// node. Children therefore always end one level deeper.
 		uint64_t const target = this->_depth;
 		this->readNext();
 		while (this->_hasNode
-			&& !(this->_reader.kind() == ArxmlNodeKind::ElementEnd && this->_depth == target))
+			&& !(this->_reader.getKind() == ArxmlNodeKind::ElementEnd && this->_depth == target))
 		{
 			this->readNext();
 		}
@@ -270,17 +287,12 @@ namespace OptiScan::Parser::Arxml
 		this->readNext();
 	}
 
-	const string & ArxmlTokenReader::text() const
-	{
-		return this->_reader.text();
-	}
-
 	void ArxmlTokenReader::throwFormatError(const string & context, const string & message) const
 	{
 		string position;
 		if (this->_hasNode)
 		{
-			position = " (line " + to_string(this->_reader.line()) + ")";
+			position = " (line " + to_string(this->_reader.getLineNumber()) + ")";
 		}
 		throw FormatException(context + position + ": " + message);
 	}
@@ -288,15 +300,15 @@ namespace OptiScan::Parser::Arxml
 	bool ArxmlTokenReader::tryMatchElementBegin(const string & name) const
 	{
 		return this->_hasNode
-			&& this->_reader.kind() == ArxmlNodeKind::ElementBegin
-			&& this->_reader.name() == name;
+			&& this->_reader.getKind() == ArxmlNodeKind::ElementBegin
+			&& this->_reader.getName() == name;
 	}
 
 	bool ArxmlTokenReader::tryMatchElementEnd(const string & name) const
 	{
 		return this->_hasNode
-			&& this->_reader.kind() == ArxmlNodeKind::ElementEnd
-			&& this->_reader.name() == name;
+			&& this->_reader.getKind() == ArxmlNodeKind::ElementEnd
+			&& this->_reader.getName() == name;
 	}
 
 }

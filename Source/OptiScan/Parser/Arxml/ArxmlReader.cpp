@@ -45,12 +45,11 @@ namespace OptiScan::Parser::Arxml
 	const string * ArxmlReader::attribute(const string & name) const
 	{
 		const string * result = nullptr;
-		for (const ArxmlAttribute & entry : this->_current._attributes)
+		for (size_t i = 0; i < this->_current._attributes.size() && result == nullptr; i++)
 		{
-			if (entry._name == name)
+			if (this->_current._attributes[i]._name == name)
 			{
-				result = &entry._value;
-				break;
+				result = &this->_current._attributes[i]._value;
 			}
 		}
 		return result;
@@ -69,7 +68,12 @@ namespace OptiScan::Parser::Arxml
 		// A short read means the end of the stream. Treating a zero length read as
 		// final as well keeps readNext from looping forever on a broken stream.
 		bool const isFinal = count <= 0 || this->_input->eof();
-		if (XML_ParseBuffer(parser, static_cast<int>(count), isFinal ? 1 : 0) == XML_STATUS_ERROR)
+		int isFinalFlag = 0;
+		if (isFinal)
+		{
+			isFinalFlag = 1;
+		}
+		if (XML_ParseBuffer(parser, static_cast<int>(count), isFinalFlag) == XML_STATUS_ERROR)
 		{
 			this->throwExpatError();
 		}
@@ -85,38 +89,35 @@ namespace OptiScan::Parser::Arxml
 		if (!this->_pendingText.empty())
 		{
 			bool isWhitespaceOnly = true;
-			for (char const value : this->_pendingText)
+			for (size_t i = 0; i < this->_pendingText.size() && isWhitespaceOnly; i++)
 			{
-				if (value != ' ' && value != '\t' && value != '\r' && value != '\n')
-				{
-					isWhitespaceOnly = false;
-					break;
-				}
+				char const value = this->_pendingText[i];
+				isWhitespaceOnly = value == ' ' || value == '\t' || value == '\r' || value == '\n';
 			}
 			if (!isWhitespaceOnly)
 			{
 				ArxmlNode node;
 				node._kind = ArxmlNodeKind::Text;
 				node._text = std::move(this->_pendingText);
-				node._line = static_cast<uint64_t>(
-					XML_GetCurrentLineNumber(static_cast<XML_Parser>(this->_parser)));
+				node._lineNumber = static_cast<uint64_t>(
+					XML_GetCurrentLineNumber64(static_cast<XML_Parser>(this->_parser)));
 				this->_queue.push_back(std::move(node));
 			}
 			this->_pendingText.clear();
 		}
 	}
 
-	ArxmlNodeKind ArxmlReader::kind() const
+	ArxmlNodeKind ArxmlReader::getKind() const
 	{
 		return this->_current._kind;
 	}
 
-	uint64_t ArxmlReader::line() const
+	uint64_t ArxmlReader::getLineNumber() const
 	{
-		return this->_current._line;
+		return this->_current._lineNumber;
 	}
 
-	const string & ArxmlReader::name() const
+	const string & ArxmlReader::getName() const
 	{
 		return this->_current._name;
 	}
@@ -137,8 +138,8 @@ namespace OptiScan::Parser::Arxml
 		ArxmlNode node;
 		node._kind = ArxmlNodeKind::ElementBegin;
 		node._name = name;
-		node._line = static_cast<uint64_t>(
-			XML_GetCurrentLineNumber(static_cast<XML_Parser>(reader->_parser)));
+		node._lineNumber = static_cast<uint64_t>(
+			XML_GetCurrentLineNumber64(static_cast<XML_Parser>(reader->_parser)));
 		for (size_t i = 0; attributes[i] != nullptr && attributes[i + 1] != nullptr; i += 2)
 		{
 			ArxmlAttribute attribute;
@@ -156,8 +157,8 @@ namespace OptiScan::Parser::Arxml
 		ArxmlNode node;
 		node._kind = ArxmlNodeKind::ElementEnd;
 		node._name = name;
-		node._line = static_cast<uint64_t>(
-			XML_GetCurrentLineNumber(static_cast<XML_Parser>(reader->_parser)));
+		node._lineNumber = static_cast<uint64_t>(
+			XML_GetCurrentLineNumber64(static_cast<XML_Parser>(reader->_parser)));
 		reader->_queue.push_back(std::move(node));
 	}
 
@@ -180,7 +181,7 @@ namespace OptiScan::Parser::Arxml
 		return result;
 	}
 
-	const string & ArxmlReader::text() const
+	const string & ArxmlReader::getText() const
 	{
 		return this->_current._text;
 	}
@@ -190,9 +191,9 @@ namespace OptiScan::Parser::Arxml
 		XML_Parser parser = static_cast<XML_Parser>(this->_parser);
 		XML_Error const code = XML_GetErrorCode(parser);
 		string message = "ArxmlReader (line ";
-		message += to_string(XML_GetCurrentLineNumber(parser));
+		message += to_string(XML_GetCurrentLineNumber64(parser));
 		message += ", column ";
-		message += to_string(XML_GetCurrentColumnNumber(parser));
+		message += to_string(XML_GetCurrentColumnNumber64(parser));
 		message += "): ";
 		message += XML_ErrorString(code);
 		throw FormatException(message);

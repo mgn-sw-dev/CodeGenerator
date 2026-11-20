@@ -22,21 +22,23 @@ namespace OptiScan::Parser::Arxml
         /** Attribute value, or an empty string when the attribute is absent. */
         const std::string & attributeOrEmpty(const std::string & name) const;
         /** */
-        uint64_t depth() const;
+        uint64_t getDepth() const;
+    	/** */
+    	ArxmlNodeKind getKind() const;
+    	/** */
+    	uint64_t getLineNumber() const;
+    	/** */
+    	const std::string & getName() const;
+    	/** */
+    	const std::string & getText() const;
         /** */
         bool hasNode() const;
-        /** */
-        ArxmlNodeKind kind() const;
-        /** */
-        uint64_t line() const;
         /** @throws FormatException. */
         void matchElementBegin(const std::string & name) const;
         /** @throws FormatException. */
         void matchElementEnd(const std::string & name) const;
         /** @throws FormatException. */
         void matchKind(ArxmlNodeKind kind) const;
-        /** */
-        const std::string & name() const;
         /** Expect "<name>" and consume it. @throws FormatException. */
         void parseElementBegin(const std::string & name);
         /** Expect "</name>" and consume it. @throws FormatException. */
@@ -63,8 +65,6 @@ namespace OptiScan::Parser::Arxml
         /** At an ElementBegin: consume the element including all of its children.
          *  @throws FormatException. */
         void skipElement();
-        /** */
-        const std::string & text() const;
         /** Build a message with the current line and throw a FormatException.
          *  @param context: "Class::method" of the caller.
          *  @throws FormatException. */
@@ -81,6 +81,8 @@ namespace OptiScan::Parser::Arxml
         bool _hasNode;
         ArxmlReader _reader;
 
+        /** Current node as text, for error messages. */
+        std::string describeCurrent() const;
         /** @throws FormatException. */
         void parseElementTextChecked(const std::string & name, const std::string & context, std::string & value);
     };
