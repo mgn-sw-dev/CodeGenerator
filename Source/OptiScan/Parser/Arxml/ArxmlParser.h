@@ -26,6 +26,15 @@ namespace OptiScan::Parser::Arxml
         void parseChildren(ArxmlDatabase & arxmlDatabase, const std::string & path,
             const std::string & elementType);
         /** @throws FormatException. */
+        void parseCanCluster(ArxmlDatabase & arxmlDatabase, const std::string & path,
+            const std::string & shortName, size_t & elementIndex);
+        /** @throws FormatException. */
+        void parseCanFrame(ArxmlDatabase & arxmlDatabase, const std::string & path,
+            const std::string & shortName, size_t & elementIndex);
+        /** @throws FormatException. */
+        void parseCanFrameTriggering(ArxmlDatabase & arxmlDatabase, const std::string & path,
+            const std::string & shortName, size_t & elementIndex);
+        /** @throws FormatException. */
         void parseCompuMethod(ArxmlDatabase & arxmlDatabase, const std::string & path,
             const std::string & shortName, size_t & elementIndex);
         /** @throws FormatException. */
@@ -51,6 +60,21 @@ namespace OptiScan::Parser::Arxml
         /** @throws FormatException. */
         void parseISignal(ArxmlDatabase & arxmlDatabase, const std::string & path,
             const std::string & shortName, size_t & elementIndex);
+        /** @throws FormatException. */
+        void parseISignalIPdu(ArxmlDatabase & arxmlDatabase, const std::string & path,
+            const std::string & shortName, size_t & elementIndex);
+        /** Reads one I-SIGNAL-TO-I-PDU-MAPPING and registers its path. The mapping is
+         *  held inside the PDU, so no element index is recorded for it.
+         *  @throws FormatException. */
+        void parseISignalToIPduMapping(ArxmlDatabase & arxmlDatabase, const std::string & pduPath,
+            Ar::ArISignalIPdu & iSignalIPdu);
+        /** Descends through I-PDU-TIMING-SPECIFICATIONS and picks up the cyclic timing.
+         *  @throws FormatException. */
+        void parseIPduTiming(const std::string & elementType, Ar::ArISignalIPdu & iSignalIPdu);
+        /** Reads one PDU-TO-FRAME-MAPPING and registers its path.
+         *  @throws FormatException. */
+        void parsePduToFrameMapping(ArxmlDatabase & arxmlDatabase, const std::string & framePath,
+            Ar::ArCanFrame & canFrame);
         /** LOWER-LIMIT and UPPER-LIMIT, which may carry INF or -INF instead of a number.
          *  @throws FormatException. */
         void parseLimit(const std::string & elementType, std::optional<double> & value);
@@ -60,6 +84,9 @@ namespace OptiScan::Parser::Arxml
         /** An element whose text is a path and which carries a DEST attribute.
          *  @throws FormatException. */
         void parseRef(const std::string & elementType, Ar::ArRef & reference);
+        /** A wrapper holding a single VALUE element, such as TIME-PERIOD.
+         *  @throws FormatException. */
+        void parseValueWrapper(const std::string & elementType, std::optional<double> & value);
         /** @throws FormatException. */
         void parseSwBaseType(ArxmlDatabase & arxmlDatabase, const std::string & path,
             const std::string & shortName, size_t & elementIndex);

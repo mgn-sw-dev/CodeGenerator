@@ -75,6 +75,139 @@ namespace OptiScan::Parser::Arxml
 		this->_reader.parseElementEnd(elementType);
 	}
 
+	void ArxmlParser::parseCanCluster(ArxmlDatabase & arxmlDatabase, const string & path,
+		const string & shortName, size_t & elementIndex)
+	{
+		ArCanCluster canCluster;
+		canCluster._path = path;
+		canCluster._shortName = shortName;
+		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::CanCluster))
+		{
+			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Baudrate))
+			{
+				uint32_t value = 0;
+				this->_reader.parseElementUInt32(ArxmlKeyword::Baudrate, value);
+				canCluster._baudrate_bps = value;
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::CanFdBaudrate))
+			{
+				uint32_t value = 0;
+				this->_reader.parseElementUInt32(ArxmlKeyword::CanFdBaudrate, value);
+				canCluster._canFdBaudrate_bps = value;
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::ProtocolName))
+			{
+				string text;
+				this->_reader.parseElementText(ArxmlKeyword::ProtocolName, text);
+				canCluster._protocolName = text;
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::CanClusterVariants)
+				|| this->_reader.tryMatchElementBegin(ArxmlKeyword::CanClusterConditional))
+			{
+				// Pure wrappers holding the baud rates; step into them so the values
+				// show up at this loop level instead of being swallowed below.
+				this->_reader.readNext();
+			}
+			else if (this->_reader.getKind() == ArxmlNodeKind::ElementBegin)
+			{
+				// Recurse instead of skipping: the CAN-FRAME-TRIGGERINGs live several
+				// levels below here and have to reach both the index and the model.
+				this->parseElement(arxmlDatabase, path);
+			}
+			else
+			{
+				this->_reader.readNext();
+			}
+		}
+		elementIndex = arxmlDatabase._canClusters.size();
+		arxmlDatabase._canClusters.push_back(std::move(canCluster));
+	}
+
+	void ArxmlParser::parseCanFrame(ArxmlDatabase & arxmlDatabase, const string & path,
+		const string & shortName, size_t & elementIndex)
+	{
+		ArCanFrame canFrame;
+		canFrame._path = path;
+		canFrame._shortName = shortName;
+		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::CanFrame))
+		{
+			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::FrameLength))
+			{
+				this->_reader.parseElementUInt32(ArxmlKeyword::FrameLength, canFrame._frameLength);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Desc))
+			{
+				this->parseDescription(canFrame._description);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::PduToFrameMapping))
+			{
+				this->parsePduToFrameMapping(arxmlDatabase, path, canFrame);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::AdminData))
+			{
+				this->_reader.skipElement();
+			}
+			else if (this->_reader.getKind() == ArxmlNodeKind::ElementBegin)
+			{
+				// PDU-TO-FRAME-MAPPINGS is a pure wrapper; step into it.
+				this->_reader.readNext();
+			}
+			else
+			{
+				this->_reader.readNext();
+			}
+		}
+		elementIndex = arxmlDatabase._canFrames.size();
+		arxmlDatabase._canFrames.push_back(std::move(canFrame));
+	}
+
+	void ArxmlParser::parseCanFrameTriggering(ArxmlDatabase & arxmlDatabase, const string & path,
+		const string & shortName, size_t & elementIndex)
+	{
+		ArCanFrameTriggering triggering;
+		triggering._path = path;
+		triggering._shortName = shortName;
+		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::CanFrameTriggering))
+		{
+			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Identifier))
+			{
+				uint32_t value = 0;
+				this->_reader.parseElementUInt32(ArxmlKeyword::Identifier, value);
+				triggering._identifier = value;
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::CanAddressingMode))
+			{
+				this->_reader.parseElementText(ArxmlKeyword::CanAddressingMode,
+					triggering._canAddressingMode);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::CanFrameRxBehavior))
+			{
+				this->_reader.parseElementText(ArxmlKeyword::CanFrameRxBehavior,
+					triggering._canFrameRxBehavior);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::CanFrameTxBehavior))
+			{
+				this->_reader.parseElementText(ArxmlKeyword::CanFrameTxBehavior,
+					triggering._canFrameTxBehavior);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::FrameRef))
+			{
+				this->parseRef(ArxmlKeyword::FrameRef, triggering._frameRef);
+			}
+			else if (this->_reader.getKind() == ArxmlNodeKind::ElementBegin)
+			{
+				// FRAME-PORT-REFS and PDU-TRIGGERINGS are out of the first scope (B6).
+				this->_reader.skipElement();
+			}
+			else
+			{
+				this->_reader.readNext();
+			}
+		}
+		elementIndex = arxmlDatabase._canFrameTriggerings.size();
+		arxmlDatabase._canFrameTriggerings.push_back(std::move(triggering));
+	}
+
 	void ArxmlParser::parseCompuMethod(ArxmlDatabase & arxmlDatabase, const string & path,
 		const string & shortName, size_t & elementIndex)
 	{
@@ -383,7 +516,19 @@ namespace OptiScan::Parser::Arxml
 				path = parentPath + "/" + shortName;
 			}
 			size_t elementIndex = ArxmlIdentifiable::NoIndex;
-			if (elementType == ArxmlKeyword::CompuMethod)
+			if (elementType == ArxmlKeyword::CanCluster)
+			{
+				this->parseCanCluster(arxmlDatabase, path, shortName, elementIndex);
+			}
+			else if (elementType == ArxmlKeyword::CanFrame)
+			{
+				this->parseCanFrame(arxmlDatabase, path, shortName, elementIndex);
+			}
+			else if (elementType == ArxmlKeyword::CanFrameTriggering)
+			{
+				this->parseCanFrameTriggering(arxmlDatabase, path, shortName, elementIndex);
+			}
+			else if (elementType == ArxmlKeyword::CompuMethod)
 			{
 				this->parseCompuMethod(arxmlDatabase, path, shortName, elementIndex);
 			}
@@ -394,6 +539,10 @@ namespace OptiScan::Parser::Arxml
 			else if (elementType == ArxmlKeyword::ISignal)
 			{
 				this->parseISignal(arxmlDatabase, path, shortName, elementIndex);
+			}
+			else if (elementType == ArxmlKeyword::ISignalIPdu)
+			{
+				this->parseISignalIPdu(arxmlDatabase, path, shortName, elementIndex);
 			}
 			else if (elementType == ArxmlKeyword::SwBaseType)
 			{
@@ -458,6 +607,198 @@ namespace OptiScan::Parser::Arxml
 		}
 		elementIndex = arxmlDatabase._iSignals.size();
 		arxmlDatabase._iSignals.push_back(std::move(iSignal));
+	}
+
+	void ArxmlParser::parseISignalIPdu(ArxmlDatabase & arxmlDatabase, const string & path,
+		const string & shortName, size_t & elementIndex)
+	{
+		ArISignalIPdu iSignalIPdu;
+		iSignalIPdu._path = path;
+		iSignalIPdu._shortName = shortName;
+		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::ISignalIPdu))
+		{
+			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Length))
+			{
+				this->_reader.parseElementUInt32(ArxmlKeyword::Length, iSignalIPdu._length);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::UnusedBitPattern))
+			{
+				uint32_t value = 0;
+				this->_reader.parseElementUInt32(ArxmlKeyword::UnusedBitPattern, value);
+				iSignalIPdu._unusedBitPattern = value;
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Desc))
+			{
+				this->parseDescription(iSignalIPdu._description);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::IPduTimingSpecifications))
+			{
+				this->parseIPduTiming(ArxmlKeyword::IPduTimingSpecifications, iSignalIPdu);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::ISignalToIPduMapping))
+			{
+				this->parseISignalToIPduMapping(arxmlDatabase, path, iSignalIPdu);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::AdminData))
+			{
+				this->_reader.skipElement();
+			}
+			else if (this->_reader.getKind() == ArxmlNodeKind::ElementBegin)
+			{
+				// I-SIGNAL-TO-PDU-MAPPINGS is a pure wrapper; step into it.
+				this->_reader.readNext();
+			}
+			else
+			{
+				this->_reader.readNext();
+			}
+		}
+		elementIndex = arxmlDatabase._iSignalIPdus.size();
+		arxmlDatabase._iSignalIPdus.push_back(std::move(iSignalIPdu));
+	}
+
+	void ArxmlParser::parseISignalToIPduMapping(ArxmlDatabase & arxmlDatabase, const string & pduPath,
+		ArISignalIPdu & iSignalIPdu)
+	{
+		ArISignalToIPduMapping mapping;
+		uint64_t const lineNumber = this->_reader.getLineNumber();
+		this->_reader.parseElementBegin(ArxmlKeyword::ISignalToIPduMapping);
+		if (this->_reader.tryMatchElementBegin(ArxmlKeyword::ShortName))
+		{
+			this->_reader.parseElementText(ArxmlKeyword::ShortName, mapping._shortName);
+			mapping._path = pduPath + "/" + mapping._shortName;
+			// A mapping is identifiable but nothing refers to one, so it is indexed
+			// without an element index and lives inside its PDU.
+			this->registerPath(arxmlDatabase, mapping._path, ArxmlKeyword::ISignalToIPduMapping,
+				lineNumber, ArxmlIdentifiable::NoIndex);
+		}
+		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::ISignalToIPduMapping))
+		{
+			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::ISignalRef))
+			{
+				this->parseRef(ArxmlKeyword::ISignalRef, mapping._iSignalRef);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::ISignalGroupRef))
+			{
+				this->parseRef(ArxmlKeyword::ISignalGroupRef, mapping._iSignalGroupRef);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::PackingByteOrder))
+			{
+				this->_reader.parseElementText(ArxmlKeyword::PackingByteOrder, mapping._packingByteOrder);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::StartPosition))
+			{
+				uint32_t value = 0;
+				this->_reader.parseElementUInt32(ArxmlKeyword::StartPosition, value);
+				mapping._startPosition = value;
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::TransferProperty))
+			{
+				this->_reader.parseElementText(ArxmlKeyword::TransferProperty, mapping._transferProperty);
+			}
+			else if (this->_reader.getKind() == ArxmlNodeKind::ElementBegin)
+			{
+				this->_reader.skipElement();
+			}
+			else
+			{
+				this->_reader.readNext();
+			}
+		}
+		this->_reader.parseElementEnd(ArxmlKeyword::ISignalToIPduMapping);
+		iSignalIPdu._mappings.push_back(std::move(mapping));
+	}
+
+	void ArxmlParser::parseIPduTiming(const string & elementType, ArISignalIPdu & iSignalIPdu)
+	{
+		this->_reader.parseElementBegin(elementType);
+		while (!this->_reader.tryMatchElementEnd(elementType))
+		{
+			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::TimePeriod))
+			{
+				this->parseValueWrapper(ArxmlKeyword::TimePeriod, iSignalIPdu._cycleTime_s);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::TimeOffset))
+			{
+				this->parseValueWrapper(ArxmlKeyword::TimeOffset, iSignalIPdu._timeOffset_s);
+			}
+			else if (this->_reader.getKind() == ArxmlNodeKind::ElementBegin)
+			{
+				// The timing sits several wrapper levels down, so step in rather than
+				// skip. TIME-PERIOD only ever occurs inside a CYCLIC-TIMING.
+				this->_reader.readNext();
+			}
+			else
+			{
+				this->_reader.readNext();
+			}
+		}
+		this->_reader.parseElementEnd(elementType);
+	}
+
+	void ArxmlParser::parsePduToFrameMapping(ArxmlDatabase & arxmlDatabase, const string & framePath,
+		ArCanFrame & canFrame)
+	{
+		ArPduToFrameMapping mapping;
+		uint64_t const lineNumber = this->_reader.getLineNumber();
+		this->_reader.parseElementBegin(ArxmlKeyword::PduToFrameMapping);
+		if (this->_reader.tryMatchElementBegin(ArxmlKeyword::ShortName))
+		{
+			this->_reader.parseElementText(ArxmlKeyword::ShortName, mapping._shortName);
+			mapping._path = framePath + "/" + mapping._shortName;
+			this->registerPath(arxmlDatabase, mapping._path, ArxmlKeyword::PduToFrameMapping,
+				lineNumber, ArxmlIdentifiable::NoIndex);
+		}
+		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::PduToFrameMapping))
+		{
+			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::PduRef))
+			{
+				this->parseRef(ArxmlKeyword::PduRef, mapping._pduRef);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::PackingByteOrder))
+			{
+				this->_reader.parseElementText(ArxmlKeyword::PackingByteOrder, mapping._packingByteOrder);
+			}
+			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::StartPosition))
+			{
+				uint32_t value = 0;
+				this->_reader.parseElementUInt32(ArxmlKeyword::StartPosition, value);
+				mapping._startPosition = value;
+			}
+			else if (this->_reader.getKind() == ArxmlNodeKind::ElementBegin)
+			{
+				this->_reader.skipElement();
+			}
+			else
+			{
+				this->_reader.readNext();
+			}
+		}
+		this->_reader.parseElementEnd(ArxmlKeyword::PduToFrameMapping);
+		canFrame._mappings.push_back(std::move(mapping));
+	}
+
+	void ArxmlParser::parseValueWrapper(const string & elementType, optional<double> & value)
+	{
+		this->_reader.parseElementBegin(elementType);
+		while (!this->_reader.tryMatchElementEnd(elementType))
+		{
+			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Value))
+			{
+				double parsed = 0.0;
+				this->_reader.parseElementDouble(ArxmlKeyword::Value, parsed);
+				value = parsed;
+			}
+			else if (this->_reader.getKind() == ArxmlNodeKind::ElementBegin)
+			{
+				this->_reader.skipElement();
+			}
+			else
+			{
+				this->_reader.readNext();
+			}
+		}
+		this->_reader.parseElementEnd(elementType);
 	}
 
 	void ArxmlParser::parseISignalProps(ArISignal & iSignal)

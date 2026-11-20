@@ -200,6 +200,76 @@ namespace
 		std::cout << "  dataConstrs:    " << database._dataConstrs.size() << std::endl;
 		std::cout << "  swBaseTypes:    " << database._swBaseTypes.size() << std::endl;
 		std::cout << "  units:          " << database._units.size() << std::endl;
+		std::cout << "  iSignalIPdus:   " << database._iSignalIPdus.size() << std::endl;
+		std::cout << "  canFrames:      " << database._canFrames.size() << std::endl;
+		std::cout << "  canFrameTrigs:  " << database._canFrameTriggerings.size() << std::endl;
+		std::cout << "  canClusters:    " << database._canClusters.size() << std::endl;
+		size_t mappings = 0;
+		size_t mappingsWithSignal = 0;
+		size_t mappingsWithGroup = 0;
+		size_t mappingsWithStart = 0;
+		size_t pdusWithCycleTime = 0;
+		for (const Ar::ArISignalIPdu & pdu : database._iSignalIPdus)
+		{
+			if (pdu._cycleTime_s.has_value())
+			{
+				pdusWithCycleTime++;
+			}
+			for (const Ar::ArISignalToIPduMapping & mapping : pdu._mappings)
+			{
+				mappings++;
+				if (!mapping._iSignalRef._path.empty())
+				{
+					mappingsWithSignal++;
+				}
+				if (!mapping._iSignalGroupRef._path.empty())
+				{
+					mappingsWithGroup++;
+				}
+				if (mapping._startPosition.has_value())
+				{
+					mappingsWithStart++;
+				}
+			}
+		}
+		std::cout << "  signalMappings: " << mappings
+			<< " (signal " << mappingsWithSignal << ", group " << mappingsWithGroup
+			<< ", withStart " << mappingsWithStart << ")" << std::endl;
+		std::cout << "  pdusWithCycle:  " << pdusWithCycleTime << std::endl;
+		size_t frameMappings = 0;
+		for (const Ar::ArCanFrame & canFrame : database._canFrames)
+		{
+			frameMappings += canFrame._mappings.size();
+		}
+		std::cout << "  frameMappings:  " << frameMappings << std::endl;
+		size_t extended = 0;
+		size_t withIdentifier = 0;
+		for (const Ar::ArCanFrameTriggering & triggering : database._canFrameTriggerings)
+		{
+			if (triggering._identifier.has_value())
+			{
+				withIdentifier++;
+			}
+			if (triggering._canAddressingMode == "EXTENDED")
+			{
+				extended++;
+			}
+		}
+		std::cout << "  triggerings:    withIdentifier " << withIdentifier
+			<< ", extended " << extended << std::endl;
+		for (const Ar::ArCanCluster & canCluster : database._canClusters)
+		{
+			std::cout << "  cluster " << canCluster._shortName << ": baudrate ";
+			if (canCluster._baudrate_bps.has_value())
+			{
+				std::cout << *canCluster._baudrate_bps;
+			}
+			if (canCluster._canFdBaudrate_bps.has_value())
+			{
+				std::cout << ", fd " << *canCluster._canFdBaudrate_bps;
+			}
+			std::cout << std::endl;
+		}
 		size_t scales = 0;
 		size_t linearScales = 0;
 		size_t textScales = 0;
@@ -297,7 +367,24 @@ namespace
 			}
 		}
 		std::cout << "  iSignals with description: " << withDescription << std::endl;
-		return reportRationalCoeffParents();
+		size_t shownFrames = 0;
+		for (const Ar::ArCanFrameTriggering & triggering : database._canFrameTriggerings)
+		{
+			if (shownFrames < 3 && triggering._identifier.has_value())
+			{
+				uint32_t dbcId = *triggering._identifier;
+				if (triggering._canAddressingMode == "EXTENDED")
+				{
+					dbcId |= 0x80000000u;
+				}
+				std::cout << "  " << triggering._shortName
+					<< ", id " << *triggering._identifier
+					<< ", dbcId " << dbcId
+					<< ", frame " << triggering._frameRef._path << std::endl;
+				shownFrames++;
+			}
+		}
+		return 0;
 	}
 
 	/** */
