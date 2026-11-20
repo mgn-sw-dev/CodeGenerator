@@ -47,6 +47,7 @@ set(OptiScanParser_SOURCES
     A2l/A2lTokenReader.inl.h
     Arxml/Ar/ArCompuMethod.h
     Arxml/Ar/ArDataConstr.h
+    Arxml/Ar/ArDescription.h
     Arxml/Ar/ArISignal.h
     Arxml/Ar/ArRef.h
     Arxml/Ar/ArSwBaseType.h
