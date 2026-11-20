@@ -75,12 +75,11 @@ namespace OptiScan::Parser::Arxml
 		this->_reader.parseElementEnd(elementType);
 	}
 
-	void ArxmlParser::parseCanCluster(ArxmlDatabase & arxmlDatabase, const string & path,
-		const string & shortName, size_t & elementIndex)
+	void ArxmlParser::parseCanCluster(ArxmlElementContext & context)
 	{
 		ArCanCluster canCluster;
-		canCluster._path = path;
-		canCluster._shortName = shortName;
+		canCluster._path = context._path;
+		canCluster._shortName = context._shortName;
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::CanCluster))
 		{
 			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Baudrate))
@@ -112,23 +111,22 @@ namespace OptiScan::Parser::Arxml
 			{
 				// Recurse instead of skipping: the CAN-FRAME-TRIGGERINGs live several
 				// levels below here and have to reach both the index and the model.
-				this->parseElement(arxmlDatabase, path);
+				this->parseElement(context._arxmlDatabase, context._path);
 			}
 			else
 			{
 				this->_reader.readNext();
 			}
 		}
-		elementIndex = arxmlDatabase._canClusters.size();
-		arxmlDatabase._canClusters.push_back(std::move(canCluster));
+		context._elementIndex = context._arxmlDatabase._canClusters.size();
+		context._arxmlDatabase._canClusters.push_back(std::move(canCluster));
 	}
 
-	void ArxmlParser::parseCanFrame(ArxmlDatabase & arxmlDatabase, const string & path,
-		const string & shortName, size_t & elementIndex)
+	void ArxmlParser::parseCanFrame(ArxmlElementContext & context)
 	{
 		ArCanFrame canFrame;
-		canFrame._path = path;
-		canFrame._shortName = shortName;
+		canFrame._path = context._path;
+		canFrame._shortName = context._shortName;
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::CanFrame))
 		{
 			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::FrameLength))
@@ -141,7 +139,7 @@ namespace OptiScan::Parser::Arxml
 			}
 			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::PduToFrameMapping))
 			{
-				this->parsePduToFrameMapping(arxmlDatabase, path, canFrame);
+				this->parsePduToFrameMapping(context, canFrame);
 			}
 			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::AdminData))
 			{
@@ -157,16 +155,15 @@ namespace OptiScan::Parser::Arxml
 				this->_reader.readNext();
 			}
 		}
-		elementIndex = arxmlDatabase._canFrames.size();
-		arxmlDatabase._canFrames.push_back(std::move(canFrame));
+		context._elementIndex = context._arxmlDatabase._canFrames.size();
+		context._arxmlDatabase._canFrames.push_back(std::move(canFrame));
 	}
 
-	void ArxmlParser::parseCanFrameTriggering(ArxmlDatabase & arxmlDatabase, const string & path,
-		const string & shortName, size_t & elementIndex)
+	void ArxmlParser::parseCanFrameTriggering(ArxmlElementContext & context)
 	{
 		ArCanFrameTriggering triggering;
-		triggering._path = path;
-		triggering._shortName = shortName;
+		triggering._path = context._path;
+		triggering._shortName = context._shortName;
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::CanFrameTriggering))
 		{
 			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Identifier))
@@ -204,16 +201,15 @@ namespace OptiScan::Parser::Arxml
 				this->_reader.readNext();
 			}
 		}
-		elementIndex = arxmlDatabase._canFrameTriggerings.size();
-		arxmlDatabase._canFrameTriggerings.push_back(std::move(triggering));
+		context._elementIndex = context._arxmlDatabase._canFrameTriggerings.size();
+		context._arxmlDatabase._canFrameTriggerings.push_back(std::move(triggering));
 	}
 
-	void ArxmlParser::parseCompuMethod(ArxmlDatabase & arxmlDatabase, const string & path,
-		const string & shortName, size_t & elementIndex)
+	void ArxmlParser::parseCompuMethod(ArxmlElementContext & context)
 	{
 		ArCompuMethod compuMethod;
-		compuMethod._path = path;
-		compuMethod._shortName = shortName;
+		compuMethod._path = context._path;
+		compuMethod._shortName = context._shortName;
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::CompuMethod))
 		{
 			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Category))
@@ -269,8 +265,8 @@ namespace OptiScan::Parser::Arxml
 				this->_reader.readNext();
 			}
 		}
-		elementIndex = arxmlDatabase._compuMethods.size();
-		arxmlDatabase._compuMethods.push_back(std::move(compuMethod));
+		context._elementIndex = context._arxmlDatabase._compuMethods.size();
+		context._arxmlDatabase._compuMethods.push_back(std::move(compuMethod));
 	}
 
 	void ArxmlParser::parseCompuScale(ArCompuMethod & compuMethod)
@@ -354,12 +350,11 @@ namespace OptiScan::Parser::Arxml
 		compuMethod._scales.push_back(std::move(scale));
 	}
 
-	void ArxmlParser::parseDataConstr(ArxmlDatabase & arxmlDatabase, const string & path,
-		const string & shortName, size_t & elementIndex)
+	void ArxmlParser::parseDataConstr(ArxmlElementContext & context)
 	{
 		ArDataConstr dataConstr;
-		dataConstr._path = path;
-		dataConstr._shortName = shortName;
+		dataConstr._path = context._path;
+		dataConstr._shortName = context._shortName;
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::DataConstr))
 		{
 			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::DataConstrRules))
@@ -450,8 +445,8 @@ namespace OptiScan::Parser::Arxml
 				this->_reader.readNext();
 			}
 		}
-		elementIndex = arxmlDatabase._dataConstrs.size();
-		arxmlDatabase._dataConstrs.push_back(std::move(dataConstr));
+		context._elementIndex = context._arxmlDatabase._dataConstrs.size();
+		context._arxmlDatabase._dataConstrs.push_back(std::move(dataConstr));
 	}
 
 	void ArxmlParser::parseDescription(optional<ArDescription> & description)
@@ -506,74 +501,72 @@ namespace OptiScan::Parser::Arxml
 		else
 		{
 			this->_reader.readNext();
-			string path = parentPath;
-			string shortName;
+			ArxmlElementContext context{arxmlDatabase, parentPath, string(), ArxmlIdentifiable::NoIndex};
 			bool const isIdentifiable = this->_reader.tryMatchElementBegin(ArxmlKeyword::ShortName);
 			if (isIdentifiable)
 			{
 				// In AUTOSAR the SHORT-NAME is the first child of an identifiable element.
-				this->_reader.parseElementText(ArxmlKeyword::ShortName, shortName);
-				path = parentPath + "/" + shortName;
+				this->_reader.parseElementText(ArxmlKeyword::ShortName, context._shortName);
+				context._path = parentPath + "/" + context._shortName;
 			}
-			size_t elementIndex = ArxmlIdentifiable::NoIndex;
 			if (elementType == ArxmlKeyword::CanCluster)
 			{
-				this->parseCanCluster(arxmlDatabase, path, shortName, elementIndex);
+				this->parseCanCluster(context);
 			}
 			else if (elementType == ArxmlKeyword::CanFrame)
 			{
-				this->parseCanFrame(arxmlDatabase, path, shortName, elementIndex);
+				this->parseCanFrame(context);
 			}
 			else if (elementType == ArxmlKeyword::CanFrameTriggering)
 			{
-				this->parseCanFrameTriggering(arxmlDatabase, path, shortName, elementIndex);
+				this->parseCanFrameTriggering(context);
 			}
 			else if (elementType == ArxmlKeyword::CompuMethod)
 			{
-				this->parseCompuMethod(arxmlDatabase, path, shortName, elementIndex);
+				this->parseCompuMethod(context);
 			}
 			else if (elementType == ArxmlKeyword::DataConstr)
 			{
-				this->parseDataConstr(arxmlDatabase, path, shortName, elementIndex);
+				this->parseDataConstr(context);
 			}
 			else if (elementType == ArxmlKeyword::ISignal)
 			{
-				this->parseISignal(arxmlDatabase, path, shortName, elementIndex);
+				this->parseISignal(context);
 			}
 			else if (elementType == ArxmlKeyword::ISignalIPdu)
 			{
-				this->parseISignalIPdu(arxmlDatabase, path, shortName, elementIndex);
+				this->parseISignalIPdu(context);
 			}
 			else if (elementType == ArxmlKeyword::SwBaseType)
 			{
-				this->parseSwBaseType(arxmlDatabase, path, shortName, elementIndex);
+				this->parseSwBaseType(context);
 			}
 			else if (elementType == ArxmlKeyword::SystemSignal)
 			{
-				this->parseSystemSignal(arxmlDatabase, path, shortName, elementIndex);
+				this->parseSystemSignal(context);
 			}
 			else if (elementType == ArxmlKeyword::Unit)
 			{
-				this->parseUnit(arxmlDatabase, path, shortName, elementIndex);
+				this->parseUnit(context);
 			}
 			else
 			{
-				this->parseChildren(arxmlDatabase, path, elementType);
+				this->parseChildren(arxmlDatabase, context._path, elementType);
 			}
 			if (isIdentifiable)
 			{
-				this->registerPath(arxmlDatabase, path, elementType, lineNumber, elementIndex);
+				this->registerPath(arxmlDatabase, context._path, elementType, lineNumber,
+					context._elementIndex);
 			}
 			this->_reader.parseElementEnd(elementType);
 		}
 	}
 
-	void ArxmlParser::parseISignal(ArxmlDatabase & arxmlDatabase, const string & path,
-		const string & shortName, size_t & elementIndex)
+	void ArxmlParser::parseISignal(ArxmlElementContext & context)
 	{
 		ArISignal iSignal;
-		iSignal._path = path;
-		iSignal._shortName = shortName;
+		iSignal._path = context._path;
+		iSignal._shortName = context._shortName;
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::ISignal))
 		{
 			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Length))
@@ -605,16 +598,15 @@ namespace OptiScan::Parser::Arxml
 				this->_reader.readNext();
 			}
 		}
-		elementIndex = arxmlDatabase._iSignals.size();
-		arxmlDatabase._iSignals.push_back(std::move(iSignal));
+		context._elementIndex = context._arxmlDatabase._iSignals.size();
+		context._arxmlDatabase._iSignals.push_back(std::move(iSignal));
 	}
 
-	void ArxmlParser::parseISignalIPdu(ArxmlDatabase & arxmlDatabase, const string & path,
-		const string & shortName, size_t & elementIndex)
+	void ArxmlParser::parseISignalIPdu(ArxmlElementContext & context)
 	{
 		ArISignalIPdu iSignalIPdu;
-		iSignalIPdu._path = path;
-		iSignalIPdu._shortName = shortName;
+		iSignalIPdu._path = context._path;
+		iSignalIPdu._shortName = context._shortName;
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::ISignalIPdu))
 		{
 			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::Length))
@@ -637,7 +629,7 @@ namespace OptiScan::Parser::Arxml
 			}
 			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::ISignalToIPduMapping))
 			{
-				this->parseISignalToIPduMapping(arxmlDatabase, path, iSignalIPdu);
+				this->parseISignalToIPduMapping(context, iSignalIPdu);
 			}
 			else if (this->_reader.tryMatchElementBegin(ArxmlKeyword::AdminData))
 			{
@@ -653,11 +645,11 @@ namespace OptiScan::Parser::Arxml
 				this->_reader.readNext();
 			}
 		}
-		elementIndex = arxmlDatabase._iSignalIPdus.size();
-		arxmlDatabase._iSignalIPdus.push_back(std::move(iSignalIPdu));
+		context._elementIndex = context._arxmlDatabase._iSignalIPdus.size();
+		context._arxmlDatabase._iSignalIPdus.push_back(std::move(iSignalIPdu));
 	}
 
-	void ArxmlParser::parseISignalToIPduMapping(ArxmlDatabase & arxmlDatabase, const string & pduPath,
+	void ArxmlParser::parseISignalToIPduMapping(const ArxmlElementContext & context,
 		ArISignalIPdu & iSignalIPdu)
 	{
 		ArISignalToIPduMapping mapping;
@@ -666,10 +658,10 @@ namespace OptiScan::Parser::Arxml
 		if (this->_reader.tryMatchElementBegin(ArxmlKeyword::ShortName))
 		{
 			this->_reader.parseElementText(ArxmlKeyword::ShortName, mapping._shortName);
-			mapping._path = pduPath + "/" + mapping._shortName;
+			mapping._path = context._path + "/" + mapping._shortName;
 			// A mapping is identifiable but nothing refers to one, so it is indexed
 			// without an element index and lives inside its PDU.
-			this->registerPath(arxmlDatabase, mapping._path, ArxmlKeyword::ISignalToIPduMapping,
+			this->registerPath(context._arxmlDatabase, mapping._path, ArxmlKeyword::ISignalToIPduMapping,
 				lineNumber, ArxmlIdentifiable::NoIndex);
 		}
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::ISignalToIPduMapping))
@@ -736,7 +728,7 @@ namespace OptiScan::Parser::Arxml
 		this->_reader.parseElementEnd(elementType);
 	}
 
-	void ArxmlParser::parsePduToFrameMapping(ArxmlDatabase & arxmlDatabase, const string & framePath,
+	void ArxmlParser::parsePduToFrameMapping(const ArxmlElementContext & context,
 		ArCanFrame & canFrame)
 	{
 		ArPduToFrameMapping mapping;
@@ -745,8 +737,8 @@ namespace OptiScan::Parser::Arxml
 		if (this->_reader.tryMatchElementBegin(ArxmlKeyword::ShortName))
 		{
 			this->_reader.parseElementText(ArxmlKeyword::ShortName, mapping._shortName);
-			mapping._path = framePath + "/" + mapping._shortName;
-			this->registerPath(arxmlDatabase, mapping._path, ArxmlKeyword::PduToFrameMapping,
+			mapping._path = context._path + "/" + mapping._shortName;
+			this->registerPath(context._arxmlDatabase, mapping._path, ArxmlKeyword::PduToFrameMapping,
 				lineNumber, ArxmlIdentifiable::NoIndex);
 		}
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::PduToFrameMapping))
@@ -906,12 +898,11 @@ namespace OptiScan::Parser::Arxml
 		this->_reader.parseElementText(elementType, reference._path);
 	}
 
-	void ArxmlParser::parseSwBaseType(ArxmlDatabase & arxmlDatabase, const string & path,
-		const string & shortName, size_t & elementIndex)
+	void ArxmlParser::parseSwBaseType(ArxmlElementContext & context)
 	{
 		ArSwBaseType swBaseType;
-		swBaseType._path = path;
-		swBaseType._shortName = shortName;
+		swBaseType._path = context._path;
+		swBaseType._shortName = context._shortName;
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::SwBaseType))
 		{
 			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::BaseTypeEncoding))
@@ -931,16 +922,15 @@ namespace OptiScan::Parser::Arxml
 				this->_reader.readNext();
 			}
 		}
-		elementIndex = arxmlDatabase._swBaseTypes.size();
-		arxmlDatabase._swBaseTypes.push_back(std::move(swBaseType));
+		context._elementIndex = context._arxmlDatabase._swBaseTypes.size();
+		context._arxmlDatabase._swBaseTypes.push_back(std::move(swBaseType));
 	}
 
-	void ArxmlParser::parseSystemSignal(ArxmlDatabase & arxmlDatabase, const string & path,
-		const string & shortName, size_t & elementIndex)
+	void ArxmlParser::parseSystemSignal(ArxmlElementContext & context)
 	{
 		ArSystemSignal systemSignal;
-		systemSignal._path = path;
-		systemSignal._shortName = shortName;
+		systemSignal._path = context._path;
+		systemSignal._shortName = context._shortName;
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::SystemSignal))
 		{
 			string name = this->_reader.getName();
@@ -967,8 +957,8 @@ namespace OptiScan::Parser::Arxml
 				this->_reader.readNext();
 			}
 		}
-		elementIndex = arxmlDatabase._systemSignals.size();
-		arxmlDatabase._systemSignals.push_back(std::move(systemSignal));
+		context._elementIndex = context._arxmlDatabase._systemSignals.size();
+		context._arxmlDatabase._systemSignals.push_back(std::move(systemSignal));
 	}
 
 	void ArxmlParser::parseSystemSignalProps(ArSystemSignal & systemSignal)
@@ -1002,12 +992,11 @@ namespace OptiScan::Parser::Arxml
 		this->_reader.parseElementEnd(ArxmlKeyword::PhysicalProps);
 	}
 
-	void ArxmlParser::parseUnit(ArxmlDatabase & arxmlDatabase, const string & path,
-		const string & shortName, size_t & elementIndex)
+	void ArxmlParser::parseUnit(ArxmlElementContext & context)
 	{
 		ArUnit unit;
-		unit._path = path;
-		unit._shortName = shortName;
+		unit._path = context._path;
+		unit._shortName = context._shortName;
 		while (!this->_reader.tryMatchElementEnd(ArxmlKeyword::Unit))
 		{
 			if (this->_reader.tryMatchElementBegin(ArxmlKeyword::DisplayName))
@@ -1023,8 +1012,8 @@ namespace OptiScan::Parser::Arxml
 				this->_reader.readNext();
 			}
 		}
-		elementIndex = arxmlDatabase._units.size();
-		arxmlDatabase._units.push_back(std::move(unit));
+		context._elementIndex = context._arxmlDatabase._units.size();
+		context._arxmlDatabase._units.push_back(std::move(unit));
 	}
 
 	void ArxmlParser::registerPath(ArxmlDatabase & arxmlDatabase, const string & path,

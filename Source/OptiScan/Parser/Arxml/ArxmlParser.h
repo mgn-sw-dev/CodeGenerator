@@ -18,6 +18,18 @@ namespace OptiScan::Parser::Arxml
         void parse(ArxmlDatabase & arxmlDatabase);
 
     private:
+        struct ArxmlElementContext
+        {
+            ArxmlDatabase & _arxmlDatabase;
+            /** Path of the element, or of the enclosing identifiable if the element
+             *  has no SHORT-NAME. */
+            std::string _path;
+            /** Empty if the element has no SHORT-NAME. */
+            std::string _shortName;
+            /** Position in the matching database vector, NoIndex if not modelled. */
+            size_t _elementIndex;
+        };
+
         ArxmlTokenReader _reader;
 
         /** Children of an element that is not modelled: recurse so nested identifiable
@@ -26,24 +38,19 @@ namespace OptiScan::Parser::Arxml
         void parseChildren(ArxmlDatabase & arxmlDatabase, const std::string & path,
             const std::string & elementType);
         /** @throws FormatException. */
-        void parseCanCluster(ArxmlDatabase & arxmlDatabase, const std::string & path,
-            const std::string & shortName, size_t & elementIndex);
+        void parseCanCluster(ArxmlElementContext & context);
         /** @throws FormatException. */
-        void parseCanFrame(ArxmlDatabase & arxmlDatabase, const std::string & path,
-            const std::string & shortName, size_t & elementIndex);
+        void parseCanFrame(ArxmlElementContext & context);
         /** @throws FormatException. */
-        void parseCanFrameTriggering(ArxmlDatabase & arxmlDatabase, const std::string & path,
-            const std::string & shortName, size_t & elementIndex);
+        void parseCanFrameTriggering(ArxmlElementContext & context);
         /** @throws FormatException. */
-        void parseCompuMethod(ArxmlDatabase & arxmlDatabase, const std::string & path,
-            const std::string & shortName, size_t & elementIndex);
+        void parseCompuMethod(ArxmlElementContext & context);
         /** @throws FormatException. */
         void parseCompuScale(Ar::ArCompuMethod & compuMethod);
         /** Reads a list of V elements into @p values. @throws FormatException. */
         void parseCoefficients(const std::string & elementType, std::vector<double> & values);
         /** @throws FormatException. */
-        void parseDataConstr(ArxmlDatabase & arxmlDatabase, const std::string & path,
-            const std::string & shortName, size_t & elementIndex);
+        void parseDataConstr(ArxmlElementContext & context);
         /** */
         void parseDescription(std::optional<Ar::ArDescription> & description);
         /** Walk one element and everything below it.
@@ -58,22 +65,20 @@ namespace OptiScan::Parser::Arxml
          *  @throws FormatException. */
         void parseElement(ArxmlDatabase & arxmlDatabase, const std::string & parentPath);
         /** @throws FormatException. */
-        void parseISignal(ArxmlDatabase & arxmlDatabase, const std::string & path,
-            const std::string & shortName, size_t & elementIndex);
+        void parseISignal(ArxmlElementContext & context);
         /** @throws FormatException. */
-        void parseISignalIPdu(ArxmlDatabase & arxmlDatabase, const std::string & path,
-            const std::string & shortName, size_t & elementIndex);
+        void parseISignalIPdu(ArxmlElementContext & context);
         /** Reads one I-SIGNAL-TO-I-PDU-MAPPING and registers its path. The mapping is
          *  held inside the PDU, so no element index is recorded for it.
          *  @throws FormatException. */
-        void parseISignalToIPduMapping(ArxmlDatabase & arxmlDatabase, const std::string & pduPath,
+        void parseISignalToIPduMapping(const ArxmlElementContext & context,
             Ar::ArISignalIPdu & iSignalIPdu);
         /** Descends through I-PDU-TIMING-SPECIFICATIONS and picks up the cyclic timing.
          *  @throws FormatException. */
         void parseIPduTiming(const std::string & elementType, Ar::ArISignalIPdu & iSignalIPdu);
         /** Reads one PDU-TO-FRAME-MAPPING and registers its path.
          *  @throws FormatException. */
-        void parsePduToFrameMapping(ArxmlDatabase & arxmlDatabase, const std::string & framePath,
+        void parsePduToFrameMapping(const ArxmlElementContext & context,
             Ar::ArCanFrame & canFrame);
         /** LOWER-LIMIT and UPPER-LIMIT, which may carry INF or -INF instead of a number.
          *  @throws FormatException. */
@@ -88,8 +93,7 @@ namespace OptiScan::Parser::Arxml
          *  @throws FormatException. */
         void parseValueWrapper(const std::string & elementType, std::optional<double> & value);
         /** @throws FormatException. */
-        void parseSwBaseType(ArxmlDatabase & arxmlDatabase, const std::string & path,
-            const std::string & shortName, size_t & elementIndex);
+        void parseSwBaseType(ArxmlElementContext & context);
         /** The SW-DATA-DEF-PROPS-CONDITIONAL below PHYSICAL-PROPS of a SYSTEM-SIGNAL.
          *  @throws FormatException. */
         void parseSystemSignalProps(Ar::ArSystemSignal & systemSignal);
@@ -97,11 +101,9 @@ namespace OptiScan::Parser::Arxml
          *  I-SIGNAL. @throws FormatException. */
         void parseISignalProps(Ar::ArISignal & iSignal);
         /** @throws FormatException. */
-        void parseSystemSignal(ArxmlDatabase & arxmlDatabase, const std::string & path,
-            const std::string & shortName, size_t & elementIndex);
+        void parseSystemSignal(ArxmlElementContext & context);
         /** @throws FormatException. */
-        void parseUnit(ArxmlDatabase & arxmlDatabase, const std::string & path,
-            const std::string & shortName, size_t & elementIndex);
+        void parseUnit(ArxmlElementContext & context);
         /** @throws FormatException. */
         void registerPath(ArxmlDatabase & arxmlDatabase, const std::string & path,
             const std::string & elementType, uint64_t lineNumber, size_t elementIndex);
