@@ -32,6 +32,67 @@ namespace
 	const std::string DbcPath = "C:/CodeGenerator/Test/BACKBONE_EXT_CAN_2025_31a.dbc";
 	const std::string ConfigPath = "C:/CodeGenerator/Test/ConfigTest.json";
 
+	/** Prints the raw ARXML values behind a signal, so a limit difference against the
+	 *  DBC can be attributed. Temporary. */
+	void dumpSignalLimits(const ArxmlDatabase & database, const ArxmlResolver & resolver,
+		const std::string & signalName)
+	{
+		for (const Ar::ArISignal & iSignal : database._iSignals)
+		{
+			if (iSignal._shortName == signalName)
+			{
+				std::cout << "    " << signalName << ":";
+				const Ar::ArSystemSignal * const systemSignal =
+					resolver.findSystemSignal(iSignal._systemSignalRef);
+				if (systemSignal == nullptr)
+				{
+					std::cout << " no system signal" << std::endl;
+				}
+				else
+				{
+					const Ar::ArDataConstr * const dataConstr =
+						resolver.findDataConstr(systemSignal->_dataConstrRef);
+					if (dataConstr == nullptr)
+					{
+						std::cout << " no data constraint";
+					}
+					else
+					{
+						std::cout << " " << dataConstr->_path << " internal [";
+						if (dataConstr->_internalLowerLimit.has_value())
+						{
+							std::cout << *dataConstr->_internalLowerLimit;
+						}
+						std::cout << "|";
+						if (dataConstr->_internalUpperLimit.has_value())
+						{
+							std::cout << *dataConstr->_internalUpperLimit;
+						}
+						std::cout << "] phys [";
+						if (dataConstr->_physLowerLimit.has_value())
+						{
+							std::cout << *dataConstr->_physLowerLimit;
+						}
+						std::cout << "|";
+						if (dataConstr->_physUpperLimit.has_value())
+						{
+							std::cout << *dataConstr->_physUpperLimit;
+						}
+						std::cout << "]";
+					}
+					const Ar::ArCompuMethod * const compuMethod =
+						resolver.findCompuMethod(systemSignal->_compuMethodRef);
+					if (compuMethod != nullptr)
+					{
+						std::cout << ", " << compuMethod->_category
+							<< ", scales " << compuMethod->_scales.size();
+					}
+					std::cout << std::endl;
+				}
+			}
+		}
+	}
+
 	/** Check path for the ARXML parser (plan 20-parser-arxml.md, N5b).
 	 *  Parses the file, resolves its references and translates it into the DBC world. */
 	int runArxmlCheck()
@@ -176,6 +237,10 @@ namespace
 		std::cout << "  signals matched  " << comparisonReport._signalsMatched
 			<< ", only in dbc " << comparisonReport._signalsOnlyInReference
 			<< ", only in arxml " << comparisonReport._signalsOnlyInCandidate << std::endl;
+		std::cout << "  converted messages without signals: "
+			<< comparisonReport._candidateMessagesWithoutSignals << std::endl;
+		std::cout << "  of the dbc only signals, in such a message: "
+			<< comparisonReport._signalsOnlyInReferenceInEmptyMessages << std::endl;
 		std::cout << "  units equal after encoding: "
 			<< comparisonReport._unitsEqualAfterEncoding << std::endl;
 		std::cout << "  attribute differences:" << std::endl;
@@ -194,6 +259,18 @@ namespace
 					<< ": dbc '" << difference._expected
 					<< "', arxml '" << difference._found << "'" << std::endl;
 				shownDifferences++;
+			}
+		}
+		std::cout << "  raw arxml values behind the first limit differences:" << std::endl;
+		size_t shownLimits = 0;
+		for (const DbcDifference & difference : comparisonReport._differences)
+		{
+			bool const isLimit = difference._attribute == "minimum"
+				|| difference._attribute == "maximum";
+			if (shownLimits < 6 && isLimit)
+			{
+				dumpSignalLimits(database, resolver, difference._signalName);
+				shownLimits++;
 			}
 		}
 		return 0;

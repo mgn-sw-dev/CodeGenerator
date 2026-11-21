@@ -42,6 +42,12 @@ namespace OptiScan::Parser::Convert
         uint64_t _signalsMatched = 0;
         uint64_t _signalsOnlyInCandidate = 0;
         uint64_t _signalsOnlyInReference = 0;
+        /** Messages the candidate produced without any signal. */
+        uint64_t _candidateMessagesWithoutSignals = 0;
+        /** Of _signalsOnlyInReference, those sitting in a message the candidate
+         *  produced empty. Those are explained by a skipped PDU rather than by a
+         *  signal that went missing. */
+        uint64_t _signalsOnlyInReferenceInEmptyMessages = 0;
         /** Units that differ as raw bytes but agree once the reference is read as
          *  Latin-1. Not counted as a difference. */
         uint64_t _unitsEqualAfterEncoding = 0;

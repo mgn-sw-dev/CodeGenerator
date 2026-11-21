@@ -121,6 +121,11 @@ namespace OptiScan::Parser::Convert
 			DbcComparison::addDifference(std::move(difference), report);
 		}
 
+		if (candidate._signals.empty())
+		{
+			report._candidateMessagesWithoutSignals++;
+		}
+
 		map<string, const DbcSignal *> candidateSignals;
 		for (const DbcSignal & signal : candidate._signals)
 		{
@@ -139,6 +144,12 @@ namespace OptiScan::Parser::Convert
 			if (entry == candidateSignals.end())
 			{
 				report._signalsOnlyInReference++;
+				if (candidate._signals.empty())
+				{
+					// The whole message came out empty, so its PDU was skipped rather
+					// than a single signal having gone missing.
+					report._signalsOnlyInReferenceInEmptyMessages++;
+				}
 				DbcDifference difference;
 				difference._kind = DbcDifferenceKind::SignalMissing;
 				difference._messageName = reference._name;
