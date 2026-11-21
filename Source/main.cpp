@@ -2,6 +2,8 @@
 #include <OptiScan/Parser/Arxml/ArxmlParser.h>
 #include <OptiScan/Parser/Arxml/ArxmlResolver.h>
 #include <OptiScan/Parser/Convert/ArxmlToDbc.h>
+#include <OptiScan/Parser/Convert/DbcComparison.h>
+#include <OptiScan/Parser/Dbc/DbcParser.h>
 #include <OptiScan/View/Console/ConsoleLogHandler.h>
 #include <chrono>
 #include <cstdint>
@@ -27,6 +29,7 @@ namespace
 	const bool RunArxmlCheck = true;
 
 	const std::string ArxmlPath = "C:/CodeGenerator/Test/BACKBONE_EXT_CAN_2025_31a.arxml";
+	const std::string DbcPath = "C:/CodeGenerator/Test/BACKBONE_EXT_CAN_2025_31a.dbc";
 	const std::string ConfigPath = "C:/CodeGenerator/Test/ConfigTest.json";
 
 	/** Check path for the ARXML parser (plan 20-parser-arxml.md, N5b).
@@ -137,6 +140,60 @@ namespace
 						<< " [" << signal._minimum << "|" << signal._maximum << "]"
 						<< " \"" << signal._unit << "\"" << std::endl;
 				}
+			}
+		}
+		// Hold the result against the DBC that another tool generated from the same
+		// network. Neither side is the truth: the DBC is itself the output of a
+		// conversion, so a difference says the two disagree, not who is right.
+		std::ifstream dbcFile(DbcPath, std::ios::binary);
+		if (!dbcFile.is_open())
+		{
+			std::cerr << "dbc not found" << std::endl;
+			return 1;
+		}
+		OptiScan::Parser::Dbc::DbcParser dbcParser(&dbcFile);
+		OptiScan::Parser::Dbc::DbcDatabase referenceDatabase;
+		try
+		{
+			dbcParser.parse(referenceDatabase);
+		}
+		catch (const std::exception & error)
+		{
+			std::cerr << "FAILED to read the dbc: " << error.what() << std::endl;
+			return 1;
+		}
+
+		DbcComparison comparison;
+		DbcComparisonReport comparisonReport;
+		comparison.compare(referenceDatabase, dbcDatabase, comparisonReport);
+
+		std::cout << "--- compared against " << DbcPath << std::endl;
+		std::cout << "  dbc messages " << referenceDatabase._messages.size()
+			<< ", converted " << dbcDatabase._messages.size() << std::endl;
+		std::cout << "  messages matched " << comparisonReport._messagesMatched
+			<< ", only in dbc " << comparisonReport._messagesOnlyInReference
+			<< ", only in arxml " << comparisonReport._messagesOnlyInCandidate << std::endl;
+		std::cout << "  signals matched  " << comparisonReport._signalsMatched
+			<< ", only in dbc " << comparisonReport._signalsOnlyInReference
+			<< ", only in arxml " << comparisonReport._signalsOnlyInCandidate << std::endl;
+		std::cout << "  units equal after encoding: "
+			<< comparisonReport._unitsEqualAfterEncoding << std::endl;
+		std::cout << "  attribute differences:" << std::endl;
+		for (const std::pair<const std::string, uint64_t> & entry : comparisonReport._differencesByAttribute)
+		{
+			std::cout << "    " << entry.second << "\t" << entry.first << std::endl;
+		}
+		std::cout << "  examples:" << std::endl;
+		size_t shownDifferences = 0;
+		for (const DbcDifference & difference : comparisonReport._differences)
+		{
+			if (shownDifferences < 12 && !difference._attribute.empty())
+			{
+				std::cout << "    " << difference._messageName << "." << difference._signalName
+					<< " " << difference._attribute
+					<< ": dbc '" << difference._expected
+					<< "', arxml '" << difference._found << "'" << std::endl;
+				shownDifferences++;
 			}
 		}
 		return 0;

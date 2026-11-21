@@ -71,6 +71,8 @@ set(OptiScanParser_SOURCES
     Arxml/ArxmlTokenReader.h
     Convert/ArxmlToDbc.cpp
     Convert/ArxmlToDbc.h
+    Convert/DbcComparison.cpp
+    Convert/DbcComparison.h
     Dbc/DbcAttribute.h
     Dbc/DbcBitTiming.cpp
     Dbc/DbcBitTiming.h
