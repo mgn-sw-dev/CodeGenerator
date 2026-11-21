@@ -1,5 +1,6 @@
 #include <OptiScan/Core/Database/SystemDatabase.h>
 #include <OptiScan/Parser/Arxml/ArxmlParser.h>
+#include <OptiScan/Parser/Arxml/ArxmlResolver.h>
 #include <OptiScan/Parser/Arxml/ArxmlTokenReader.h>
 #include <OptiScan/View/Console/ConsoleLogHandler.h>
 #include <algorithm>
@@ -383,7 +384,73 @@ namespace
 				shownFrames++;
 			}
 		}
-		return reportParents("I-SIGNAL-TO-I-PDU-MAPPING");
+		ArxmlResolver resolver(database);
+		ArxmlResolveReport resolveReport;
+		resolver.validate(resolveReport);
+		std::cout << "--- references" << std::endl;
+		std::cout << "  total:          " << resolveReport._referenceCount << std::endl;
+		std::cout << "  resolved:       " << resolveReport._resolvedCount << std::endl;
+		std::cout << "  unresolved:     " << resolveReport._unresolved.size() << std::endl;
+		std::cout << "  type mismatch:  " << resolveReport._typeMismatches.size() << std::endl;
+		for (size_t i = 0; i < resolveReport._unresolved.size() && i < 5; i++)
+		{
+			const ArxmlResolveIssue & issue = resolveReport._unresolved[i];
+			std::cout << "    missing " << issue._path
+				<< " (DEST " << issue._dest << ") from " << issue._source << std::endl;
+		}
+		for (size_t i = 0; i < resolveReport._typeMismatches.size() && i < 5; i++)
+		{
+			const ArxmlResolveIssue & issue = resolveReport._typeMismatches[i];
+			std::cout << "    DEST " << issue._dest << " but found " << issue._elementType
+				<< " at " << issue._path << std::endl;
+		}
+		// Spot check: walk one frame all the way down to a signal and its conversion.
+		for (const Ar::ArCanFrameTriggering & triggering : database._canFrameTriggerings)
+		{
+			if (triggering._shortName.rfind("EBS21_TRLR_EBS", 0) == 0)
+			{
+				const Ar::ArCanFrame * const canFrame = resolver.findCanFrame(triggering._frameRef);
+				if (canFrame != nullptr && !canFrame->_mappings.empty())
+				{
+					const Ar::ArISignalIPdu * const pdu =
+						resolver.findISignalIPdu(canFrame->_mappings[0]._pduRef);
+					std::cout << "--- chain for " << canFrame->_shortName << std::endl;
+					if (pdu != nullptr && !pdu->_mappings.empty())
+					{
+						const Ar::ArISignalToIPduMapping & mapping = pdu->_mappings[0];
+						const Ar::ArISignal * const iSignal = resolver.findISignal(mapping._iSignalRef);
+						std::cout << "  pdu " << pdu->_shortName
+							<< ", mappings " << pdu->_mappings.size() << std::endl;
+						if (iSignal != nullptr)
+						{
+							std::cout << "  signal " << iSignal->_shortName
+								<< ", length " << iSignal->_length << std::endl;
+							const Ar::ArSystemSignal * const systemSignal =
+								resolver.findSystemSignal(iSignal->_systemSignalRef);
+							if (systemSignal != nullptr)
+							{
+								const Ar::ArCompuMethod * const compuMethod =
+									resolver.findCompuMethod(systemSignal->_compuMethodRef);
+								const Ar::ArDataConstr * const dataConstr =
+									resolver.findDataConstr(systemSignal->_dataConstrRef);
+								if (compuMethod != nullptr)
+								{
+									std::cout << "  compuMethod " << compuMethod->_shortName
+										<< " (" << compuMethod->_category
+										<< ", scales " << compuMethod->_scales.size() << ")" << std::endl;
+								}
+								if (dataConstr != nullptr && dataConstr->_internalUpperLimit.has_value())
+								{
+									std::cout << "  dataConstr internal up to "
+										<< *dataConstr->_internalUpperLimit << std::endl;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return 0;
 	}
 
 	/** */
