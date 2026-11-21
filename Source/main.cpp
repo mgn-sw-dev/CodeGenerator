@@ -1,21 +1,18 @@
 #include <OptiScan/Core/Database/SystemDatabase.h>
 #include <OptiScan/Parser/Arxml/ArxmlParser.h>
 #include <OptiScan/Parser/Arxml/ArxmlResolver.h>
-#include <OptiScan/Parser/Arxml/ArxmlTokenReader.h>
+#include <OptiScan/Parser/Convert/ArxmlToDbc.h>
 #include <OptiScan/View/Console/ConsoleLogHandler.h>
-#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <exception>
 #include <fstream>
 #include <iostream>
-#include <map>
 #include <string>
-#include <utility>
-#include <vector>
 
 using namespace OptiScan::Core::Database;
 using namespace OptiScan::Parser::Arxml;
+using namespace OptiScan::Parser::Convert;
 using namespace OptiScan::View::Console;
 
 namespace
@@ -32,126 +29,9 @@ namespace
 	const std::string ArxmlPath = "C:/CodeGenerator/Test/BACKBONE_EXT_CAN_2025_31a.arxml";
 	const std::string ConfigPath = "C:/CodeGenerator/Test/ConfigTest.json";
 
-	/** Check path for the ARXML reader (plan 20-parser-arxml.md, N1).
-	 *  Counts the opening tags per element name so the result can be held against an
-	 *  independently produced count. */
+	/** Check path for the ARXML parser (plan 20-parser-arxml.md, N5b).
+	 *  Parses the file, resolves its references and translates it into the DBC world. */
 	int runArxmlCheck()
-	{
-		std::cout << "=== " << ArxmlPath << std::endl;
-		std::ifstream file(ArxmlPath, std::ios::binary);
-		if (!file.is_open())
-		{
-			std::cerr << "file not found" << std::endl;
-			return 1;
-		}
-
-		ArxmlTokenReader reader(&file);
-		std::map<std::string, uint64_t> counts;
-		uint64_t nodes = 0;
-		uint64_t texts = 0;
-		uint64_t maxDepth = 0;
-		const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-		try
-		{
-			while (reader.readNext())
-			{
-				nodes++;
-				if (reader.getKind() == ArxmlNodeKind::ElementBegin)
-				{
-					counts[reader.getName()]++;
-					maxDepth = std::max(maxDepth, reader.getDepth());
-				}
-				else if (reader.getKind() == ArxmlNodeKind::Text)
-				{
-					texts++;
-				}
-			}
-		}
-		catch (const std::exception & error)
-		{
-			std::cerr << "FAILED: " << error.what() << std::endl;
-			return 1;
-		}
-		const std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-
-		std::vector<std::pair<std::string, uint64_t>> sorted(counts.begin(), counts.end());
-		std::sort(sorted.begin(), sorted.end(),
-			[](const std::pair<std::string, uint64_t> & left, const std::pair<std::string, uint64_t> & right)
-			{
-				return left.second != right.second ? right.second < left.second : left.first < right.first;
-			});
-
-		std::cout << "  nodes:          " << nodes << std::endl;
-		std::cout << "  text nodes:     " << texts << std::endl;
-		std::cout << "  distinct names: " << counts.size() << std::endl;
-		std::cout << "  max depth:      " << maxDepth << std::endl;
-		std::cout << "  duration:       "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-			<< " ms" << std::endl;
-		std::cout << "--- elements by count" << std::endl;
-		for (const std::pair<std::string, uint64_t> & entry : sorted)
-		{
-			std::cout << "  " << entry.second << "\t" << entry.first << std::endl;
-		}
-		return 0;
-	}
-
-	/** Locates every occurrence of @p elementName and reports the elements enclosing it.
-	 *  Answers why a model count differs from the plain element count. Temporary. */
-	int reportParents(const std::string & elementName)
-	{
-		int result = 0;
-		std::ifstream file(ArxmlPath, std::ios::binary);
-		if (!file.is_open())
-		{
-			std::cerr << "file not found" << std::endl;
-			result = 1;
-		}
-		else
-		{
-			ArxmlTokenReader reader(&file);
-			std::vector<std::string> stack;
-			std::map<std::string, uint64_t> chains;
-			while (reader.readNext())
-			{
-				if (reader.getKind() == ArxmlNodeKind::ElementBegin)
-				{
-					if (reader.getName() == elementName)
-					{
-						std::string chain;
-						size_t from = 0;
-						if (3 < stack.size())
-						{
-							from = stack.size() - 3;
-						}
-						for (size_t i = from; i < stack.size(); i++)
-						{
-							chain += "/";
-							chain += stack[i];
-						}
-						chains[chain]++;
-					}
-					stack.push_back(reader.getName());
-				}
-				else if (reader.getKind() == ArxmlNodeKind::ElementEnd)
-				{
-					if (!stack.empty())
-					{
-						stack.pop_back();
-					}
-				}
-			}
-			std::cout << "--- " << elementName << " by enclosing elements" << std::endl;
-			for (const std::pair<const std::string, uint64_t> & entry : chains)
-			{
-				std::cout << "  " << entry.second << "\t" << entry.first << std::endl;
-			}
-		}
-		return result;
-	}
-
-	/** Check path for the path index (plan 20-parser-arxml.md, N2). */
-	int runArxmlIndexCheck()
 	{
 		std::cout << "=== " << ArxmlPath << std::endl;
 		std::ifstream file(ArxmlPath, std::ios::binary);
@@ -175,278 +55,87 @@ namespace
 		}
 		const std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-		std::map<std::string, uint64_t> counts;
-		for (const std::pair<const std::string, ArxmlIdentifiable> & entry : database._pathIndex)
-		{
-			counts[entry.second._elementType]++;
-		}
-		std::vector<std::pair<std::string, uint64_t>> sorted(counts.begin(), counts.end());
-		std::sort(sorted.begin(), sorted.end(),
-			[](const std::pair<std::string, uint64_t> & left, const std::pair<std::string, uint64_t> & right)
-			{
-				return left.second != right.second ? right.second < left.second : left.first < right.first;
-			});
-
-		std::cout << "  indexed paths:  " << database._pathIndex.size() << std::endl;
-		std::cout << "  duplicates:     " << database._duplicatePaths.size() << std::endl;
-		std::cout << "  element types:  " << counts.size() << std::endl;
-		std::cout << "  duration:       "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-			<< " ms" << std::endl;
 		std::cout << "--- model" << std::endl;
+		std::cout << "  indexed paths:  " << database._pathIndex.size()
+			<< ", duplicates " << database._duplicatePaths.size() << std::endl;
 		std::cout << "  iSignals:       " << database._iSignals.size() << std::endl;
 		std::cout << "  systemSignals:  " << database._systemSignals.size() << std::endl;
 		std::cout << "  compuMethods:   " << database._compuMethods.size() << std::endl;
 		std::cout << "  dataConstrs:    " << database._dataConstrs.size() << std::endl;
-		std::cout << "  swBaseTypes:    " << database._swBaseTypes.size() << std::endl;
 		std::cout << "  units:          " << database._units.size() << std::endl;
 		std::cout << "  iSignalIPdus:   " << database._iSignalIPdus.size() << std::endl;
 		std::cout << "  canFrames:      " << database._canFrames.size() << std::endl;
 		std::cout << "  canFrameTrigs:  " << database._canFrameTriggerings.size() << std::endl;
-		std::cout << "  canClusters:    " << database._canClusters.size() << std::endl;
-		size_t mappings = 0;
-		size_t mappingsWithSignal = 0;
-		size_t mappingsWithGroup = 0;
-		size_t mappingsWithStart = 0;
-		size_t pdusWithCycleTime = 0;
-		for (const Ar::ArISignalIPdu & pdu : database._iSignalIPdus)
-		{
-			if (pdu._cycleTime_s.has_value())
-			{
-				pdusWithCycleTime++;
-			}
-			for (const Ar::ArISignalToIPduMapping & mapping : pdu._mappings)
-			{
-				mappings++;
-				if (!mapping._iSignalRef._path.empty())
-				{
-					mappingsWithSignal++;
-				}
-				if (!mapping._iSignalGroupRef._path.empty())
-				{
-					mappingsWithGroup++;
-				}
-				if (mapping._startPosition.has_value())
-				{
-					mappingsWithStart++;
-				}
-			}
-		}
-		std::cout << "  signalMappings: " << mappings
-			<< " (signal " << mappingsWithSignal << ", group " << mappingsWithGroup
-			<< ", withStart " << mappingsWithStart << ")" << std::endl;
-		std::cout << "  pdusWithCycle:  " << pdusWithCycleTime << std::endl;
-		size_t frameMappings = 0;
-		for (const Ar::ArCanFrame & canFrame : database._canFrames)
-		{
-			frameMappings += canFrame._mappings.size();
-		}
-		std::cout << "  frameMappings:  " << frameMappings << std::endl;
-		size_t extended = 0;
-		size_t withIdentifier = 0;
-		for (const Ar::ArCanFrameTriggering & triggering : database._canFrameTriggerings)
-		{
-			if (triggering._identifier.has_value())
-			{
-				withIdentifier++;
-			}
-			if (triggering._canAddressingMode == "EXTENDED")
-			{
-				extended++;
-			}
-		}
-		std::cout << "  triggerings:    withIdentifier " << withIdentifier
-			<< ", extended " << extended << std::endl;
-		for (const Ar::ArCanCluster & canCluster : database._canClusters)
-		{
-			std::cout << "  cluster " << canCluster._shortName << ": baudrate ";
-			if (canCluster._baudrate_bps.has_value())
-			{
-				std::cout << *canCluster._baudrate_bps;
-			}
-			if (canCluster._canFdBaudrate_bps.has_value())
-			{
-				std::cout << ", fd " << *canCluster._canFdBaudrate_bps;
-			}
-			std::cout << std::endl;
-		}
-		size_t scales = 0;
-		size_t linearScales = 0;
-		size_t textScales = 0;
-		std::map<std::string, uint64_t> categories;
-		for (const Ar::ArCompuMethod & compuMethod : database._compuMethods)
-		{
-			categories[compuMethod._category]++;
-			for (const Ar::ArCompuScale & scale : compuMethod._scales)
-			{
-				scales++;
-				if (!scale._numerator.empty())
-				{
-					linearScales++;
-				}
-				if (scale._textValue.has_value())
-				{
-					textScales++;
-				}
-			}
-		}
-		std::cout << "  compuScales:    " << scales
-			<< " (linear " << linearScales << ", text " << textScales << ")" << std::endl;
-		std::cout << "--- compuMethod categories" << std::endl;
-		for (const std::pair<const std::string, uint64_t> & entry : categories)
-		{
-			std::cout << "  " << entry.second << "\t" << entry.first << std::endl;
-		}
-		size_t withoutCompuMethod = 0;
-		size_t withoutDataConstr = 0;
-		for (const Ar::ArSystemSignal & systemSignal : database._systemSignals)
-		{
-			if (systemSignal._compuMethodRef._path.empty())
-			{
-				withoutCompuMethod++;
-			}
-			if (systemSignal._dataConstrRef._path.empty())
-			{
-				withoutDataConstr++;
-			}
-		}
-		size_t withoutSystemSignal = 0;
-		size_t withoutBaseType = 0;
-		for (const Ar::ArISignal & iSignal : database._iSignals)
-		{
-			if (iSignal._systemSignalRef._path.empty())
-			{
-				withoutSystemSignal++;
-			}
-			if (iSignal._baseTypeRef._path.empty())
-			{
-				withoutBaseType++;
-			}
-		}
-		std::cout << "--- unresolvable references" << std::endl;
-		std::cout << "  systemSignal without compuMethod: " << withoutCompuMethod << std::endl;
-		std::cout << "  systemSignal without dataConstr:  " << withoutDataConstr << std::endl;
-		std::cout << "  iSignal without systemSignal:     " << withoutSystemSignal << std::endl;
-		std::cout << "  iSignal without baseType:         " << withoutBaseType << std::endl;
-		for (size_t i = 0; i < database._duplicatePaths.size() && i < 10; i++)
-		{
-			std::cout << "    duplicate: " << database._duplicatePaths[i] << std::endl;
-		}
-		std::cout << "--- indexed elements by type" << std::endl;
-		for (const std::pair<std::string, uint64_t> & entry : sorted)
-		{
-			if (100 <= entry.second)
-			{
-				std::cout << "  " << entry.second << "\t" << entry.first << std::endl;
-			}
-		}
-		std::cout << "--- sample signals" << std::endl;
-		size_t shown = 0;
-		for (const Ar::ArISignal & iSignal : database._iSignals)
-		{
-			if (shown < 3)
-			{
-				std::cout << "  " << iSignal._path << ", length " << iSignal._length
-					<< ", systemSignal " << iSignal._systemSignalRef._path
-					<< ", baseType " << iSignal._baseTypeRef._path << std::endl;
-				shown++;
-			}
-		}
-		for (const Ar::ArSwBaseType & swBaseType : database._swBaseTypes)
-		{
-			std::cout << "  baseType " << swBaseType._shortName
-				<< ", size " << swBaseType._baseTypeSize
-				<< ", encoding '" << swBaseType._baseTypeEncoding << "'" << std::endl;
-		}
-		size_t withDescription = 0;
-		for (const Ar::ArISignal & iSignal : database._iSignals)
-		{
-			if (iSignal._description.has_value())
-			{
-				withDescription++;
-			}
-		}
-		std::cout << "  iSignals with description: " << withDescription << std::endl;
-		size_t shownFrames = 0;
-		for (const Ar::ArCanFrameTriggering & triggering : database._canFrameTriggerings)
-		{
-			if (shownFrames < 3 && triggering._identifier.has_value())
-			{
-				uint32_t dbcId = *triggering._identifier;
-				if (triggering._canAddressingMode == "EXTENDED")
-				{
-					dbcId |= 0x80000000u;
-				}
-				std::cout << "  " << triggering._shortName
-					<< ", id " << *triggering._identifier
-					<< ", dbcId " << dbcId
-					<< ", frame " << triggering._frameRef._path << std::endl;
-				shownFrames++;
-			}
-		}
+		std::cout << "  duration:       "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+			<< " ms" << std::endl;
+
 		ArxmlResolver resolver(database);
 		ArxmlResolveReport resolveReport;
 		resolver.validate(resolveReport);
 		std::cout << "--- references" << std::endl;
-		std::cout << "  total:          " << resolveReport._referenceCount << std::endl;
-		std::cout << "  resolved:       " << resolveReport._resolvedCount << std::endl;
-		std::cout << "  unresolved:     " << resolveReport._unresolved.size() << std::endl;
-		std::cout << "  type mismatch:  " << resolveReport._typeMismatches.size() << std::endl;
-		for (size_t i = 0; i < resolveReport._unresolved.size() && i < 5; i++)
+		std::cout << "  total " << resolveReport._referenceCount
+			<< ", resolved " << resolveReport._resolvedCount
+			<< ", unresolved " << resolveReport._unresolved.size()
+			<< ", type mismatch " << resolveReport._typeMismatches.size() << std::endl;
+
+		ArxmlToDbc converter(database);
+		OptiScan::Parser::Dbc::DbcDatabase dbcDatabase;
+		ArxmlToDbcReport convertReport;
+		converter.convert(dbcDatabase, convertReport);
+
+		std::cout << "--- converted to the DBC world" << std::endl;
+		std::cout << "  messages:       " << convertReport._messageCount << std::endl;
+		std::cout << "  signals:        " << convertReport._signalCount << std::endl;
+		std::cout << "  valueTables:    " << convertReport._valueTableCount << std::endl;
+		std::cout << "  baudrate:       " << dbcDatabase._bitTiming._baudrate << std::endl;
+		std::cout << "  skipped pdus:   " << convertReport._skippedPdus << std::endl;
+		for (const std::pair<const std::string, uint64_t> & entry : convertReport._skippedPduTypes)
 		{
-			const ArxmlResolveIssue & issue = resolveReport._unresolved[i];
-			std::cout << "    missing " << issue._path
-				<< " (DEST " << issue._dest << ") from " << issue._source << std::endl;
+			std::cout << "    " << entry.second << "\t" << entry.first << std::endl;
 		}
-		for (size_t i = 0; i < resolveReport._typeMismatches.size() && i < 5; i++)
+		std::cout << "  pdus no frame:  " << convertReport._unreferencedPdus << std::endl;
+		std::cout << "  skipped groups: " << convertReport._skippedGroupMappings << std::endl;
+		std::cout << "  no compuMethod: " << convertReport._signalsWithoutCompuMethod << std::endl;
+		std::cout << "  limits phys " << convertReport._limitsFromPhys
+			<< ", internal " << convertReport._limitsFromInternal
+			<< ", missing " << convertReport._limitsMissing << std::endl;
+		std::cout << "  warnings:       " << convertReport._warnings.size() << std::endl;
+		for (size_t i = 0; i < convertReport._warnings.size() && i < 5; i++)
 		{
-			const ArxmlResolveIssue & issue = resolveReport._typeMismatches[i];
-			std::cout << "    DEST " << issue._dest << " but found " << issue._elementType
-				<< " at " << issue._path << std::endl;
+			std::cout << "    " << convertReport._warnings[i] << std::endl;
 		}
-		// Spot check: walk one frame all the way down to a signal and its conversion.
-		for (const Ar::ArCanFrameTriggering & triggering : database._canFrameTriggerings)
+
+		std::cout << "--- sample message" << std::endl;
+		for (const OptiScan::Parser::Dbc::DbcMessage & message : dbcDatabase._messages)
 		{
-			if (triggering._shortName.rfind("EBS21_TRLR_EBS", 0) == 0)
+			if (message._name == "EBS21_TRLR_EBS")
 			{
-				const Ar::ArCanFrame * const canFrame = resolver.findCanFrame(triggering._frameRef);
-				if (canFrame != nullptr && !canFrame->_mappings.empty())
+				std::cout << "  BO_ " << message._id << " " << message._name
+					<< ": " << message._size_byte << std::endl;
+				for (const OptiScan::Parser::Dbc::DbcSignal & signal : message._signals)
 				{
-					const Ar::ArISignalIPdu * const pdu =
-						resolver.findISignalIPdu(canFrame->_mappings[0]._pduRef);
-					std::cout << "--- chain for " << canFrame->_shortName << std::endl;
-					if (pdu != nullptr && !pdu->_mappings.empty())
+					std::cout << "   SG_ " << signal._name << " : " << signal._startBit
+						<< "|" << signal._size_bit;
+					if (signal._isBigEndian)
 					{
-						const Ar::ArISignalToIPduMapping & mapping = pdu->_mappings[0];
-						const Ar::ArISignal * const iSignal = resolver.findISignal(mapping._iSignalRef);
-						std::cout << "  pdu " << pdu->_shortName
-							<< ", mappings " << pdu->_mappings.size() << std::endl;
-						if (iSignal != nullptr)
-						{
-							std::cout << "  signal " << iSignal->_shortName
-								<< ", length " << iSignal->_length << std::endl;
-							const Ar::ArSystemSignal * const systemSignal =
-								resolver.findSystemSignal(iSignal->_systemSignalRef);
-							if (systemSignal != nullptr)
-							{
-								const Ar::ArCompuMethod * const compuMethod =
-									resolver.findCompuMethod(systemSignal->_compuMethodRef);
-								const Ar::ArDataConstr * const dataConstr =
-									resolver.findDataConstr(systemSignal->_dataConstrRef);
-								if (compuMethod != nullptr)
-								{
-									std::cout << "  compuMethod " << compuMethod->_shortName
-										<< " (" << compuMethod->_category
-										<< ", scales " << compuMethod->_scales.size() << ")" << std::endl;
-								}
-								if (dataConstr != nullptr && dataConstr->_internalUpperLimit.has_value())
-								{
-									std::cout << "  dataConstr internal up to "
-										<< *dataConstr->_internalUpperLimit << std::endl;
-								}
-							}
-						}
+						std::cout << "@0";
 					}
+					else
+					{
+						std::cout << "@1";
+					}
+					if (signal._isSigned)
+					{
+						std::cout << "-";
+					}
+					else
+					{
+						std::cout << "+";
+					}
+					std::cout << " (" << signal._factor << "," << signal._offset << ")"
+						<< " [" << signal._minimum << "|" << signal._maximum << "]"
+						<< " \"" << signal._unit << "\"" << std::endl;
 				}
 			}
 		}
@@ -480,7 +169,7 @@ int main()
 	int result = 0;
 	if (RunArxmlCheck)
 	{
-		result = runArxmlIndexCheck();
+		result = runArxmlCheck();
 	}
 	else
 	{

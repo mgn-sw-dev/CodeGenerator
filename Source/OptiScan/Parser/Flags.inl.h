@@ -5,26 +5,31 @@
 namespace OptiScan::Parser
 {
 	template <typename Enum>
-	constexpr Flags<typename Enum>::Flags() noexcept
+	constexpr Flags<Enum>::Flags() noexcept
 		: _value(0)
 	{
 	}
 
 	template <typename Enum>
-	constexpr Flags<typename Enum>::Flags(Enum flag) noexcept
+	constexpr Flags<Enum>::Flags(Enum flag) noexcept
 		: _value(static_cast<UnderlyingType>(flag))
 	{
 	}
 
 	template <typename Enum>
-	constexpr bool Flags<typename Enum>::testFlag(Enum flag) const noexcept
+	constexpr bool Flags<Enum>::testFlag(Enum flag) const noexcept
 	{
 		UnderlyingType const mask = static_cast<UnderlyingType>(flag);
-		return mask == 0 ? _value == 0 : (_value & mask) == mask;
+		bool result = (_value & mask) == mask;
+		if (mask == 0)
+		{
+			result = _value == 0;
+		}
+		return result;
 	}
 
 	template <typename Enum>
-	void Flags<typename Enum>::setFlag(Enum flag, bool on) noexcept
+	void Flags<Enum>::setFlag(Enum flag, bool on) noexcept
 	{
 		UnderlyingType const mask = static_cast<UnderlyingType>(flag);
 		if (on)

@@ -1,4 +1,3 @@
-#pragma once
 
 #include <OptiScan/Parser/Dbc/DbcBitTiming.h>
 
