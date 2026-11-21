@@ -95,10 +95,9 @@ namespace
 		return 0;
 	}
 
-	/** Locates every COMPU-RATIONAL-COEFFS and reports the elements enclosing it.
-	 *  Answers why the model holds fewer linear scales than the file has coefficient
-	 *  blocks. Temporary, remove once the question is settled. */
-	int reportRationalCoeffParents()
+	/** Locates every occurrence of @p elementName and reports the elements enclosing it.
+	 *  Answers why a model count differs from the plain element count. Temporary. */
+	int reportParents(const std::string & elementName)
 	{
 		int result = 0;
 		std::ifstream file(ArxmlPath, std::ios::binary);
@@ -116,13 +115,13 @@ namespace
 			{
 				if (reader.getKind() == ArxmlNodeKind::ElementBegin)
 				{
-					if (reader.getName() == "COMPU-RATIONAL-COEFFS")
+					if (reader.getName() == elementName)
 					{
 						std::string chain;
 						size_t from = 0;
-						if (4 < stack.size())
+						if (3 < stack.size())
 						{
-							from = stack.size() - 4;
+							from = stack.size() - 3;
 						}
 						for (size_t i = from; i < stack.size(); i++)
 						{
@@ -141,7 +140,7 @@ namespace
 					}
 				}
 			}
-			std::cout << "--- COMPU-RATIONAL-COEFFS by enclosing elements" << std::endl;
+			std::cout << "--- " << elementName << " by enclosing elements" << std::endl;
 			for (const std::pair<const std::string, uint64_t> & entry : chains)
 			{
 				std::cout << "  " << entry.second << "\t" << entry.first << std::endl;
@@ -384,7 +383,7 @@ namespace
 				shownFrames++;
 			}
 		}
-		return 0;
+		return reportParents("I-SIGNAL-TO-I-PDU-MAPPING");
 	}
 
 	/** */
